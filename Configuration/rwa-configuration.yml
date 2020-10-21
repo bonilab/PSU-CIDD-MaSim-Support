@@ -82,7 +82,7 @@ raster_db:
   cell_size: 5
 
   # Approximate national age distribution for Burkina Faso
-  age_distribution_by_location: [[ 1.0 ]]
+  age_distribution_by_location: [[0.0378, 0.0378, 0.0378, 0.0378, 0.0282, 0.0282, 0.0282, 0.0282, 0.0282,  0.029,  0.029,  0.029,  0.029,  0.029,  0.169,  0.134,  0.106,  0.066,  0.053,  0.035, 0.0]]
 
   # probability that a symptomatic and infected individual seeks and receives antimalarial treatment
   #if the number of values less than number of locations, the first value will be applied for all locations
