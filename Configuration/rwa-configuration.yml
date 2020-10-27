@@ -70,10 +70,6 @@ raster_db:
   # Raster files defining the country
   district_raster:
   travel_raster:
-
-  # Raster files defining treatments
-  pr_treatment_under5:
-  pr_treatment_over5:
   
   # Raster file containing the calibrated beta value
   beta_raster:
@@ -81,14 +77,13 @@ raster_db:
   # Set the cell size used by raster, in sq.km
   cell_size: 5
 
-  # Approximate national age distribution for Burkina Faso
+  # Approximate national age distribution for Rwanda
   age_distribution_by_location: [[0.0378, 0.0378, 0.0378, 0.0378, 0.0282, 0.0282, 0.0282, 0.0282, 0.0282,  0.029,  0.029,  0.029,  0.029,  0.029,  0.169,  0.134,  0.106,  0.066,  0.053,  0.035, 0.0]]
 
-  # probability that a symptomatic and infected individual seeks and receives antimalarial treatment
-  #if the number of values less than number of locations, the first value will be applied for all locations
-  # this is the initial value, the modification values can be change by setting in events node
-  p_treatment_for_less_than_5_by_location: [ -1 ]
-  p_treatment_for_more_than_5_by_location: [ -1 ]
+  # Probability that an infected an symptomatic person receives treatment, 
+  # note that a single value is being used for the entire country
+  p_treatment_for_less_than_5_by_location: [ 0.99 ]
+  p_treatment_for_more_than_5_by_location: [ 0.99 ]
 
   # Will be overridden by beta_raster
   beta_by_location: [ -1 ]
@@ -287,104 +282,6 @@ drug_db:
       ..0..: 0.75
       ..1..: 1.2
   1:
-    name: "ADQ"       # Amodiaquine
-    half_life: 9.0
-    maximum_parasite_killing_rate: 0.95
-    n: 19
-    age_specific_drug_concentration_sd: [0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4]
-    mutation_probability: 0.005
-    affecting_loci: [0,1]
-    selecting_alleles: [[1],[0,1,3,4,5,7]]
-    k: 4
-    EC50:
-      #KNY--
-      00...: 0.62
-      #KYY--
-      01...: 0.85
-      #KNF--
-      02...: 0.5
-      #KYF--
-      03...: 0.775
-      #KNYNY
-      04...: 0.62
-      #KYYYY
-      05...: 0.85
-      #KNFNF
-      06...: 0.5
-      #KYFYF
-      07...: 0.775
-      #TNY--
-      10...: 0.7
-      #TYY--
-      11...: 0.9
-      #TNF--
-      12...: 0.65
-      #TYF--
-      13...: 0.82
-      #TNYNY
-      14...: 0.7
-      #TYYYY
-      15...: 0.9
-      #TNFNF
-      16...: 0.65
-      #TYFYF
-      17...: 0.82      
-  2:
-    name: "SP"        # Sulfadoxine/pyrimethamine
-    half_life: 6.5
-    maximum_parasite_killing_rate: 0.9
-    n: 15
-    age_specific_drug_concentration_sd: [0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4]
-    mutation_probability: 0.000
-    affecting_loci: []
-    selecting_alleles: []
-    k: 4
-    EC50:
-      .....: 1.08
-  3:
-    name: "CQ"      # Chloroquine
-    half_life: 10
-    maximum_parasite_killing_rate: 0.95
-    n: 19
-    age_specific_drug_concentration_sd: [0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4]
-    mutation_probability: 0.005
-    affecting_loci: [0,1]
-    selecting_alleles: [[1],[1,3,5,7]]
-    k: 4
-    EC50:
-      #KNY--
-      00...: 0.72
-      #KYY--
-      01...: 0.9
-      #KNF--
-      02...: 0.72
-      #KYF--
-      03...: 0.9
-      #KNYNY
-      04...: 0.72
-      #KYYYY
-      05...: 0.9
-      #KNFNF
-      06...: 0.72
-      #KYFYF
-      07...: 0.9
-      #TNY--
-      10...: 1.19
-      #TYY--
-      11...: 1.35
-      #TNF--
-      12...: 1.19
-      #TYF--
-      13...: 1.35
-      #TNYNY
-      14...: 1.19
-      #TYYYY
-      15...: 1.35
-      #TNFNF
-      16...: 1.19
-      #TYFYF
-      17...: 1.35     
-  4:
     name: "LUM"       # Lumefantrine
     half_life: 4.5
     maximum_parasite_killing_rate: 0.99
@@ -427,40 +324,7 @@ drug_db:
       16...: 1.05
       #TYFYF
       17...: 0.95       
-  5:
-    name: "PQ"        # Piperaquine
-    half_life: 28.0
-    maximum_parasite_killing_rate: 0.9
-    n: 15
-    age_specific_drug_concentration_sd: [0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4]
-    mutation_probability: 0.005
-    affecting_loci: [3]
-    selecting_alleles: [[1]]
-    resistant_factor: [[1]]
-    k: 4
-    EC50:
-      ...0.: 0.58
-      ...1.: 1.4
-  6:
-    name: "MF"      # Mefloquine
-    half_life: 21.0
-    maximum_parasite_killing_rate: 0.9
-    n: 15
-    age_specific_drug_concentration_sd: [0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4]
-    mutation_probability: 0.005
-    affecting_loci: [1]
-    selecting_alleles: [[4,5,6,7]]
-    k: 4
-    EC50:
-       .0... : 0.45
-       .1... : 0.45
-       .2... : 0.45
-       .3... : 0.45
-       .4... : 1.1
-       .5... : 1.1
-       .6... : 1.1
-       .7... : 1.1
-  7:
+  2:
     name: "QUIN"       # Quinine
     half_life: 18
     maximum_parasite_killing_rate: 0.9
@@ -481,59 +345,31 @@ artemisinin_drug_id: 0
 lumefantrine_drug_id: 4
 
 # Therapies that are used in Rwanda
-#
-# drug_id -     The ids from the above drug_db that make up the therapy
-# dosing_days - The number of days that the therapy is prescribed for 
-#
-# testing day tells you the follow-up point at which it is determined if treatment failed or not
 tf_testing_day: 28
 therapy_db:
   # Rwanda Treatments
-  # ACT - artesunate–amodiaquine (ASAQ)
+  # ACT - artemether–lumefantrine (AL) / first line therapy
   0:
     drug_id: [0, 1]
-    dosing_days: [3] 
-  # ACT - artemether–lumefantrine (AL) 
+    dosing_days: [3]
+  # MONO - Artesunate (AS) / severe treatment
   1:
-    drug_id: [0, 4]
-    dosing_days: [3]
-  # ACT - artesunate-mefloquine (ASMQ)
-  2:
-    drug_id: [0, 6]
-    dosing_days: [3]
-  # ACT - Dihydroartemisinin-piperaquine (DP)
-  3:
-    drug_id: [0, 5]
-    dosing_days: [3]
-  # MONO - Amodiaquine (ADQ)
-  4:
-    drug_id: [1]
-    dosing_days: [3]
-  # MONO - Artesunate (AS)
-  5:
     drug_id: [0]
     dosing_days: [3]
-  # MONO - Chloroquine (CQ)
-  6:
-    drug_id: [3]
-    dosing_days: [3]
-  # MONO - Quinine (QUIN)
-  7:
-    drug_id: [7]
-    dosing_days: [7]
-  # COMBINATION - Sulfadoxine/pyrimethamine (SP)
-  8:
+  # MONO - Quinine (QUIN) / severe treatment
+  2:
     drug_id: [2]
-    dosing_days: [3]
+    dosing_days: [7]
   
-# Drug-deployment strategy - baseline represents the survey data for Burkina Faso
+# Drug-deployment strategy - baseline represents the survey data for Rwanda
+# 
+# NOTE severe treatments are not included in the strategy
 strategy_db:
   0:
-    # 
     name: Rwanda-Baseline
     type: MFT
-    therapy_ids: [ 0.0 ]
-    distribution: [ 0.0 ]
+    therapy_ids: [ 0 ]
+    distribution: [ 1 ]
 initial_strategy_id: 0
 
 # Days from end of liver-stage infection to appearance of symptoms
@@ -611,14 +447,12 @@ inflation_factor: 0.01
 # Define locations of drug resistant genes
 genotype_info:
   loci:
-    # here we start defining the first locus
     - locus_name: "pfcrt"
       position: 0
       alleles:
         - value: 0
           allele_name: "K76"
           short_name: "K"
-          # this is the list of "mutant values" you can mutate up to (there is no real meaning of up; down mutations are equally likely)
           can_mutate_to: [1]
           mutation_level: 0
           daily_cost_of_resistance: 0.0
@@ -628,7 +462,6 @@ genotype_info:
           can_mutate_to: [0]
           mutation_level: 1
           daily_cost_of_resistance: 0.0005
-          # here we start defining the second locus
     - locus_name: "pfmdr1"
       position: 1
       alleles:
