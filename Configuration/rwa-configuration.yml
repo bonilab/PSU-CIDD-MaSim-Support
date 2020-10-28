@@ -107,7 +107,7 @@ spatial_model:
     gamma: 2.0
 
 # Crude Birth Rate
-birth_rate: 
+birth_rate: 32.6
 
 # Malaria adjusted, all-causes death rate for Burkina Faso
 death_rate_by_age_class: [ 0.0 ]
