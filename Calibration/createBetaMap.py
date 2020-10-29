@@ -17,8 +17,10 @@ MAX_EPSILON = 0.1
 
 BETAVALUES = 'data/calibration.csv'
 
-PFPRVALUES = 'data/bfa_pfpr_2to10.asc'
-POPULATIONVALUES = 'data/bfa_pop.asc'
+PFPRVALUES = '../GIS/rwa_pfpr2to10.asc'
+POPULATIONVALUES = '../GIS/rwa_population.asc'
+
+# TODO RWA has only a single treatment rate and ecozone
 TREATMENTVALUES = 'data/bfa_treatment.asc'
 ZONEVALUES = 'data/bfa_ecozone.asc'
 

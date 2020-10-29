@@ -5,7 +5,7 @@ import os
 
 from include.ascFile import *
 
-PATH = '../../GIS'
+PATH = '../GIS'
 
 
 def compare(one, two):

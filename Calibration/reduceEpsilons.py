@@ -14,19 +14,22 @@ from include.utility import *
 # TODO Figure out a better way to store these locations, maybe a library that finds them?
 # Country specific inputs
 CALIBRATION = 'data/calibration.csv'
-POPULATIONVALUES = 'data/bfa_pop.asc'
+POPULATIONVALUES = '../GIS/rwa_population.asc'
+
+# TODO Refactor the code so that these values are optional
 TREATMENTVALUES = 'data/bfa_treatment.asc'
 ZONEVALUES = 'data/bfa_ecozone.asc'
 
 # Inputs from other modules
-BETAVALUES = 'out/bf_mean_beta.asc'
-EPSILONVALUES = 'out/bf_epsilons_beta.asc'
+BETAVALUES = 'out/rwa_beta.asc'
+EPSILONVALUES = 'out/rwa_epsilons.asc'
 
 # Default output
 RESULTS = 'out/reduction.csv'
 SCRIPT = 'out/script.sh'
 
 parameters = {}
+
 
 def addBeta(lookup, step, zone, beta, population, treatment):
     global parameters
