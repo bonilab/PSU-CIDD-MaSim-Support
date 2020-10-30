@@ -1,11 +1,11 @@
+#!/usr/bin/python
+
 # validate_raster.py
 #
 # This script is intended to validate raster files to ensure they are aligned correctly.
 import os
 
 from include.ascFile import *
-
-PATH = '../GIS'
 
 
 def compare(one, two):
@@ -20,27 +20,46 @@ def compare(one, two):
     return result
 
 
-def main():
+def main(path):
+    # Prepare the variables
+    count = 0
     first = ''
     error = False
-    for filename in next(os.walk(PATH))[2]:
+
+    for filename in next(os.walk(path))[2]:
         # Continue if we this is not an ASC
         if ".asc" not in filename: continue
 
         # If the first one has not been set, do so and continue
         if first == '':
-            first = os.path.join(PATH, filename)
+            first = os.path.join(path, filename)
             continue
 
         # We now have two paths, so compare the first versus the new one
-        second = os.path.join(PATH, filename)
+        second = os.path.join(path, filename)
         if not compare(first, second):
             error = True
             print 'Error with alignment between {} and {}'.format(first, second)
+
+        # Update the count
+        count = count + 1
     
+    # Print the status
+    print "{} files checked".format(count)
+
     if not error:
-        print 'Complete! No errors.'
+        print "No errors detected"
 
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) != 2:
+        print "Usage: ./validateRaster.py [path]"
+        print "path - path to GIS files relative to this script"
+        print "\nExample: ./validateRaster.py ../GIS\n"
+        exit(0)
+
+    # Parse the parameters
+    path = sys.argv[1]
+
+    # Main entry point
+    main(path)
