@@ -91,10 +91,10 @@ raster_db:
 seasonal_info:
   enable: true
   raster: false
-  base: [ 1 ]
-  a:    [ 0 ]
-  b:    [ 1 ]
-  phi:  [ 0 ]
+  base: [  0.75 ]
+  a:    [ -0.25 ]
+  b:    [  3.5 ]
+  phi:  [ 50 ]
   
 # Country specific movement model and calibration
 spatial_model:
