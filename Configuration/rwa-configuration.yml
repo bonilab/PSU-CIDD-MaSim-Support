@@ -4,8 +4,6 @@
 #
 # Baseline RWANDA model configuration.
 #
-# PfPR data for calibration comes from the Malaria Atlas Project
-# projections for 2017.
 # ---------------------------------------------------------------
 
 # ---------------------------------------------------------------
@@ -64,15 +62,16 @@ artificial_rescaling_of_population_size: 1.0
 # that the paths are relative to the binary file for the simulation
 # ---------------------------------------------------------------
 raster_db:
-  # Adjusted population to account for burn-in up to 2017 start
+  # Adjusted population to account for burn-in up to 2017 start 
+  # reference population is for 2020
   population_raster:
     
   # Raster files defining the country
-  district_raster:
-  travel_raster:
+  district_raster: "rwa_district.asc"
+  travel_raster: "rwa_travel.asc"
   
   # Raster file containing the calibrated beta value
-  beta_raster:
+  beta_raster: "rwa_beta.asc"
   
   # Set the cell size used by raster, in sq.km
   cell_size: 5
@@ -210,11 +209,11 @@ events:
       # Artemisinin
       - day: 
         drug_id: 0
-        mutation_probability: 
+        mutation_probability: 0.001983
       # Amodiaquine
       - day: 
         drug_id: 1
-        mutation_probability: 
+        mutation_probability: 0.001983
       # Sulfadoxine/pyrimethamine
       - day:
         drug_id: 2
@@ -222,19 +221,19 @@ events:
       # Chloroquine
       - day: 
         drug_id: 3
-        mutation_probability: 
+        mutation_probability: 0.001983
       # Lumefantrine
       - day: 
         drug_id: 4
-        mutation_probability: 
+        mutation_probability: 0.001983
       # Piperaquine
       - day: 
         drug_id: 5
-        mutation_probability: 
+        mutation_probability: 0.001983
       # Mefloquine
       - day:
         drug_id: 6
-        mutation_probability: 
+        mutation_probability: 0.001983
       # Quinine
       - day: 
         drug_id: 7
