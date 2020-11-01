@@ -49,7 +49,9 @@ def addBeta(lookup, step, zone, beta, population, treatment):
     # Add the stepped betas to the set
     value = round(beta - (step * 10), 4)
     while value < beta + (step * 10):
-        parameters[zone][populationBin][treatmentBin].add(value)
+        # Only add values greater than zero
+        if value > 0:
+            parameters[zone][populationBin][treatmentBin].add(value)
         value = round(value + step, 4)
   
 
@@ -141,16 +143,21 @@ if __name__ == "__main__":
     if len(sys.argv) != 3:
         print "Usage: ./reduceEpsilons.py [tolerance] [step]"
         print "tolerance - float, maximum epsilon"
-        print "step - float, increment +/- 10x around known beta"
+        print "step - float, increment +/- 10x around known beta (maximum 0.0001)"
         exit(0)
 
     # Parse the parameters
     tolerance = float(sys.argv[1])
     step = float(sys.argv[2])
 
+    # Step cannot be greater than one
+    if step >= 1:
+        print "The step cannot be greater than one"
+        exit(1)
+
     # Can only go out to four decimal places
     if round(step, 4) != step:
-        print "{} exceeds maximum step of 0.0001"
+        print "{} exceeds maximum step of 0.0001".format(step)
         exit(1)
 
     main(tolerance, step)
