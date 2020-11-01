@@ -13,7 +13,8 @@ POPULATION_FILE = '../GIS/rwa_population.asc'
 treatmentBins = [ 0.99 ]
 
 # TODO Determine the bins computationally
-populationBins = [797, 1417, 2279, 3668, 6386, 12627, 25584, 53601, 117418]
+# Following bins are for Rwanda
+populationBins = [2125, 5640, 8989, 12108, 15577, 20289, 27629, 49378, 95262, 286928]
 
 
 def getBin(value, bins):
