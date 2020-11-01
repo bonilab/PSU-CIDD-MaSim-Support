@@ -32,6 +32,7 @@ def main(path):
 
         # If the first one has not been set, do so and continue
         if first == '':
+            print "Using {} as reference".format(filename)
             first = os.path.join(path, filename)
             continue
 
