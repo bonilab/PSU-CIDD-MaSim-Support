@@ -88,10 +88,10 @@ raster_db:
 seasonal_info:
   enable: true
   raster: false
-  base: [ 1 ]
-  a:    [ 0 ]
-  b:    [ 1 ]
-  phi:  [ 0 ]
+  base: [  0.75 ]
+  a:    [ -0.25 ]
+  b:    [  3.5 ]
+  phi:  [ 50 ]
   
 # Disable movement during the beta run since it is a single cell
 spatial_model:
