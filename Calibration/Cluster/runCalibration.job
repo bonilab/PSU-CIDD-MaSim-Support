@@ -4,8 +4,5 @@
 #PBS -l nodes=1:ppn=1
 #PBS -l walltime=96:00:00
 
-#PBS -m ea
-#PBS -M rbz5100@psu.edu
-
 cd $PBS_O_WORKDIR
-./runCalibration.sh
+./calibration.sh
