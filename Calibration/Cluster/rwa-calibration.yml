@@ -31,13 +31,13 @@ report_frequency: 30
 # Items controlling the behavior of the model
 # ---------------------------------------------------------------
 # Starting date is calibration year minus 11 years of burn-in
-starting_date: 
+starting_date: 2007/1/1
 
-# TODO determine when to start recording data
-start_of_comparison_period: 
+# 2018 is the target calibration year
+start_of_comparison_period: 2018/1/1
 
-# Ending date is start of recording period plus 20 years
-ending_date: 
+# Ending date is 2023 so we have some extra data to check
+ending_date: 2023/12/31
 
 # Discard the first five years worth of data
 start_collect_data_day: 1825 
@@ -105,9 +105,8 @@ spatial_model:
 # Crude Birth Rate
 birth_rate: 32.6
 
-# TODO
 # Malaria adjusted, all-causes death rate for Rwanda
-death_rate_by_age_class: [ 0.0 ]
+death_rate_by_age_class: [ 0.02641, 0.01727, 0.01155, 0.00867, 0.00682, 0.00029, 0.0003, 0.0003, 0.00031, 0.00034, 0.00035, 0.0049, 0.00638, 0.00906, 0.05348, 0.37479 ]
 
 # probability of death for patients who are not treated or patients who experience a treatment failure (due to drug resistance, or otherwise)
 # when received treatment, this rate drop by factor of 10 in code
