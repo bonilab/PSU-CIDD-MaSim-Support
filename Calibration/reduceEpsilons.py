@@ -143,7 +143,7 @@ if __name__ == "__main__":
     if len(sys.argv) != 3:
         print "Usage: ./reduceEpsilons.py [tolerance] [step]"
         print "tolerance - float, maximum epsilon"
-        print "step - float, increment +/- 10x around known beta (maximum 0.0001)"
+        print "step - float, increment +/- 10x around known beta (maximum 0.00001)"
         exit(0)
 
     # Parse the parameters
@@ -155,9 +155,9 @@ if __name__ == "__main__":
         print "The step cannot be greater than one"
         exit(1)
 
-    # Can only go out to four decimal places
-    if round(step, 4) != step:
-        print "{} exceeds maximum step of 0.0001".format(step)
+    # Can only go out to five decimal places
+    if round(step, 5) != step:
+        print "{} exceeds maximum step of 0.00001".format(step)
         exit(1)
 
     main(tolerance, step)
