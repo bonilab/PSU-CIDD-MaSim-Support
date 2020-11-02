@@ -1,2 +1,8 @@
 # Ignore compiled Python file
 *.pyc
+
+# Ignore script output files
+/**/out
+
+# Ignore data directories
+/**/data

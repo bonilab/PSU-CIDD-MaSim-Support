@@ -1,7 +1,10 @@
+#!/usr/bin/python
+
 # generateBins.py
 #
 # This script generates the bins that need to be run to determine the beta values
 import math
+import os
 
 from include.ascFile import *
 
@@ -9,8 +12,10 @@ from include.ascFile import *
 PFPR_FILE       = '../GIS/rwa_pfpr2to10.asc'
 POPULATION_FILE = '../GIS/rwa_population.asc'
 
-# Only one treatment bin for Rwanda
-treatmentBins = [ 0.99 ]
+# TODO Determine how to do this computationally
+# Reference values for Rwanda
+ZONE = 0
+TREATMENT = 0.99
 
 # TODO Determine the bins computationally
 # Following bins are for Rwanda
@@ -31,7 +36,7 @@ def process():
     [ ascHeader, population ] = load_asc(POPULATION_FILE)
 
     # Prepare our results
-    pfprRanges = {}
+    ranges = {}
 
     # Process the data
     for row in range(0, ascHeader['nrows']):
@@ -44,39 +49,39 @@ def process():
             popBin = getBin(population[row][col], populationBins)
 
             # Add to the dictionary as needed
-            if popBin not in pfprRanges: pfprRanges[popBin] = []
+            if popBin not in ranges: ranges[popBin] = []
             
             # Add to our data sets
-            pfprRanges[popBin].append(pfpr[row][col])
+            ranges[popBin].append(pfpr[row][col])
 
-    return [ pfprRanges ]
+    return [ ranges ]
 
 
-def save(pfprRanges, filename):
+def save(ranges, filename, username):
     with open(filename, 'w') as script:
         # Print the front matter
-        script.write("#!/bin/bash\n")
-        script.write("\n# Calibration template script\n")
-        
-        # Print the blocks for the calibration
-        values = " ".join(str(value) for value in sorted(pfprRanges.keys()))
-        script.write("for population in {}; do\n".format(values))
-        script.write("  for beta in `seq 0.05 0.05 1.20`; do\n")
-        script.write("\n#TODO\n\n")
-        script.write("  done\n")
-        script.write("done\n")
+        script.write("#!/bin/bash\n\n")
+        script.write("source ./calibrationLib.sh\n")
+        value = " ".join([str(x) for x in sorted(populationBins)])
+        script.write("generateAsc \"\\\"{}\\\"\"\n".format(value))
+        script.write("run {} \"\\\"{}\\\"\" \"\\\"{}\\\"\" {}".format(ZONE, value, TREATMENT, username))
+
 
 
 if __name__ == '__main__':
-    # Process the data
-    [ pfprRanges ] = process()
+    if len(sys.argv) != 2:
+        print "Usage: ./generateBins.py [username]"
+        print "username - the user who will be running the calibration on the cluster"
+        exit(0)
 
-    # Print the relevent ranges for the user
-    for zone in pfprRanges.keys():
-        print "Populations: {}".format(sorted(pfprRanges[zone].keys()))
-        for popBin in sorted(pfprRanges[zone].keys()):
-            print "{} - {} to {} PfPR".format(popBin, min(pfprRanges[zone][popBin]), max(pfprRanges[zone][popBin]))
-        print
+    # Parse the parameters
+    username = str(sys.argv[1])
+
+    # Process and print the relevent ranges for the user
+    [ ranges ] = process()
+    for population in sorted(ranges):
+        print "{} - {} to {} PfPR".format(population, min(ranges[population]), max(ranges[population]))
 
     # Save the basic script
-    save(pfprRanges, 'out/calibration.sh')
+    if not os.path.isdir('out'): os.mkdir('out')
+    save(ranges, 'out/calibration.sh', username)
