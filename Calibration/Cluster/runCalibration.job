@@ -2,7 +2,7 @@
 
 #PBS -A mfb9_b_g_sc_default
 #PBS -l nodes=1:ppn=1
-#PBS -l walltime=96:00:00
+#PBS -l walltime=24:00:00
 
 #PBS -m ea
 
