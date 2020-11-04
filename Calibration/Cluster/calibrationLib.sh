@@ -6,7 +6,7 @@
 
 # Get the current job count, note the overcount due to the delay.
 # Wait if there are currently too many jobs
-LIMIT=20
+LIMIT=75
 function check_delay {
   eval user=$1
   while [ `qstat -u $user | grep $user | wc -l` -gt $LIMIT ]; do
