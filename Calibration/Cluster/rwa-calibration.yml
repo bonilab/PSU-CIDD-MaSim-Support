@@ -102,8 +102,8 @@ spatial_model:
     beta:  0
     gamma: 0
 
-# Crude Birth Rate
-birth_rate: 32.6
+# Crude Birth Rate: 32.6
+birth_rate: 0.0326
 
 # Malaria adjusted, all-causes death rate for Rwanda
 death_rate_by_age_class: [ 0.02641, 0.01727, 0.01155, 0.00867, 0.00682, 0.00029, 0.0003, 0.0003, 0.00031, 0.00034, 0.00035, 0.0049, 0.00638, 0.00906, 0.05348 ]
