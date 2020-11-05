@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This script will queue processes on the cluster up to the configured limit. The filenames
-# will encode the values based using the name ZONE-POPUATION-ACCESS-BETA-bfa.yml although a fixed
+# will encode the values based using the name ZONE-POPUATION-ACCESS-BETA-rwa.yml although a fixed
 # study id is in place as well.
 
 # Get the current job count, note the overcount due to the delay.
@@ -35,18 +35,18 @@ function run() {
         check_delay $user
 
         # Prepare the configuration file
-        sed 's/#BETA#/'"$beta"'/g' rwa-calibration.yml > $zone-$population-$access-$beta-bfa.yml
-        sed -i 's/#POPULATION#/'"$population"'/g' $zone-$population-$access-$beta-bfa.yml  
-        sed -i 's/#ACCESS#/'"$access"'/g' $zone-$population-$access-$beta-bfa.yml
-        sed -i 's/#ZONE#/'"$zone"'/g' $zone-$population-$access-$beta-bfa.yml
+        sed 's/#BETA#/'"$beta"'/g' rwa-calibration.yml > $zone-$population-$access-$beta-rwa.yml
+        sed -i 's/#POPULATION#/'"$population"'/g' $zone-$population-$access-$beta-rwa.yml  
+        sed -i 's/#ACCESS#/'"$access"'/g' $zone-$population-$access-$beta-rwa.yml
+        sed -i 's/#ZONE#/'"$zone"'/g' $zone-$population-$access-$beta-rwa.yml
     
-        sed 's/#BETA#/'"$beta"'/g' template.job > $zone-$population-$access-$beta-bfa.pbs
-        sed -i 's/#POPULATION#/'"$population"'/g' $zone-$population-$access-$beta-bfa.pbs
-        sed -i 's/#ACCESS#/'"$access"'/g' $zone-$population-$access-$beta-bfa.pbs
-        sed -i 's/#ZONE#/'"$zone"'/g' $zone-$population-$access-$beta-bfa.pbs
+        sed 's/#BETA#/'"$beta"'/g' template.job > $zone-$population-$access-$beta-rwa.pbs
+        sed -i 's/#POPULATION#/'"$population"'/g' $zone-$population-$access-$beta-rwa.pbs
+        sed -i 's/#ACCESS#/'"$access"'/g' $zone-$population-$access-$beta-rwa.pbs
+        sed -i 's/#ZONE#/'"$zone"'/g' $zone-$population-$access-$beta-rwa.pbs
     
         # Queue the next item
-        qsub $zone-$population-$access-$beta-bfa.pbs
+        qsub $zone-$population-$access-$beta-rwa.pbs
       done
     done
   done

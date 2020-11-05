@@ -184,16 +184,16 @@ circulation_info:
 initial_parasite_info:
   - location_id: -1
     parasite_info:
-      # TNY--C1x / 
+      # TNY--C1 
       # T - CQ resistance (everywhere)
       # NY-- - N (diversity at 86 locus), Y (184 locus)
       # C - Artemisinin (ART) sensitive
       # 1 - PPQ sensitive
-      - parasite_type_id: 64
+      - parasite_type_id: 32
         prevalence: 0.05
 
-      # TYY--C1x
-      - parasite_type_id: 72
+      # TYY--C1
+      - parasite_type_id: 36
         prevalence: 0.05
         
 # Events for Rwanda

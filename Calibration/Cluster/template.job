@@ -7,4 +7,4 @@
 
 # Change to the directory we launched the script from and launch the simulation
 cd $PBS_O_WORKDIR
-./MaSim -i #ZONE#-#POPULATION#-#ACCESS#-#BETA#-bfa.yml -s 1
+./MaSim -i #ZONE#-#POPULATION#-#ACCESS#-#BETA#-rwa.yml -s 1
