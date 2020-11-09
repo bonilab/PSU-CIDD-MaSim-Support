@@ -11,18 +11,74 @@ from include.ascFile import *
 from include.calibrationLib import *
 from include.utility import *
 
-# Starting epsilon and delta to be used
-EPSILON = 0.00001
-MAX_EPSILON = 0.1
-
-BETAVALUES = 'data/calibration.csv'
-
+# TODO Grab all of this from a config file
+# Connection string for the database
+CONNECTION = "host=masimdb.vmhost.psu.edu dbname=rwanda user=sim password=sim"
 PFPRVALUES = '../GIS/rwa_pfpr2to10.asc'
 POPULATIONVALUES = '../GIS/rwa_population.asc'
 
 # TODO RWA has only a single treatment rate and ecozone
-TREATMENTVALUES = 'data/bfa_treatment.asc'
-ZONEVALUES = 'data/bfa_ecozone.asc'
+TREATMENT = 0.99
+ECOZONE = 0
+
+# Starting epsilon and delta to be used
+EPSILON = 0.00001
+MAX_EPSILON = 0.1
+
+
+def create_beta_map():
+    # Load the relevent data
+    [ ascheader, pfpr ] = load_asc(PFPRVALUES)
+    [ ascheader, population ] = load_asc(POPULATIONVALUES)
+    lookup = load_betas(BETAVALUES)
+
+    # Prepare for the ASC data
+    epsilons = []
+    maxEpsilon = 0
+    meanBeta = []
+
+    print "Determining betas for {} rows, {} columns".format(ascheader['nrows'], ascheader['ncols'])
+
+    # Scan each of the rows 
+    for row in range(0, ascheader['nrows']):
+
+        # Append the empty rows
+        epsilons.append([])
+        meanBeta.append([])
+
+        # Scan each of the PfPR values    
+        for col in range(0, ascheader['ncols']):
+
+            # Append nodata and continue
+            if pfpr[row][col] == ascheader['nodata']:
+                epsilons[row].append(ascheader['nodata'])
+                meanBeta[row].append(ascheader['nodata'])
+                continue
+
+            # Get the beta values
+            [values, epsilon] = get_betas(ECOZONE, pfpr[row][col], population[row][col], TREATMENT, lookup)
+
+            # Was nothing returned?
+            if len(values) == 0:
+                epsilons[row].append(0)
+                meanBeta[row].append(0)
+                continue
+
+            # Note the epsilon and the mean
+            epsilons[row].append(epsilon)
+            if epsilon > maxEpsilon: maxEpsilon = epsilon
+            meanBeta[row].append(sum(values) / len(values))
+
+        # Note the progress
+        progressBar(row + 1, ascheader['nrows'])
+                
+    # Write the results
+    print "Max epsilon: {}".format(maxEpsilon)
+    print "Saving {}".format('out/bf_epsilons_beta.asc')
+    write_asc(ascheader, epsilons, 'out/bf_epsilons_beta.asc')
+    print "Saving {}".format('out/bf_mean_beta.asc')
+    write_asc(ascheader, meanBeta, 'out/bf_mean_beta.asc')
+
 
 # Get the beta values that generate the PfPR for the given population and 
 # treatment level, this function will start with the lowest epsilon value 
@@ -79,62 +135,19 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
     return(betas)
     
 
-def main():               
-    # Load the relevent data
-    [ ascheader, zones ] = load_asc(ZONEVALUES)
-    [ ascheader, pfpr ] = load_asc(PFPRVALUES)
-    [ ascheader, population ] = load_asc(POPULATIONVALUES)
-    [ ascheader, treatment ] = load_asc(TREATMENTVALUES)
-    lookup = load_betas(BETAVALUES)
-
-    # Prepare for the ASC data
-    epsilons = []
-    maxEpsilon = 0
-    meanBeta = []
-
-    print "Determining betas for {} rows, {} columns".format(ascheader['nrows'], ascheader['ncols'])
-
-    # Scan each of the rows 
-    for row in range(0, ascheader['nrows']):
-
-        # Append the empty rows
-        epsilons.append([])
-        meanBeta.append([])
-
-        # Scan each of the PfPR values    
-        for col in range(0, ascheader['ncols']):
-
-            # Append nodata and continue
-            if pfpr[row][col] == ascheader['nodata']:
-                epsilons[row].append(ascheader['nodata'])
-                meanBeta[row].append(ascheader['nodata'])
-                continue
-
-            # Get the beta values
-            [values, epsilon] = get_betas( \
-                zones[row][col], pfpr[row][col], population[row][col], treatment[row][col] / 100, lookup)
-
-            # Was nothing returned?
-            if len(values) == 0:
-                epsilons[row].append(0)
-                meanBeta[row].append(0)
-                continue
-
-            # Note the epsilon and the mean
-            epsilons[row].append(epsilon)
-            if epsilon > maxEpsilon: maxEpsilon = epsilon
-            meanBeta[row].append(sum(values) / len(values))
-
-        # Note the progress
-        progressBar(row + 1, ascheader['nrows'])
-                
-    # Write the results
-    print "Max epsilon: {}".format(maxEpsilon)
-    print "Saving {}".format('out/bf_epsilons_beta.asc')
-    write_asc(ascheader, epsilons, 'out/bf_epsilons_beta.asc')
-    print "Saving {}".format('out/bf_mean_beta.asc')
-    write_asc(ascheader, meanBeta, 'out/bf_mean_beta.asc')
+# Main entry point for the script
+def main(studyId):               
+    query_betas(CONNECTION, studyId)
+    create_beta_map()
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 2:
+        print "Usage: ./createBetaMap.py [study]"
+        print "study - the database id of the study to use for the reference beta values"
+        exit(0)
+
+    # Parse the parameters
+    studyId = int(sys.argv[1])    
+
+    main(studyId)
