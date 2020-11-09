@@ -37,9 +37,10 @@ def check(zone):
             for ndz in beta:
                 row = [ ndx, ndy, ndz]
                 matched = False
-                for index in range(0, len(raw) - 1):
+                for index in range(len(raw)):
                     if row == raw[index]:
                         matched = True
+                        break
                 if not matched:
                     missing.append([zone, ndx, ndy, ndz])
 
