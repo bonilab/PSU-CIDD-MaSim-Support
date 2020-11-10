@@ -74,10 +74,10 @@ def create_beta_map():
                 
     # Write the results
     print "Max epsilon: {}".format(maxEpsilon)
-    print "Saving {}".format('out/bf_epsilons_beta.asc')
-    write_asc(ascheader, epsilons, 'out/bf_epsilons_beta.asc')
-    print "Saving {}".format('out/bf_mean_beta.asc')
-    write_asc(ascheader, meanBeta, 'out/bf_mean_beta.asc')
+    print "Saving {}".format('out/epsilons_beta.asc')
+    write_asc(ascheader, epsilons, 'out/epsilons_beta.asc')
+    print "Saving {}".format('out/mean_beta.asc')
+    write_asc(ascheader, meanBeta, 'out/mean_beta.asc')
 
 
 # Get the beta values that generate the PfPR for the given population and 

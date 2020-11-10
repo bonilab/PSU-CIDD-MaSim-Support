@@ -16,13 +16,13 @@ from include.utility import *
 CALIBRATION = 'data/calibration.csv'
 POPULATIONVALUES = '../GIS/rwa_population.asc'
 
-# TODO Refactor the code so that these values are optional
-TREATMENTVALUES = 'data/bfa_treatment.asc'
-ZONEVALUES = 'data/bfa_ecozone.asc'
+# TODO RWA has only a single treatment rate and ecozone
+TREATMENT = 0.99
+ECOZONE = 0
 
 # Inputs from other modules
-BETAVALUES = 'out/rwa_beta.asc'
-EPSILONVALUES = 'out/rwa_epsilons.asc'
+BETAVALUES = 'out/mean_beta.asc'
+EPSILONVALUES = 'out/epsilons_beta.asc'
 
 # Default output
 RESULTS = 'out/reduction.csv'
@@ -104,9 +104,7 @@ def main(tolerance, step):
     global parameters
 
     # Load the relevent data
-    [ ascheader, zones ] = load_asc(ZONEVALUES)
     [ ascheader, population ] = load_asc(POPULATIONVALUES)
-    [ ascheader, treatment ] = load_asc(TREATMENTVALUES)
     lookup = load_betas(CALIBRATION)
 
     # Read the epsilons file in
@@ -126,8 +124,7 @@ def main(tolerance, step):
             if value < tolerance: continue
 
             # Update the running list
-            addBeta(lookup, step, int(zones[row][col]), \
-                beta[row][col], population[row][col], treatment[row][col] / 100)
+            addBeta(lookup, step, ECOZONE, beta[row][col], population[row][col], TREATMENT)
 
         # Note the progress
         progressBar(row + 1, ascheader['nrows'])
