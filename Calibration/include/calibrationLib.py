@@ -63,6 +63,9 @@ def load_betas(filename):
 # Note that we are presuming that the filenames have been standardized to allow for
 # scripting to take place.
 def query_betas(connection, studyId):
+    
+    # Permit beta = 0 when PfPR = 0, but filter the beta out otherwise since 
+    # the PfPR should never quite reach zero during seasonal transmission
     sql = """
         SELECT replicateid, zone, population, access, beta, eir, 
             CASE WHEN zone IN (0, 1) THEN max ELSE pfpr2to10 END AS pfpr,
@@ -83,6 +86,7 @@ def query_betas(connection, studyId):
                 INNER JOIN sim.monthlysitedata msd on msd.monthlydataid = md.id
             WHERE studyid = %(studyId)s AND md.dayselapsed >= (4352 - 366)
             GROUP BY replicateid, filename) iq
+        WHERE (beta = 0 and pfpr2to10 = 0) OR (beta != 0 and min != 0)            
         ORDER BY zone, population, access, pfpr"""
     header = "replicateid,zone,population,access,beta,eir,pfpr,min,pfpr2to10,max\n"
 
