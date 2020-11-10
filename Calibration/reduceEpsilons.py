@@ -92,15 +92,15 @@ def writeBetas(lookup):
     print "Preparing script, {}".format(SCRIPT)
     with open(SCRIPT, "w") as script:
         script.write("#!/bin/bash\n")
-        script.write("source ./runMissing.sh\n")
+        script.write("source ./calibrationLib.sh\n")
         value = " ".join([str(x) for x in sorted(populationAsc)])
-        script.write("generatePopulationAsc \"\\\"{}\\\"\"\n".format(value.strip()))
+        script.write("generateAsc \"\\\"{}\\\"\"\n".format(value.strip()))
         value = " ".join([str(x) for x in sorted(parameters.keys())])
         script.write("generateZoneAsc \"\\\"{}\\\"\"\n".format(value.strip()))
-        script.write("run '{}'\n".format(RESULTS[4:]))
+        script.write("runCsv '{}'\n".format(RESULTS[4:]))
         
 
-def main(tolerance, step):
+def main(tolerance, step, username):
     global parameters
 
     # Load the relevent data
@@ -137,15 +137,17 @@ def main(tolerance, step):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print "Usage: ./reduceEpsilons.py [tolerance] [step]"
+    if len(sys.argv) != 4:
+        print "Usage: ./reduceEpsilons.py [tolerance] [step] [username]"
         print "tolerance - float, maximum epsilon"
         print "step - float, increment +/- 10x around known beta (maximum 0.00001)"
+        print "username - the user who will be running the calibration on the cluster"
         exit(0)
 
     # Parse the parameters
     tolerance = float(sys.argv[1])
     step = float(sys.argv[2])
+    username = str(sys.argv[3])
 
     # Step cannot be greater than one
     if step >= 1:
@@ -157,4 +159,4 @@ if __name__ == "__main__":
         print "{} exceeds maximum step of 0.00001".format(step)
         exit(1)
 
-    main(tolerance, step)
+    main(tolerance, step, username)

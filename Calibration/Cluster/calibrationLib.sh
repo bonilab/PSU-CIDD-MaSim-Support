@@ -21,6 +21,13 @@ function generateAsc() {
   done
 }
 
+function generateZoneAsc() {
+  eval zones=$1
+  for zone in $zones; do
+    sed 's/#ZONE#/'"$zone"'/g' zone.asc > $zone.asc
+  done
+}
+
 function run() {
   eval zone=$1
   eval population_list=$2
@@ -50,4 +57,32 @@ function run() {
       done
     done
   done
+}
+
+function runCsv() {
+  eval filename=$1
+  eval user=$2
+
+  while IFS=, read -r zone population access beta
+  do
+    check_delay $user
+
+    # Trim the return
+    beta="$(echo "$beta"|tr -d '\r')"
+
+    # Prepare the configuration file
+    sed 's/#BETA#/'"$beta"'/g' bf-calibration.yml > $zone-$population-$access-$beta-bfa.yml
+    sed -i 's/#POPULATION#/'"$population"'/g' $zone-$population-$access-$beta-bfa.yml  
+    sed -i 's/#ACCESS#/'"$access"'/g' $zone-$population-$access-$beta-bfa.yml
+    sed -i 's/#ZONE#/'"$zone"'/g' $zone-$population-$access-$beta-bfa.yml
+
+    sed 's/#BETA#/'"$beta"'/g' template.job > $zone-$population-$access-$beta-bfa.pbs
+    sed -i 's/#POPULATION#/'"$population"'/g' $zone-$population-$access-$beta-bfa.pbs
+    sed -i 's/#ACCESS#/'"$access"'/g' $zone-$population-$access-$beta-bfa.pbs
+    sed -i 's/#ZONE#/'"$zone"'/g' $zone-$population-$access-$beta-bfa.pbs
+
+    # Queue the next item
+    qsub $zone-$population-$access-$beta-bfa.pbs
+
+  done < $filename
 }
