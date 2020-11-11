@@ -62,7 +62,7 @@ def getLookupBetas(lookup, zone, population, treatment):
     return betas
 
 
-def writeBetas(lookup):
+def writeBetas(lookup, username):
     global parameters
 
     # Generate a list of populations to create ASC files for
@@ -97,7 +97,7 @@ def writeBetas(lookup):
         script.write("generateAsc \"\\\"{}\\\"\"\n".format(value.strip()))
         value = " ".join([str(x) for x in sorted(parameters.keys())])
         script.write("generateZoneAsc \"\\\"{}\\\"\"\n".format(value.strip()))
-        script.write("runCsv '{}'\n".format(RESULTS[4:]))
+        script.write("runCsv '{}' {}\n".format(RESULTS[4:], username))
         
 
 def main(tolerance, step, username):
@@ -133,7 +133,7 @@ def main(tolerance, step, username):
     if len(parameters) == 0:
         print "Nothing to reduce!"
     else:
-        writeBetas(lookup)
+        writeBetas(lookup, username)
 
 
 if __name__ == "__main__":
