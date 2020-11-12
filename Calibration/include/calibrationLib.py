@@ -50,8 +50,8 @@ def load_betas(filename):
             if not treatment in lookup[zone][population]:
                 lookup[zone][population][treatment] = []
 
-            # Ignore the zeros
-            if float(row['pfpr']) == 0: continue
+            # Ignore the zeros unless the beta is also zero
+            if float(row['pfpr']) == 0 and float(row['beta']) != 0: continue
 
             # Append the beta and PfPR
             lookup[zone][population][treatment].append([ float(row['pfpr']) / 100, float(row['beta']) ])

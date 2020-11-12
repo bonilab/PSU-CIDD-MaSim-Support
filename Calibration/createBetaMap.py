@@ -37,6 +37,9 @@ def create_beta_map():
     maxEpsilon = 0
     meanBeta = []
 
+    # Prepare to track the distribution
+    distribution = [0] * 5
+
     print "Determining betas for {} rows, {} columns".format(ascheader['nrows'], ascheader['ncols'])
 
     # Scan each of the rows 
@@ -58,6 +61,12 @@ def create_beta_map():
             # Get the beta values
             [values, epsilon] = get_betas(ECOZONE, pfpr[row][col], population[row][col], TREATMENT, lookup)
 
+            # Update the distribution
+            for exponent in range(1, len(distribution) + 1):
+                if epsilon >= pow(10, -exponent):
+                    distribution[exponent - 1] += 1
+                    break
+
             # Was nothing returned?
             if len(values) == 0:
                 epsilons[row].append(0)
@@ -66,15 +75,22 @@ def create_beta_map():
 
             # Note the epsilon and the mean
             epsilons[row].append(epsilon)
-            if epsilon > maxEpsilon: maxEpsilon = epsilon
+            if epsilon > maxEpsilon: 
+                maxEpsilon = epsilon
+                maxValues = "PfPR: {}, Population: {}".format(pfpr[row][col], population[row][col])
             meanBeta[row].append(sum(values) / len(values))
 
         # Note the progress
         progressBar(row + 1, ascheader['nrows'])
                 
     # Write the results
-    print "Max epsilon: {}".format(maxEpsilon)
-    print "Saving {}".format('out/epsilons_beta.asc')
+    print "\nMax epsilon: {} / {}".format(maxEpsilon, maxValues)
+    print "Epsilon Distribution"
+    for ndx in range(0, len(distribution)):
+        print "{:>6} : {}".format(pow(10, -(ndx + 1)), distribution[ndx])
+
+    # Save the maps        
+    print "\nSaving {}".format('out/epsilons_beta.asc')
     write_asc(ascheader, epsilons, 'out/epsilons_beta.asc')
     print "Saving {}".format('out/mean_beta.asc')
     write_asc(ascheader, meanBeta, 'out/mean_beta.asc')
@@ -122,7 +138,7 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
     # within the margin
     betas = []
     for value in lookup[zone][populationBin][treatmentBin]:
-            
+
         # Add the value if it is in the bounds
         if low <= value[0] and value[0] <= high:
             betas.append(value[1])
