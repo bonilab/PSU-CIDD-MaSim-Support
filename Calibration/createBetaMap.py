@@ -86,6 +86,7 @@ def create_beta_map():
     # Write the results
     print "\nMax epsilon: {} / {}".format(maxEpsilon, maxValues)
     print "Epsilon Distribution"
+    total = 0
     for ndx in range(0, len(distribution)):
         print "{:>6} : {}".format(pow(10, -(ndx + 1)), distribution[ndx])
         total += distribution[ndx]
