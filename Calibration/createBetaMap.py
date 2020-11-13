@@ -88,6 +88,8 @@ def create_beta_map():
     print "Epsilon Distribution"
     for ndx in range(0, len(distribution)):
         print "{:>6} : {}".format(pow(10, -(ndx + 1)), distribution[ndx])
+        total += distribution[ndx]
+    print "Total Cells: {}".format(total)
 
     # Save the maps        
     print "\nSaving {}".format('out/epsilons_beta.asc')
