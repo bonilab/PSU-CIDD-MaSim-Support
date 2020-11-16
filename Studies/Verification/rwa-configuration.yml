@@ -62,7 +62,7 @@ artificial_rescaling_of_population_size: 0.25
 # that the paths are relative to the binary file for the simulation
 # ---------------------------------------------------------------
 raster_db:
-  # Adjusted population to account for burn-in up to 2009 start 
+# Adjusted population to account for burn-in up to 2009 start 
   population_raster: "rwa_init_pop.asc"
     
   # Raster files defining the country
@@ -206,40 +206,6 @@ events:
   - name: turn_off_mutation
     info:
       - day: 2007/1/1
-  - name: turn_on_mutation
-    info:
-      # Artemisinin
-      - day: 2015/1/1
-        drug_id: 0
-        mutation_probability: 0.001983
-      # Amodiaquine
-      - day: 2015/1/1
-        drug_id: 1
-        mutation_probability: 0.001983
-      # Sulfadoxine/pyrimethamine
-      - day: 2015/1/1
-        drug_id: 2
-        mutation_probability: 0.0
-      # Chloroquine
-      - day: 2015/1/1
-        drug_id: 3
-        mutation_probability: 0.001983
-      # Lumefantrine
-      - day: 2015/1/1
-        drug_id: 4
-        mutation_probability: 0.001983
-      # Piperaquine
-      - day: 2015/1/1
-        drug_id: 5
-        mutation_probability: 0.001983
-      # Mefloquine
-      - day: 2015/1/1
-        drug_id: 6
-        mutation_probability: 0.001983
-      # Quinine
-      - day: 2015/1/1
-        drug_id: 7
-        mutation_probability: 0.0                 
 
 # Drug Information
 #
