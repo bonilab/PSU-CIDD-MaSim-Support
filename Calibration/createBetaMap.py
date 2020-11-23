@@ -155,18 +155,29 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
     
 
 # Main entry point for the script
-def main(studyId):               
-    query_betas(CONNECTION, studyId)
+def main(studyId, zeroFilter):               
+    query_betas(CONNECTION, studyId, zeroFilter)
     create_beta_map()
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print "Usage: ./createBetaMap.py [study]"
-        print "study - the database id of the study to use for the reference beta values"
+    if len(sys.argv) == 1 or len(sys.argv) > 3:
+        print "Usage: ./createBetaMap.py [study] [filter]"
+        print "study  - the database id of the study to use for the reference beta values"
+        print "filter - optional default true (1), false (0) means zeroed minima should not be filtered"
         exit(0)
+
+    # Default values
+    zeroFilter = True
 
     # Parse the parameters
     studyId = int(sys.argv[1])    
+    if len(sys.argv) == 3:
+        if sys.argv[2] == "0":
+            zeroFilter = False
+            print "Zero filter disabled"
+        if sys.argv[2] not in ["0", "1"]:
+            print "Flag for filter must be 0 (false) or 1 (true)"
+            exit(1)
 
-    main(studyId)
+    main(studyId, zeroFilter)

@@ -59,14 +59,17 @@ def load_betas(filename):
     return lookup
 
 
-# Query the database at the given location for the beta values in the given study. 
-# Note that we are presuming that the filenames have been standardized to allow for
-# scripting to take place.
-def query_betas(connection, studyId):
+# Query the database at the given location for the beta values in the given 
+# study. Note that we are presuming that the filenames have been standardized 
+# to allow for scripting to take place.
+#
+# filterZero is an optional argument (default True) that prevents beta values 
+#   associated with zero as a local minima from being returned.
+def query_betas(connection, studyId, filterZero = True):
     
     # Permit beta = 0 when PfPR = 0, but filter the beta out otherwise since 
     # the PfPR should never quite reach zero during seasonal transmission
-    sql = """
+    SQL = """
         SELECT replicateid, zone, population, access, beta, eir, 
             CASE WHEN zone IN (0, 1) THEN max ELSE pfpr2to10 END AS pfpr,
             min, pfpr2to10, max
@@ -85,10 +88,16 @@ def query_betas(connection, studyId):
                 INNER JOIN sim.monthlydata md on md.replicateid = r.id
                 INNER JOIN sim.monthlysitedata msd on msd.monthlydataid = md.id
             WHERE studyid = %(studyId)s AND md.dayselapsed >= (4352 - 366)
-            GROUP BY replicateid, filename) iq
-        WHERE (beta = 0 and pfpr2to10 = 0) OR (beta != 0 and min != 0)            
+            GROUP BY replicateid, filename) iq {}           
         ORDER BY zone, population, access, pfpr"""
     header = "replicateid,zone,population,access,beta,eir,pfpr,min,pfpr2to10,max\n"
+
+    # Include the filter if need be
+    WHERE = "WHERE (beta = 0 and pfpr2to10 = 0) OR (beta != 0 and min != 0) "
+    if filterZero:
+        sql = SQL.format(WHERE)
+    else:
+        sql = SQL.format("")
 
     # Select for the beta values
     print("Loading beta values for study id: {}".format(studyId))
