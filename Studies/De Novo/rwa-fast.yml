@@ -20,7 +20,7 @@ initial_seed_number: 0
 connection_string: "host=masimdb.vmhost.psu.edu dbname=rwanda user=sim password=sim connect_timeout=60"
 
 # Record the genomic data
-record_genome_db: false
+record_genome_db: true
 
 # Report to GUI and console every 30 days
 report_frequency: 30
