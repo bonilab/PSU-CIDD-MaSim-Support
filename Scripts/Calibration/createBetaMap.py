@@ -14,8 +14,8 @@ from include.utility import *
 # TODO Grab all of this from a config file
 # Connection string for the database
 CONNECTION = "host=masimdb.vmhost.psu.edu dbname=rwanda user=sim password=sim"
-PFPRVALUES = '../GIS/rwa_pfpr2to10.asc'
-POPULATIONVALUES = '../GIS/rwa_population.asc'
+PFPRVALUES = '../../GIS/rwa_pfpr2to10.asc'
+POPULATIONVALUES = '../../GIS/rwa_population.asc'
 
 # TODO RWA has only a single treatment rate and ecozone
 TREATMENT = 0.99

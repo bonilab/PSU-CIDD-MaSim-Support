@@ -9,8 +9,8 @@ import os
 from include.ascFile import *
 
 # Define the major influences of the beta values
-PFPR_FILE       = '../GIS/rwa_pfpr2to10.asc'
-POPULATION_FILE = '../GIS/rwa_population.asc'
+PFPR_FILE       = '../../GIS/rwa_pfpr2to10.asc'
+POPULATION_FILE = '../../GIS/rwa_population.asc'
 
 # TODO Determine how to do this computationally
 # Reference values for Rwanda

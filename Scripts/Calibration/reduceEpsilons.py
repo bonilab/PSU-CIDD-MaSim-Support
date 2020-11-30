@@ -14,7 +14,7 @@ from include.utility import *
 # TODO Figure out a better way to store these locations, maybe a library that finds them?
 # Country specific inputs
 CALIBRATION = 'data/calibration.csv'
-POPULATIONVALUES = '../GIS/rwa_population.asc'
+POPULATIONVALUES = '../../GIS/rwa_population.asc'
 
 # TODO RWA has only a single treatment rate and ecozone
 TREATMENT = 0.99

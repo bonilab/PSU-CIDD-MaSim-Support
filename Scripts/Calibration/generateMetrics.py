@@ -11,8 +11,8 @@ def calculate(populationFile):
     NUMERATOR = 0
     DENOMINATOR = 1
 
-    [ ascheader, district ] = load_asc("../GIS/rwa_district.asc")
-    [ ascheader, pfpr ] = load_asc("../GIS/rwa_pfpr2to10.asc")
+    [ ascheader, district ] = load_asc("../../GIS/rwa_district.asc")
+    [ ascheader, pfpr ] = load_asc("../../GIS/rwa_pfpr2to10.asc")
     [ ascheader, population ] = load_asc(populationFile)
 
     data = {}
@@ -82,5 +82,5 @@ def simulatePopulation(fileName, rate, years, start):
 
 
 if __name__ == '__main__':
-    calculate("../GIS/rwa_population.asc")
+    calculate("../../GIS/rwa_population.asc")
 \
