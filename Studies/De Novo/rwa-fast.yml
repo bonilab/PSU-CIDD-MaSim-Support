@@ -80,8 +80,8 @@ raster_db:
 
   # Probability that an infected an symptomatic person receives treatment, 
   # note that a single value is being used for the entire country
-  p_treatment_for_less_than_5_by_location: [ 0.99 ]
-  p_treatment_for_more_than_5_by_location: [ 0.99 ]
+  p_treatment_for_less_than_5_by_location: [ 0.56 ]
+  p_treatment_for_more_than_5_by_location: [ 0.56 ]
 
   # Will be overridden by beta_raster
   beta_by_location: [ -1 ]
