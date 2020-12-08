@@ -6,7 +6,7 @@
 import math
 import os
 
-from include.ascFile import *
+from Scripts.Calibration.include.ascFile import *
 
 # Define the major influences of the beta values
 PFPR_FILE       = '../../GIS/rwa_pfpr2to10.asc'
@@ -70,8 +70,8 @@ def save(ranges, filename, username):
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print "Usage: ./generateBins.py [username]"
-        print "username - the user who will be running the calibration on the cluster"
+        print ("Usage: ./generateBins.py [username]")
+        print ("username - the user who will be running the calibration on the cluster")
         exit(0)
 
     # Parse the parameters
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     # Process and print the relevent ranges for the user
     [ ranges ] = process()
     for population in sorted(ranges):
-        print "{} - {} to {} PfPR".format(population, min(ranges[population]), max(ranges[population]))
+        print ("{} - {} to {} PfPR".format(population, min(ranges[population]), max(ranges[population])))
 
     # Save the basic script
     if not os.path.isdir('out'): os.mkdir('out')

@@ -5,7 +5,7 @@
 import csv
 import os
 
-from database import *
+from Scripts.Calibration.include.database import *
 
 
 # Path and name of file to save beta values to

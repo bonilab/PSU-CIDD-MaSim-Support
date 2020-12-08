@@ -4,8 +4,10 @@
 #
 # This script is intended to validate raster files to ensure they are aligned correctly.
 import os
+#import sys
+#sys.path.append("C://Users//pua66//PycharmProjects//PSU-CIDD-Rwanda//Scripts//Calibration//include//ascFile.py")
 
-from include.ascFile import *
+from Scripts.Calibration.include.ascFile import *
 
 
 def compare(one, two):
@@ -32,7 +34,7 @@ def main(path):
 
         # If the first one has not been set, do so and continue
         if first == '':
-            print "Using {} as reference".format(filename)
+            print ("Using {} as reference".format(filename))
             first = os.path.join(path, filename)
             continue
 
@@ -40,23 +42,23 @@ def main(path):
         second = os.path.join(path, filename)
         if not compare(first, second):
             error = True
-            print 'Error with alignment between {} and {}'.format(first, second)
+            print ('Error with alignment between {} and {}'.format(first, second))
 
         # Update the count
         count = count + 1
     
     # Print the status
-    print "{} files checked".format(count)
+    print ("{} files checked".format(count))
 
     if not error:
-        print "No errors detected"
+        print ("No errors detected")
 
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print "Usage: ./validateRaster.py [path]"
-        print "path - path to GIS files relative to this script"
-        print "\nExample: ./validateRaster.py ../GIS\n"
+        print ("Usage: ./validateRaster.py [path]")
+        print ("path - path to GIS files relative to this script")
+        print ("\nExample: ./validateRaster.py ../GIS\n")
         exit(0)
 
     # Parse the parameters

@@ -2,7 +2,7 @@
 
 # This module contains functions relevent to getting metrics from ASC files.
 
-from include.ascFile import *
+from Scripts.Calibration.include.ascFile import *
 
 
 def calculate(populationFile):
@@ -62,7 +62,7 @@ def simulatePopulation(fileName, rate, years, start):
             if data[row][col] == ascheader['nodata']: continue
             data[row][col] *= 0.25
             initial += data[row][col]
-    print "{}: {}".format(start, int(round(initial / 0.25)))
+    print ("{}: {}".format(start, int(round(initial / 0.25))))
 
     # Apply the population growth
     for year in range(years):
@@ -78,9 +78,8 @@ def simulatePopulation(fileName, rate, years, start):
                 # Update the running total
                 population += data[row][col]
 
-        print "{}: {}".format(start + year + 1, int(round(population / 0.25)))
+        print ("{}: {}".format(start + year + 1, int(round(population / 0.25))))
 
 
 if __name__ == '__main__':
     calculate("../../GIS/rwa_population.asc")
-\

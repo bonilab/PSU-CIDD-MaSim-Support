@@ -7,9 +7,9 @@
 
 import csv
 
-from include.ascFile import *
-from include.calibrationLib import *
-from include.utility import *
+from Scripts.Calibration.include.ascFile import *
+from Scripts.Calibration.include.calibrationLib import *
+from Scripts.Loader.utility import *
 
 # TODO Grab all of this from a config file
 # Connection string for the database
@@ -40,7 +40,7 @@ def create_beta_map():
     # Prepare to track the distribution
     distribution = [0] * 5
 
-    print "Determining betas for {} rows, {} columns".format(ascheader['nrows'], ascheader['ncols'])
+    print ("Determining betas for {} rows, {} columns".format(ascheader['nrows'], ascheader['ncols']))
 
     # Scan each of the rows 
     for row in range(0, ascheader['nrows']):
@@ -84,18 +84,18 @@ def create_beta_map():
         progressBar(row + 1, ascheader['nrows'])
                 
     # Write the results
-    print "\nMax epsilon: {} / {}".format(maxEpsilon, maxValues)
-    print "Epsilon Distribution"
+    print ("\nMax epsilon: {} / {}".format(maxEpsilon, maxValues))
+    print ("Epsilon Distribution")
     total = 0
     for ndx in range(0, len(distribution)):
-        print "{:>6} : {}".format(pow(10, -(ndx + 1)), distribution[ndx])
+        print ("{:>6} : {}".format(pow(10, -(ndx + 1)), distribution[ndx]))
         total += distribution[ndx]
-    print "Total Cells: {}".format(total)
+    print ("Total Cells: {}".format(total))
 
     # Save the maps        
-    print "\nSaving {}".format('out/epsilons_beta.asc')
+    print ("\nSaving {}".format('out/epsilons_beta.asc'))
     write_asc(ascheader, epsilons, 'out/epsilons_beta.asc')
-    print "Saving {}".format('out/mean_beta.asc')
+    print ("Saving {}".format('out/mean_beta.asc'))
     write_asc(ascheader, meanBeta, 'out/mean_beta.asc')
 
 
@@ -162,9 +162,9 @@ def main(studyId, zeroFilter):
 
 if __name__ == "__main__":
     if len(sys.argv) == 1 or len(sys.argv) > 3:
-        print "Usage: ./createBetaMap.py [study] [filter]"
-        print "study  - the database id of the study to use for the reference beta values"
-        print "filter - optional default true (1), false (0) means zeroed minima should not be filtered"
+        print ("Usage: ./createBetaMap.py [study] [filter]")
+        print ("study  - the database id of the study to use for the reference beta values")
+        print ("filter - optional default true (1), false (0) means zeroed minima should not be filtered")
         exit(0)
 
     # Default values
@@ -175,9 +175,9 @@ if __name__ == "__main__":
     if len(sys.argv) == 3:
         if sys.argv[2] == "0":
             zeroFilter = False
-            print "Zero filter disabled"
+            print ("Zero filter disabled")
         if sys.argv[2] not in ["0", "1"]:
-            print "Flag for filter must be 0 (false) or 1 (true)"
+            print ("Flag for filter must be 0 (false) or 1 (true)")
             exit(1)
 
     main(studyId, zeroFilter)
