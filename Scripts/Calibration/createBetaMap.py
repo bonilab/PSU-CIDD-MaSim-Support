@@ -12,7 +12,7 @@ from Scripts.Calibration.include.calibrationLib import *
 from Scripts.Loader.utility import *
 import Scripts.Calibration.include.databaseconfig as cfg
 
-# TODO Grab all of this from a config file
+# TODO Grab all of this from a config file -> Done
 # Connection string for the database
 
 #CONNECTION = "host=masimdb.vmhost.psu.edu dbname=rwanda user=sim password=sim"
