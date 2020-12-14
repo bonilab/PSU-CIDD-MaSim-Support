@@ -6,3 +6,6 @@
 
 # Ignore data directories
 /**/data
+
+# Ignore Config
+*config.py

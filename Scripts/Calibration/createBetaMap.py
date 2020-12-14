@@ -10,12 +10,15 @@ import csv
 from Scripts.Calibration.include.ascFile import *
 from Scripts.Calibration.include.calibrationLib import *
 from Scripts.Loader.utility import *
+import Scripts.Calibration.include.databaseconfig as cfg
 
 # TODO Grab all of this from a config file
 # Connection string for the database
-CONNECTION = "host=masimdb.vmhost.psu.edu dbname=rwanda user=sim password=sim"
-PFPRVALUES = '../../GIS/rwa_pfpr2to10.asc'
-POPULATIONVALUES = '../../GIS/rwa_population.asc'
+
+#CONNECTION = "host=masimdb.vmhost.psu.edu dbname=rwanda user=sim password=sim"
+#connect(cfg.mysql["host"], cfg.mysql["user"], cfg.mysql["password"])
+#PFPRVALUES = '../../GIS/rwa_pfpr2to10.asc'
+#POPULATIONVALUES = '../../GIS/rwa_population.asc'
 
 # TODO RWA has only a single treatment rate and ecozone
 TREATMENT = 0.99
@@ -28,8 +31,8 @@ MAX_EPSILON = 0.1
 
 def create_beta_map():
     # Load the relevent data
-    [ ascheader, pfpr ] = load_asc(PFPRVALUES)
-    [ ascheader, population ] = load_asc(POPULATIONVALUES)
+    [ ascheader, pfpr ] = load_asc(cfg.PFPRVALUES)
+    [ ascheader, population ] = load_asc(cfg.POPULATIONVALUES)
     lookup = load_betas(BETAVALUES)
 
     # Prepare for the ASC data
@@ -84,7 +87,7 @@ def create_beta_map():
         progressBar(row + 1, ascheader['nrows'])
                 
     # Write the results
-    print ("\nMax epsilon: {} / {}".format(maxEpsilon, maxValues))
+    print ("\n Max epsilon: {} / {}".format(maxEpsilon, maxValues))
     print ("Epsilon Distribution")
     total = 0
     for ndx in range(0, len(distribution)):
@@ -155,8 +158,10 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
     
 
 # Main entry point for the script
-def main(studyId, zeroFilter):               
-    query_betas(CONNECTION, studyId, zeroFilter)
+def main(connect, studyId, zeroFilter):
+    query_betas(connect(cfg.mysql["host"], cfg.mysql["user"], cfg.mysql["password"]), studyId, zeroFilter)
+    #query_betas(CONNECTION, studyId, zeroFilter)
+
     create_beta_map()
 
 
