@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import preprocessing
 
-mysql = {
-    "host": "masimdb.vmhost.psu.edu",
-    "user": "sim",
-    "passwd": "sim",
-    "db": "rwanda",
-}
+#mysql = {
+#    "host": "masimdb.vmhost.psu.edu",
+#    "user": "sim",
+#    "passwd": "sim",
+#    "db": "rwanda",
+#}
 
 preprocessing_queue = [
 #    preprocessing.scale_and_center,

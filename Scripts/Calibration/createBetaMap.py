@@ -11,6 +11,7 @@ from Scripts.Calibration.include.ascFile import *
 from Scripts.Calibration.include.calibrationLib import *
 from Scripts.Loader.utility import *
 import Scripts.Calibration.include.databaseconfig as cfg
+import yaml
 
 # TODO Grab all of this from a config file
 # Connection string for the database
@@ -158,9 +159,12 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
     
 
 # Main entry point for the script
-def main(connect, studyId, zeroFilter):
-    query_betas(connect(cfg.mysql["host"], cfg.mysql["user"], cfg.mysql["password"]), studyId, zeroFilter)
+def main(cfg, studyId, zeroFilter):
+    with open("rwa-calibration.yml", "r") as ymlfile:
+        cfg = yaml.load(ymlfile)
+    #query_betas(connect(cfg.mysql["host"], cfg.mysql["user"], cfg.mysql["password"]), studyId, zeroFilter)
     #query_betas(CONNECTION, studyId, zeroFilter)
+    query_betas(cfg, studyId, zeroFilter)
 
     create_beta_map()
 
