@@ -21,8 +21,8 @@ import Scripts.Calibration.include.databaseconfig as cfg
 #POPULATIONVALUES = '../../GIS/rwa_population.asc'
 
 # TODO RWA has only a single treatment rate and ecozone
-TREATMENT = 0.99
-ECOZONE = 0
+#TREATMENT = 0.99
+#ECOZONE = 0
 
 # Starting epsilon and delta to be used
 EPSILON = 0.00001
@@ -62,7 +62,7 @@ def create_beta_map():
                 continue
 
             # Get the beta values
-            [values, epsilon] = get_betas(ECOZONE, pfpr[row][col], population[row][col], TREATMENT, lookup)
+            [values, epsilon] = get_betas(cfg.ECOZONE, pfpr[row][col], population[row][col], cfg.TREATMENT, lookup)
 
             # Update the distribution
             for exponent in range(1, len(distribution) + 1):

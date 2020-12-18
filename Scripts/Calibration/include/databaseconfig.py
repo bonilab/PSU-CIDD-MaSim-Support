@@ -17,4 +17,7 @@ preprocessing_queue = [
 PFPRVALUES = '../../GIS/rwa_pfpr2to10.asc'
 POPULATIONVALUES = '../../GIS/rwa_population.asc'
 
+TREATMENT = 0.99
+ECOZONE = 0
+
 use_anonymous = True
