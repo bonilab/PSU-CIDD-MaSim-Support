@@ -18,13 +18,14 @@ import yaml
 
 #CONNECTION = "host=masimdb.vmhost.psu.edu dbname=rwanda user=sim password=sim"
 #connect(cfg.mysql["host"], cfg.mysql["user"], cfg.mysql["password"])
-#PFPRVALUES = '../../GIS/rwa_pfpr2to10.asc'
-#POPULATIONVALUES = '../../GIS/rwa_population.asc'
+PFPRVALUES = '../../GIS/rwa_pfpr2to10.asc'
+POPULATIONVALUES = '../../GIS/rwa_population.asc'
 
 # TODO RWA has only a single treatment rate and ecozone
 #TREATMENT = 0.99
 #ECOZONE = 0
-
+TREATMENT = input("ENTER Treatment rate")
+ECOZONE = input("Enter Ecozone Value")
 # Starting epsilon and delta to be used
 EPSILON = 0.00001
 MAX_EPSILON = 0.1
@@ -32,8 +33,8 @@ MAX_EPSILON = 0.1
 
 def create_beta_map():
     # Load the relevent data
-    [ ascheader, pfpr ] = load_asc(cfg.PFPRVALUES)
-    [ ascheader, population ] = load_asc(cfg.POPULATIONVALUES)
+    [ ascheader, pfpr ] = load_asc(PFPRVALUES)
+    [ ascheader, population ] = load_asc(POPULATIONVALUES)
     lookup = load_betas(BETAVALUES)
 
     # Prepare for the ASC data
@@ -63,7 +64,7 @@ def create_beta_map():
                 continue
 
             # Get the beta values
-            [values, epsilon] = get_betas(cfg.ECOZONE, pfpr[row][col], population[row][col], cfg.TREATMENT, lookup)
+            [values, epsilon] = get_betas(ECOZONE, pfpr[row][col], population[row][col], TREATMENT, lookup)
 
             # Update the distribution
             for exponent in range(1, len(distribution) + 1):
@@ -159,7 +160,7 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
     
 
 # Main entry point for the script
-def main(cfg, studyId, zeroFilter):
+def main(studyId, zeroFilter):
     with open("rwa-calibration.yml", "r") as ymlfile:
         cfg = yaml.load(ymlfile)
     #query_betas(connect(cfg.mysql["host"], cfg.mysql["user"], cfg.mysql["password"]), studyId, zeroFilter)
