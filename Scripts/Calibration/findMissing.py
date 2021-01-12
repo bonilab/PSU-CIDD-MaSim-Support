@@ -4,7 +4,9 @@
 #
 # This script finds the combination that are missing from a calibration.
 
-import csv
+#import csv
+import Scripts.Calibration.include.head as hd
+
 
 BETAVALUES = 'data/calibration.csv'
 
@@ -53,7 +55,7 @@ def main():
 
     # Start by reading the raw population, treatment rate, and beta
     with open(BETAVALUES) as csvfile:
-        reader = csv.DictReader(csvfile)
+        reader = hd.csv.DictReader(csvfile)
         for row in reader:
             # Set the zone if not set
             if zone is None:
@@ -84,7 +86,7 @@ def main():
     # Save the missing values as a CSV file
     print ("Saving {}".format(RESULTS))
     with open(RESULTS, "wb") as csvfile:
-        writer = csv.writer(csvfile)
+        writer = hd.csv.writer(csvfile)
         writer.writerows(missing)
 
 

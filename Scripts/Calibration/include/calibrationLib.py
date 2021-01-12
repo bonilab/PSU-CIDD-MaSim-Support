@@ -2,10 +2,12 @@
 #
 # This module includes functions that are intended for use with calibration functions.
 
-import csv
-import os
+#import csv
+#import os
 
-from Scripts.Calibration.include.database import *
+#from Scripts.Calibration.include.database import *
+
+import Scripts.Calibration.include.head as hd
 
 
 # Path and name of file to save beta values to
@@ -32,7 +34,7 @@ def get_bin(value, bins):
 def load_betas(filename):
     lookup = {}
     with open(filename) as csvfile:
-        reader = csv.DictReader(csvfile)
+        reader = hd.csv.DictReader(csvfile)
         for row in reader:
 
             # Add a new entry for the zone
@@ -101,10 +103,10 @@ def query_betas(connection, studyId, filterZero = True):
 
     # Select for the beta values
     print("Loading beta values for study id: {}".format(studyId))
-    rows = select(connection, sql, {'studyId': studyId})
+    rows = hd.select(connection, sql, {'studyId': studyId})
 
     # Create the directory if need be
-    if not os.path.isdir('data'): os.mkdir('data')
+    if not hd.os.path.isdir('data'): hd.os.mkdir('data')
 
     # Save the values to a CSV file
     print("Saving beta values to: {}".format(BETAVALUES))

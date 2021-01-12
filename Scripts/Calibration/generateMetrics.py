@@ -2,18 +2,18 @@
 
 # This module contains functions relevent to getting metrics from ASC files.
 
-from Scripts.Calibration.include.ascFile import *
+#from Scripts.Calibration.include.ascFile import *
 
+import Scripts.Calibration.include.head as hd
 
 def calculate(populationFile):
     WEIGHTEDPFPR = 'out/weighted_pfpr.csv'
 
     NUMERATOR = 0
     DENOMINATOR = 1
-
-    [ ascheader, district ] = load_asc("../../GIS/rwa_district.asc")
-    [ ascheader, pfpr ] = load_asc("../../GIS/rwa_pfpr2to10.asc")
-    [ ascheader, population ] = load_asc(populationFile)
+    [ ascheader, district ] = hd.load_asc("../../GIS/rwa_district.asc")
+    [ ascheader, pfpr ] = hd.load_asc("../../GIS/rwa_pfpr2to10.asc")
+    [ ascheader, population ] = hd.load_asc(populationFile)
 
     data = {}
     totalPopulation = 0
@@ -53,7 +53,7 @@ def calculate(populationFile):
 
 
 def simulatePopulation(fileName, rate, years, start):
-    [ ascheader, data ] = load_asc(fileName)
+    [ ascheader, data ] = hd.load_asc(fileName)
 
     # Apply the population adjustment
     initial = 0

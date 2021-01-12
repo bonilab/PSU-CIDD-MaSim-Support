@@ -5,12 +5,10 @@
 # This module reads an ASC file that contains the PfPR for the two to ten age
 # bracket and generates three ASC files with beta values.
 
-import csv
 
 #from Scripts.Calibration.include.ascFile import *
 #from Scripts.Calibration.include.calibrationLib import *
 #from Scripts.Loader.utility import *
-import Scripts.Calibration.include.databaseconfig as cfg
 #import yaml
 import Scripts.Calibration.include.head as hd
 
