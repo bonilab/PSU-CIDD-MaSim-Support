@@ -12,19 +12,24 @@
 #import yaml
 import Scripts.Calibration.include.head as hd
 
+from pathlib import Path
+
+
 # TODO Grab all of this from a config file
 # Connection string for the database
 
 #CONNECTION = "host=masimdb.vmhost.psu.edu dbname=rwanda user=sim password=sim"
 #connect(cfg.mysql["host"], cfg.mysql["user"], cfg.mysql["password"])
-PFPRVALUES = '../../GIS/rwa_pfpr2to10.asc'
-POPULATIONVALUES = '../../GIS/rwa_population.asc'
+PFPRVALUES = Path("../../GIS/rwa_pfpr2to10.asc")
+POPULATIONVALUES = Path("../../GIS/rwa_population.asc")
 
 # TODO RWA has only a single treatment rate and ecozone
 #TREATMENT = 0.99
 #ECOZONE = 0
-TREATMENT = input("ENTER Treatment rate")
-ECOZONE = input("Enter Ecozone Value")
+
+TREATMENT = input("ENTER Treatment rate:")
+ECOZONE = input("Enter Ecozone Value:")
+
 # Starting epsilon and delta to be used
 EPSILON = 0.00001
 MAX_EPSILON = 0.1

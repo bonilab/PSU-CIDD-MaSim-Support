@@ -6,11 +6,12 @@
 
 #import csv
 import Scripts.Calibration.include.head as hd
+from pathlib import Path
 
 
-BETAVALUES = 'data/calibration.csv'
+BETAVALUES = Path("data/calibration.csv")
 
-RESULTS = 'out/missing.csv'
+RESULTS = Path("out/missing.csv")
 
 # Prepare the variables
 population = set()

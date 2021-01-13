@@ -7,16 +7,20 @@
 #import os
 #from Scripts.Calibration.include.ascFile import *
 import Scripts.Calibration.include.head as hd
+from pathlib import Path
 
 
 # Define the major influences of the beta values
-PFPR_FILE       = '../../GIS/rwa_pfpr2to10.asc'
-POPULATION_FILE = '../../GIS/rwa_population.asc'
+PFPR_FILE       = Path("../../GIS/rwa_pfpr2to10.asc")
+POPULATION_FILE = Path("../../GIS/rwa_population.asc")
 
 # TODO Determine how to do this computationally
 # Reference values for Rwanda
-ZONE = 0
-TREATMENT = 0.56
+#ZONE = 0
+#TREATMENT = 0.56
+
+TREATMENT = input("ENTER Treatment rate:")
+ZONE = input("Enter Zone Value:")
 
 # TODO Determine the bins computationally
 # Following bins are for Rwanda

@@ -5,9 +5,11 @@
 #from Scripts.Calibration.include.ascFile import *
 
 import Scripts.Calibration.include.head as hd
+from pathlib import Path
+
 
 def calculate(populationFile):
-    WEIGHTEDPFPR = 'out/weighted_pfpr.csv'
+    WEIGHTEDPFPR = Path("out/weighted_pfpr.csv")
 
     NUMERATOR = 0
     DENOMINATOR = 1

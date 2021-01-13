@@ -8,10 +8,11 @@
 #from Scripts.Calibration.include.database import *
 
 import Scripts.Calibration.include.head as hd
+from pathlib import Path
 
 
 # Path and name of file to save beta values to
-BETAVALUES = 'data/calibration.csv'
+BETAVALUES = Path("data/calibration.csv")
 
 
 # Get the bin that the value belongs to

@@ -11,24 +11,29 @@
 #from Scripts.Loader.utility import *
 
 import Scripts.Calibration.include.head as hd
+from pathlib import Path
 
 
 # TODO Figure out a better way to store these locations, maybe a library that finds them?
 # Country specific inputs
-CALIBRATION = 'data/calibration.csv'
-POPULATIONVALUES = '../../GIS/rwa_population.asc'
+CALIBRATION = Path("data/calibration.csv")
+POPULATIONVALUES = Path("../../GIS/rwa_population.asc")
 
 # TODO RWA has only a single treatment rate and ecozone
-TREATMENT = 0.99
-ECOZONE = 0
+#TREATMENT = 0.99
+#ECOZONE = 0
+
+TREATMENT = input("ENTER Treatment rate:")
+ECOZONE = input("Enter Ecozone Value:")
 
 # Inputs from other modules
-BETAVALUES = 'out/mean_beta.asc'
-EPSILONVALUES = 'out/epsilons_beta.asc'
+
+BETAVALUES = Path("out/mean_beta.asc")
+EPSILONVALUES = Path("out/epsilons_beta.asc")
 
 # Default output
-RESULTS = 'out/reduction.csv'
-SCRIPT = 'out/script.sh'
+RESULTS = Path("out/reduction.csv")
+SCRIPT = Path("out/script.sh")
 
 parameters = {}
 
