@@ -11,7 +11,7 @@ import os
 import psycopg2
 import sys
 
-from utility import *
+from Scripts.Loader.utility import *
 
 # Connection string for the database
 CONNECTION = "host=masimdb.vmhost.psu.edu dbname=rwanda user=sim password=sim"

@@ -1,29 +1,31 @@
 # ascFile.py
 # 
 # This module contains some common functions for working with ASC files.
-import sys
+#import sys
+
+import Scripts.Calibration.include.head as hd
 
 # Compare the two header files, return True if they are the same, False otherwise. 
 # If printError is set, then errors will be printed to stderr
 def compare_header(one, two, printError = True):
     result = True
     if one['ncols'] != two['ncols']:
-        if printError: sys.stderr.write('{} != {} ncols\n'.format(one['ncols'], two['ncols']))
+        if printError: hd.sys.stderr.write('{} != {} ncols\n'.format(one['ncols'], two['ncols']))
         result = False
     if one['nrows'] != two['nrows']:
-        if printError: sys.stderr.write('{} != {} nrows\n'.format(one['nrows'], two['nrows']))
+        if printError: hd.sys.stderr.write('{} != {} nrows\n'.format(one['nrows'], two['nrows']))
         result = False
     if one['xllcorner'] != two['xllcorner']:
-        if printError: sys.stderr.write('{} != {} xllcorner\n'.format(one['xllcorner'], two['xllcorner']))
+        if printError: hd.sys.stderr.write('{} != {} xllcorner\n'.format(one['xllcorner'], two['xllcorner']))
         result = False
     if one['yllcorner'] != two['yllcorner']:
-        if printError: sys.stderr.write('{} != {} yllcorner\n'.format(one['yllcorner'], two['yllcorner']))
+        if printError: hd.sys.stderr.write('{} != {} yllcorner\n'.format(one['yllcorner'], two['yllcorner']))
         result = False
     if one['cellsize'] != two['cellsize']:
-        if printError: sys.stderr.write('{} != {} cellsize\n'.format(one['cellsize'], two['cellsize']))
+        if printError: hd.sys.stderr.write('{} != {} cellsize\n'.format(one['cellsize'], two['cellsize']))
         result = False
     if one['nodata'] != two['nodata']:
-        if printError: sys.stderr.write('{} != {} nodata\n'.format(one['nodata'], two['nodata']))
+        if printError: hd.sys.stderr.write('{} != {} nodata\n'.format(one['nodata'], two['nodata']))
         result = False                                
     return result
 
@@ -43,8 +45,8 @@ def compare_data(one, two, nodata, printError = True):
             if (a == nodata and a != b) or (b == nodata and a != b):
                 result = False
                 if printError: 
-                    sys.stderr.write('Mismatched nodata at {}, {}\n'.format(row, col))
-                    sys.stderr.write('One: {}, Two {}\n'.format(a, b))
+                    hd.sys.stderr.write('Mismatched nodata at {}, {}\n'.format(row, col))
+                    hd.sys.stderr.write('One: {}, Two {}\n'.format(a, b))
 
 
     return result

@@ -2,18 +2,20 @@
 
 # This module contains functions relevent to getting metrics from ASC files.
 
-from include.ascFile import *
+#from Scripts.Calibration.include.ascFile import *
+
+import Scripts.Calibration.include.head as hd
+from pathlib import Path
 
 
 def calculate(populationFile):
-    WEIGHTEDPFPR = 'out/weighted_pfpr.csv'
+    WEIGHTEDPFPR = Path("out/weighted_pfpr.csv")
 
     NUMERATOR = 0
     DENOMINATOR = 1
-
-    [ ascheader, district ] = load_asc("../../GIS/rwa_district.asc")
-    [ ascheader, pfpr ] = load_asc("../../GIS/rwa_pfpr2to10.asc")
-    [ ascheader, population ] = load_asc(populationFile)
+    [ ascheader, district ] = hd.load_asc("../../GIS/rwa_district.asc")
+    [ ascheader, pfpr ] = hd.load_asc("../../GIS/rwa_pfpr2to10.asc")
+    [ ascheader, population ] = hd.load_asc(populationFile)
 
     data = {}
     totalPopulation = 0
@@ -53,7 +55,7 @@ def calculate(populationFile):
 
 
 def simulatePopulation(fileName, rate, years, start):
-    [ ascheader, data ] = load_asc(fileName)
+    [ ascheader, data ] = hd.load_asc(fileName)
 
     # Apply the population adjustment
     initial = 0
@@ -62,7 +64,7 @@ def simulatePopulation(fileName, rate, years, start):
             if data[row][col] == ascheader['nodata']: continue
             data[row][col] *= 0.25
             initial += data[row][col]
-    print "{}: {}".format(start, int(round(initial / 0.25)))
+    print ("{}: {}".format(start, int(round(initial / 0.25))))
 
     # Apply the population growth
     for year in range(years):
@@ -78,9 +80,8 @@ def simulatePopulation(fileName, rate, years, start):
                 # Update the running total
                 population += data[row][col]
 
-        print "{}: {}".format(start + year + 1, int(round(population / 0.25)))
+        print ("{}: {}".format(start + year + 1, int(round(population / 0.25))))
 
 
 if __name__ == '__main__':
     calculate("../../GIS/rwa_population.asc")
-\

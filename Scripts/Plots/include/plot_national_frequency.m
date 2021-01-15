@@ -60,12 +60,12 @@ function [] = generate(directory, startDate, plotTitle, file)
     datetick('x', 'yyyy');
     xlabel('Model Year');
     yyaxis left;
-    ylabel('580Y Frequency');
+    ylabel('561H Frequency');
     yyaxis right;
-    ylabel('Occurances of 580Y (log10)');    
+    ylabel('Occurances of 561H (log10)');    
 
     % Apply the title
-    sgtitle({sprintf('580Y Frequency %s (%d Replicates)', ...
+    sgtitle({sprintf('561H Frequency %s (%d Replicates)', ...
         plotTitle, length(files))}, 'FontSize', 24);  
     
     graphic = gca;

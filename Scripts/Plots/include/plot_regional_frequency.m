@@ -42,11 +42,11 @@ function [] = generate(directory, startdate, plotTitle, file)
     handle.XLabel.Visible = 'on';
     handle.YLabel.Visible = 'on';
     handle.FontSize = 22;
-    ylabel(handle, '580Y Frequency');
+    ylabel(handle, '561H Frequency');
     xlabel(handle, 'Model Year');
     
     % Apply the title
-    sgtitle({sprintf('580Y Frequency %s (%d Replicates)', ...
+    sgtitle({sprintf('561H Frequency %s (%d Replicates)', ...
         plotTitle, length(files))}, 'FontSize', 24);
     
     % Save and close

@@ -4,11 +4,14 @@
 #
 # This script finds the combination that are missing from a calibration.
 
-import csv
+#import csv
+import Scripts.Calibration.include.head as hd
+from pathlib import Path
 
-BETAVALUES = 'data/calibration.csv'
 
-RESULTS = 'out/missing.csv'
+BETAVALUES = Path("data/calibration.csv")
+
+RESULTS = Path("out/missing.csv")
 
 # Prepare the variables
 population = set()
@@ -21,7 +24,7 @@ def check(zone):
     global missing, population, treatment, beta
 
     # Check-in with user
-    print "Checking zone {}".format(zone)
+    print ("Checking zone {}".format(zone))
 
     # Unique values are loaded, sort them
     population = sorted(population, reverse=True)
@@ -29,7 +32,7 @@ def check(zone):
     beta = sorted(beta)
 
     # Print how many we expect to find
-    print "{} combinations expected".format(len(population) * len(treatment) * len(beta))
+    print ("{} combinations expected".format(len(population) * len(treatment) * len(beta)))
 
     # Scan for the matching row, add it to the missing list if not found
     for ndx in population:
@@ -53,7 +56,7 @@ def main():
 
     # Start by reading the raw population, treatment rate, and beta
     with open(BETAVALUES) as csvfile:
-        reader = csv.DictReader(csvfile)
+        reader = hd.csv.DictReader(csvfile)
         for row in reader:
             # Set the zone if not set
             if zone is None:
@@ -78,13 +81,13 @@ def main():
     check(zone)
     
     # Print the number missing
-    print "{} combinations missing".format(len(missing))
+    print ("{} combinations missing".format(len(missing)))
     if len(missing) == 0: return
 
     # Save the missing values as a CSV file
-    print "Saving {}".format(RESULTS)
+    print ("Saving {}".format(RESULTS))
     with open(RESULTS, "wb") as csvfile:
-        writer = csv.writer(csvfile)
+        writer = hd.csv.writer(csvfile)
         writer.writerows(missing)
 
 

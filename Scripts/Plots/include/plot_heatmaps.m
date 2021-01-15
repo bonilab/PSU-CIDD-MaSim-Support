@@ -31,7 +31,7 @@ function [] = parse_file(filename, name, startdate)
         ndx = ndx + 1;
     end
     
-    sgtitle(sprintf("580Y Frequency %s", name), 'FontSize', 24);
+    sgtitle(sprintf("561H Frequency %s", name), 'FontSize', 24);
 end
 
 % Generate a single heatmap for the given date
