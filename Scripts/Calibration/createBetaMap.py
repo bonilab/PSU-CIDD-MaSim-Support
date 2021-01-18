@@ -1,34 +1,25 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # createBetaMap.py
 #
 # This module reads an ASC file that contains the PfPR for the two to ten age
 # bracket and generates three ASC files with beta values.
 
-
-#from Scripts.Calibration.include.ascFile import *
-#from Scripts.Calibration.include.calibrationLib import *
+from include.ascFile import *
+from include.calibrationLib import *
 #from Scripts.Loader.utility import *
-#import yaml
-import Scripts.Calibration.include.head as hd
+#import Scripts.Calibration.include.databaseconfig as cfg
 
+import yaml
+import sys
 from pathlib import Path
-
 
 # TODO Grab all of this from a config file
 # Connection string for the database
-
 #CONNECTION = "host=masimdb.vmhost.psu.edu dbname=rwanda user=sim password=sim"
 #connect(cfg.mysql["host"], cfg.mysql["user"], cfg.mysql["password"])
 PFPRVALUES = Path("../../GIS/rwa_pfpr2to10.asc")
 POPULATIONVALUES = Path("../../GIS/rwa_population.asc")
-
-# TODO RWA has only a single treatment rate and ecozone
-#TREATMENT = 0.99
-#ECOZONE = 0
-
-TREATMENT = input("ENTER Treatment rate:")
-ECOZONE = input("Enter Ecozone Value:")
 
 # Starting epsilon and delta to be used
 EPSILON = 0.00001
@@ -164,34 +155,41 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
     
 
 # Main entry point for the script
-def main(studyId, zeroFilter):
-    with open("rwa-calibration.yml", "r") as ymlfile:
-        cfg = hd.yaml.load(ymlfile)
-    #query_betas(connect(cfg.mysql["host"], cfg.mysql["user"], cfg.mysql["password"]), studyId, zeroFilter)
-    #query_betas(CONNECTION, studyId, zeroFilter)
-    hd.query_betas(cfg, studyId, zeroFilter)
+def main(configuration, studyId, zeroFilter):
+    # TODO Error handling
+    with open(configuration, "r") as ymlfile:
+        cfg = yaml.load(ymlfile)
 
+    # TODO Continue from here
+    query_betas(cfg, studyId, zeroFilter)
     create_beta_map()
 
 
 if __name__ == "__main__":
-    if len(hd.sys.argv) == 1 or len(hd.sys.argv) > 3:
-        print ("Usage: ./createBetaMap.py [study] [filter]")
-        print ("study  - the database id of the study to use for the reference beta values")
-        print ("filter - optional default true (1), false (0) means zeroed minima should not be filtered")
+    if len(sys.argv) == 2 or len(sys.argv) > 3:
+        print("Usage: ./createBetaMap.py [configuration] [study] [filter]")
+        print("configuration - the configuration file to be loaded")
+        print("study  - the database id of the study to use for the reference beta values")
+        print("filter - optional default true (1), false (0) means zeroed minima should not be filtered")
+        print("\nExample ./createBetaMap.py ../country/config.yml 1")
         exit(0)
+
+    # TODO Remove these forced entries
+    TREATMENT = input("Enter Treatment rate: ")
+    ECOZONE = input("Enter Ecozone Value: ")
 
     # Default values
     zeroFilter = True
 
     # Parse the parameters
-    studyId = int(hd.sys.argv[1])
-    if len(hd.sys.argv) == 3:
-        if hd.sys.argv[2] == "0":
+    configuration = sys.argv[1]
+    studyId = int(sys.argv[2])
+    if len(sys.argv) == 4:
+        if sys.argv[3] == "0":
             zeroFilter = False
             print ("Zero filter disabled")
-        if hd.sys.argv[2] not in ["0", "1"]:
+        if sys.argv[3] not in ["0", "1"]:
             print ("Flag for filter must be 0 (false) or 1 (true)")
             exit(1)
 
-    main(studyId, zeroFilter)
+    main(configuration, studyId, zeroFilter)

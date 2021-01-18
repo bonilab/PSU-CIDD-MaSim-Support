@@ -3,8 +3,6 @@
 # This module contains some common functions for working with ASC files.
 #import sys
 
-import Scripts.Calibration.include.head as hd
-
 # Compare the two header files, return True if they are the same, False otherwise. 
 # If printError is set, then errors will be printed to stderr
 def compare_header(one, two, printError = True):
