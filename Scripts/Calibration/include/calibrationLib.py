@@ -5,9 +5,6 @@
 #import csv
 #import os
 
-#from Scripts.Calibration.include.database import *
-
-import Scripts.Calibration.include.head as hd
 from pathlib import Path
 
 
