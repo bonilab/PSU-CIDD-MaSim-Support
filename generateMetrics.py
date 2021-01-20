@@ -4,17 +4,17 @@
 
 #from Scripts.Calibration.include.ascFile import *
 
-import Scripts.Calibration.include.head as hd
+import head as hd
 from pathlib import Path
 
 
 def calculate(populationFile):
-    WEIGHTEDPFPR = Path("out/weighted_pfpr.csv")
+    WEIGHTEDPFPR = Path("C:\\Users\\pua66\\PycharmProjects\\PSU-CIDD-Rwanda\\out\\weighted_pfpr.csv")#("out/weighted_pfpr.csv")
 
     NUMERATOR = 0
     DENOMINATOR = 1
-    [ ascheader, district ] = hd.load_asc("../../GIS/rwa_district.asc")
-    [ ascheader, pfpr ] = hd.load_asc("../../GIS/rwa_pfpr2to10.asc")
+    [ ascheader, district ] = hd.load_asc("C:\\Users\\pua66\\PycharmProjects\\PSU-CIDD-Rwanda\\GIS\\rwa_district.asc")#("../../GIS/rwa_district.asc")
+    [ ascheader, pfpr ] = hd.load_asc("C:\\Users\\pua66\\PycharmProjects\\PSU-CIDD-Rwanda\\GIS\\rwa_pfpr2to10.asc")#("../../GIS/rwa_pfpr2to10.asc")
     [ ascheader, population ] = hd.load_asc(populationFile)
 
     data = {}
@@ -84,4 +84,4 @@ def simulatePopulation(fileName, rate, years, start):
 
 
 if __name__ == '__main__':
-    calculate("../../GIS/rwa_population.asc")
+    calculate("C:\\Users\\pua66\\PycharmProjects\\PSU-CIDD-Rwanda\\GIS\\rwa_population.asc")#("../../GIS/rwa_population.asc")

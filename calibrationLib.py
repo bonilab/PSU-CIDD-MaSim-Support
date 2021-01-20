@@ -6,6 +6,8 @@
 #import os
 
 from pathlib import Path
+import head as hd
+
 
 
 # Path and name of file to save beta values to

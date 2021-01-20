@@ -3,7 +3,7 @@
 # Various utility functions for Python
 
 #import sys
-import Scripts.Calibration.include.head as hd
+import head as hd
 
 
 # Progress bar for console applications

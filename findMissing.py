@@ -5,7 +5,7 @@
 # This script finds the combination that are missing from a calibration.
 
 #import csv
-import Scripts.Calibration.include.head as hd
+import head as hd
 from pathlib import Path
 
 

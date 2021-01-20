@@ -4,7 +4,7 @@
 
 #import psycopg2
 
-import Scripts.Calibration.include.head as hd
+import head as hd
 
 
 def select(connection, sql, parameters):

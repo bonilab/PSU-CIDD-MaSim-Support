@@ -5,13 +5,14 @@
 # This module reads an ASC file that contains the PfPR for the two to ten age
 # bracket and generates three ASC files with beta values.
 
-from include.ascFile import *
-from include.calibrationLib import *
+from ascFile import *
+from calibrationLib import *
 #from Scripts.Loader.utility import *
 #import Scripts.Calibration.include.databaseconfig as cfg
+import head as hd
 
 import yaml
-import sys
+#import sys
 from pathlib import Path
 
 # TODO Grab all of this from a config file
@@ -157,16 +158,20 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
 # Main entry point for the script
 def main(configuration, studyId, zeroFilter):
     # TODO Error handling
-    with open(configuration, "r") as ymlfile:
-        cfg = yaml.load(ymlfile)
-
+    try:
+        with open(configuration, "r") as ymlfile:
+            cfg = yaml.load(ymlfile)
+    except Exception:
+        print("File not found")
+        pass
     # TODO Continue from here
-    query_betas(cfg, studyId, zeroFilter)
+
+    hd.query_betas(cfg, studyId, zeroFilter)
     create_beta_map()
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2 or len(sys.argv) > 3:
+    if len(hd.sys.argv) == 2 or len(hd.sys.argv) > 3:
         print("Usage: ./createBetaMap.py [configuration] [study] [filter]")
         print("configuration - the configuration file to be loaded")
         print("study  - the database id of the study to use for the reference beta values")
@@ -177,18 +182,30 @@ if __name__ == "__main__":
     # TODO Remove these forced entries
     TREATMENT = input("Enter Treatment rate: ")
     ECOZONE = input("Enter Ecozone Value: ")
+    # TREATMENT = 0.99
+    # ECOZONE = 0
 
     # Default values
     zeroFilter = True
 
     # Parse the parameters
-    configuration = sys.argv[1]
-    studyId = int(sys.argv[2])
-    if len(sys.argv) == 4:
-        if sys.argv[3] == "0":
+    print(len(hd.sys.argv))
+
+    configuration = hd.sys.argv[1]
+    #print(len(hd.sys.argv))
+    #configuration = "rwa-calibration.yml"
+    studyId = int(hd.sys.argv[2])
+    #studyId = int(hd.sys.argv[1])
+    #if len(hd.sys.argv) == 3:
+     #   if hd.sys.argv[2] == "0":
+
+    if len(hd.sys.argv) == 4:
+        if hd.sys.argv[3] == "0":
             zeroFilter = False
             print ("Zero filter disabled")
-        if sys.argv[3] not in ["0", "1"]:
+        if hd.sys.argv[3] not in ["0", "1"]:
+        #if hd.sys.argv[2] not in ["0", "1"]:
+
             print ("Flag for filter must be 0 (false) or 1 (true)")
             exit(1)
 

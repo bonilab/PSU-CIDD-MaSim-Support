@@ -6,7 +6,7 @@
 #import os
 
 #from Scripts.Calibration.include.ascFile import *
-import Scripts.Calibration.include.head as hd
+import head as hd
 
 
 def compare(one, two):
