@@ -1,4 +1,4 @@
-# PSU-CIDD-Rwanda
+# PSU-CIDD-MaSim-Support
 ---
 This repository contains analysis files used for modeling the prevalence of malaria (*P. falciparum*) in in various countries using the main malarial simulation.
 
