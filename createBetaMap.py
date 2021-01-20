@@ -26,11 +26,17 @@ EPSILON = 0.00001
 MAX_EPSILON = 0.1
 
 
-def create_beta_map():
+def create_beta_map(configuration):
     # Load the relevent data
     [ ascheader, pfpr ] = load_asc(PFPRVALUES)
     [ ascheader, population ] = load_asc(POPULATIONVALUES)
     lookup = load_betas(BETAVALUES)
+
+    # Get the ecological zone and configuration
+    # TODO This is a quick way of doing things which is fine for countries with single values
+    # TODO However, in the case of more complex countries this will need to be parsed out and binned
+    treatment = configuration["raster_db"]["p_treatment_for_less_than_5_by_location"][0]
+    ecozone = len(configuration["seasonal_info"]["base"]) - 1   # Zero indexed
 
     # Prepare for the ASC data
     epsilons = []
@@ -59,7 +65,7 @@ def create_beta_map():
                 continue
 
             # Get the beta values
-            [values, epsilon] = get_betas(ECOZONE, pfpr[row][col], population[row][col], TREATMENT, lookup)
+            [values, epsilon] = get_betas(ecozone, pfpr[row][col], population[row][col], treatment, lookup)
 
             # Update the distribution
             for exponent in range(1, len(distribution) + 1):
@@ -168,7 +174,7 @@ def main(configuration, studyId, zeroFilter):
         pass
 
     query_betas(cfg["connection_string"], studyId, zeroFilter)
-    create_beta_map()
+    create_beta_map(cfg)
 
 
 if __name__ == "__main__":
@@ -184,14 +190,6 @@ if __name__ == "__main__":
         print("filter - optional default true (1), false (0) means zeroed minima should not be filtered")
         print("\nExample ./createBetaMap.py ../country/config.yml 1")
         exit(0)
-
-    # TODO Remove these forced entries
-#    TREATMENT = input("Enter Treatment rate: ")
-#    ECOZONE = input("Enter Ecozone Value: ")
-
-    # TODO Testing values
-    TREATMENT = 0.99
-    ECOZONE = 0
 
     # Parse the parameters
     configuration = sys.argv[1]
