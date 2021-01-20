@@ -1,5 +1,6 @@
 # Ignore compiled Python file
 *.pyc
+__pycache__
 
 # Ignore script output files
 /**/out
@@ -9,3 +10,6 @@
 
 # Ignore Config
 *config.py
+
+# Ignore IDE directories
+.idea
