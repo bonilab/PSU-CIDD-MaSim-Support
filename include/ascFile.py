@@ -1,8 +1,7 @@
 # ascFile.py
 # 
 # This module contains some common functions for working with ASC files.
-#import sys
-import head as hd
+import sys
 
 
 # Compare the two header files, return True if they are the same, False otherwise. 
