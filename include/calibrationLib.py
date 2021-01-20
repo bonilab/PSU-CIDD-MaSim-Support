@@ -1,13 +1,10 @@
 # calibrationLib.py
 #
 # This module includes functions that are intended for use with calibration functions.
-
-#import csv
-#import os
-
+from database import *
 from pathlib import Path
-import head as hd
-
+import csv
+import os
 
 
 # Path and name of file to save beta values to
@@ -17,7 +14,7 @@ BETAVALUES = Path("data/calibration.csv")
 # Get the bin that the value belongs to
 def get_bin(value, bins):
     # Sort the bins and step through them
-    bins.sort()
+    bins = sorted(bins)
     for item in bins:
         if value < item:
             return item
@@ -34,7 +31,7 @@ def get_bin(value, bins):
 def load_betas(filename):
     lookup = {}
     with open(filename) as csvfile:
-        reader = hd.csv.DictReader(csvfile)
+        reader = csv.DictReader(csvfile)
         for row in reader:
 
             # Add a new entry for the zone
@@ -103,14 +100,14 @@ def query_betas(connection, studyId, filterZero = True):
 
     # Select for the beta values
     print("Loading beta values for study id: {}".format(studyId))
-    rows = hd.select(connection, sql, {'studyId': studyId})
+    rows = select(connection, sql, {'studyId': studyId})
 
     # Create the directory if need be
-    if not hd.os.path.isdir('data'): hd.os.mkdir('data')
+    if not os.path.isdir('data'): os.mkdir('data')
 
     # Save the values to a CSV file
     print("Saving beta values to: {}".format(BETAVALUES))
-    with open(BETAVALUES, "wb") as csvfile:
+    with open(BETAVALUES, "w") as csvfile:
         csvfile.write(header)
         for row in rows:
             line = ','.join(str(row[ndx]) for ndx in range(0, len(row)))

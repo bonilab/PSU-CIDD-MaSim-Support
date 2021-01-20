@@ -4,23 +4,22 @@
 #
 # This module reads an ASC file that contains the PfPR for the two to ten age
 # bracket and generates three ASC files with beta values.
+import sys
+import yaml
+
+from pathlib import Path
+
+# Add the common include directory before importing our custom libraries
+sys.path.append("include")
 
 from ascFile import *
 from calibrationLib import *
-#from Scripts.Loader.utility import *
-#import Scripts.Calibration.include.databaseconfig as cfg
-import head as hd
+from utility import *
 
-import yaml
-#import sys
-from pathlib import Path
 
 # TODO Grab all of this from a config file
-# Connection string for the database
-#CONNECTION = "host=masimdb.vmhost.psu.edu dbname=rwanda user=sim password=sim"
-#connect(cfg.mysql["host"], cfg.mysql["user"], cfg.mysql["password"])
-PFPRVALUES = Path("../../GIS/rwa_pfpr2to10.asc")
-POPULATIONVALUES = Path("../../GIS/rwa_population.asc")
+PFPRVALUES = "GIS/rwa_pfpr2to10.asc"
+POPULATIONVALUES = "GIS/rwa_population.asc"
 
 # Starting epsilon and delta to be used
 EPSILON = 0.00001
@@ -29,9 +28,9 @@ MAX_EPSILON = 0.1
 
 def create_beta_map():
     # Load the relevent data
-    [ ascheader, pfpr ] = hd.load_asc(PFPRVALUES)
-    [ ascheader, population ] = hd.load_asc(POPULATIONVALUES)
-    lookup = hd.load_betas(hd.BETAVALUES)
+    [ ascheader, pfpr ] = load_asc(PFPRVALUES)
+    [ ascheader, population ] = load_asc(POPULATIONVALUES)
+    lookup = load_betas(BETAVALUES)
 
     # Prepare for the ASC data
     epsilons = []
@@ -82,7 +81,7 @@ def create_beta_map():
             meanBeta[row].append(sum(values) / len(values))
 
         # Note the progress
-        hd.progressBar(row + 1, ascheader['nrows'])
+        progressBar(row + 1, ascheader['nrows'])
                 
     # Write the results
     print ("\n Max epsilon: {} / {}".format(maxEpsilon, maxValues))
@@ -93,18 +92,21 @@ def create_beta_map():
         total += distribution[ndx]
     print ("Total Cells: {}".format(total))
 
+    # Create the directory if need be
+    if not os.path.isdir('out'): os.mkdir('out')
+
     # Save the maps        
     print ("\nSaving {}".format('out/epsilons_beta.asc'))
-    hd.write_asc(ascheader, epsilons, 'out/epsilons_beta.asc')
+    write_asc(ascheader, epsilons, 'out/epsilons_beta.asc')
     print ("Saving {}".format('out/mean_beta.asc'))
-    hd.write_asc(ascheader, meanBeta, 'out/mean_beta.asc')
+    write_asc(ascheader, meanBeta, 'out/mean_beta.asc')
 
 
 # Get the beta values that generate the PfPR for the given population and 
 # treatment level, this function will start with the lowest epsilon value 
 # and increase it until at least one value is found to be returned
 def get_betas(zone, pfpr, population, treatment, lookup):
-    # Inital values
+    # Initial values
     epsilon = 0
     betas = []
 
@@ -131,8 +133,8 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
         raise ValueError("Zone {} was not found in lookup".format(zone))
 
     # Determine the population and treatment bin we are working with
-    populationBin = hd.get_bin(population, lookup[zone].keys())
-    treatmentBin = hd.get_bin(treatment, lookup[zone][populationBin].keys())
+    populationBin = get_bin(population, lookup[zone].keys())
+    treatmentBin = get_bin(treatment, lookup[zone][populationBin].keys())
     
     # Note the bounds
     low = pfpr - epsilon
@@ -164,14 +166,18 @@ def main(configuration, studyId, zeroFilter):
     except Exception:
         print("File not found")
         pass
-    # TODO Continue from here
 
-    hd.query_betas(cfg, studyId, zeroFilter)
+    query_betas(cfg["connection_string"], studyId, zeroFilter)
     create_beta_map()
 
 
 if __name__ == "__main__":
-    if len(hd.sys.argv) == 2 or len(hd.sys.argv) > 3:
+    # Check the command line
+    # 0: Script
+    # 1: Configuration file
+    # 2: Study identification number
+    # 3: Optional zero filter
+    if len(sys.argv) not in (3, 4):
         print("Usage: ./createBetaMap.py [configuration] [study] [filter]")
         print("configuration - the configuration file to be loaded")
         print("study  - the database id of the study to use for the reference beta values")
@@ -180,32 +186,24 @@ if __name__ == "__main__":
         exit(0)
 
     # TODO Remove these forced entries
-    TREATMENT = input("Enter Treatment rate: ")
-    ECOZONE = input("Enter Ecozone Value: ")
-    # TREATMENT = 0.99
-    # ECOZONE = 0
+#    TREATMENT = input("Enter Treatment rate: ")
+#    ECOZONE = input("Enter Ecozone Value: ")
 
-    # Default values
-    zeroFilter = True
+    # TODO Testing values
+    TREATMENT = 0.99
+    ECOZONE = 0
 
     # Parse the parameters
-    print(len(hd.sys.argv))
+    configuration = sys.argv[1]
+    studyId = int(sys.argv[2])
 
-    configuration = hd.sys.argv[1]
-    #print(len(hd.sys.argv))
-    #configuration = "rwa-calibration.yml"
-    studyId = int(hd.sys.argv[2])
-    #studyId = int(hd.sys.argv[1])
-    #if len(hd.sys.argv) == 3:
-     #   if hd.sys.argv[2] == "0":
-
-    if len(hd.sys.argv) == 4:
-        if hd.sys.argv[3] == "0":
+    # Parse out the zero filter if one is provided, otherwise default True
+    zeroFilter = True
+    if len(sys.argv) == 4:
+        if sys.argv[3] == "0":
             zeroFilter = False
             print ("Zero filter disabled")
-        if hd.sys.argv[3] not in ["0", "1"]:
-        #if hd.sys.argv[2] not in ["0", "1"]:
-
+        if sys.argv[3] not in ["0", "1"]:
             print ("Flag for filter must be 0 (false) or 1 (true)")
             exit(1)
 
