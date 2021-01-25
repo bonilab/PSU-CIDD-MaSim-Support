@@ -29,7 +29,7 @@ def main(path):
     first = ''
     error = False
 
-    for filename in next(hd.os.walk(path))[2]:
+    for filename in next(os.walk(path))[2]:
         # Continue if we this is not an ASC
         if ".asc" not in filename: continue
 
