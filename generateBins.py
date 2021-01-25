@@ -5,13 +5,13 @@
 # This script generates the bins that need to be run to determine the beta values
 
 import os
-
-from ascFile import *
+import sys
+from include.ascFile import *
 from pathlib import Path
 
 # Define the major influences of the beta values
-PFPR_FILE       = Path("../../GIS/rwa_pfpr2to10.asc")
-POPULATION_FILE = Path("../../GIS/rwa_population.asc")
+PFPR_FILE       = "/GIS/rwa_pfpr2to10.asc"
+POPULATION_FILE = "GIS/rwa_population.asc"
 
 # TODO Determine how to do this computationally
 # Reference values for Rwanda
@@ -36,8 +36,8 @@ def getBin(value, bins):
 
 def process():
     # Load the relevent data
-    [ ascHeader, pfpr ] = hd.load_asc(PFPR_FILE)
-    [ ascHeader, population ] = hd.load_asc(POPULATION_FILE)
+    [ ascHeader, pfpr ] = load_asc(PFPR_FILE)
+    [ ascHeader, population ] = load_asc(POPULATION_FILE)
 
     # Prepare our results
     ranges = {}
@@ -73,13 +73,13 @@ def save(ranges, filename, username):
 
 
 if __name__ == '__main__':
-    if len(hd.sys.argv) != 2:
+    if len(sys.argv) != 2:
         print ("Usage: ./generateBins.py [username]")
         print ("username - the user who will be running the calibration on the cluster")
         exit(0)
 
     # Parse the parameters
-    username = str(hd.sys.argv[1])
+    username = str(sys.argv[1])
 
     # Process and print the relevent ranges for the user
     [ ranges ] = process()
@@ -87,5 +87,5 @@ if __name__ == '__main__':
         print ("{} - {} to {} PfPR".format(population, min(ranges[population]), max(ranges[population])))
 
     # Save the basic script
-    if not hd.os.path.isdir('out'): hd.os.mkdir('out')
+    if not os.path.isdir('out'): os.mkdir('out')
     save(ranges, 'out/calibration.sh', username)
