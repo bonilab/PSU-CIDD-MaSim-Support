@@ -200,7 +200,7 @@ if __name__ == "__main__":
     if len(sys.argv) == 4:
         if sys.argv[3] == "0":
             zeroFilter = False
-            print ("Zero filter disabled")
+            print("Zero filter disabled")
         if sys.argv[3] not in ["0", "1"]:
             print("Flag for filter must be 0 (false) or 1 (true)")
             exit(1)

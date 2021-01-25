@@ -6,14 +6,13 @@
 # file to prepare 
 
 # Add the common include directory before importing our custom libraries
-import sys
-sys.path.append("include")
+
 
 from pathlib import Path
 import csv
-from ascFile import *
-from calibrationLib import *
-from utility import *
+from include.ascFile import *
+from include.calibrationLib import *
+from include.utility import *
 
 # TODO Figure out a better way to store these locations, maybe a library that finds them?
 # Country specific inputs
@@ -24,8 +23,8 @@ CALIBRATION = "data/calibration.csv"
 POPULATIONVALUES = "GIS/rwa_population.asc"
 
 # TODO RWA has only a single treatment rate and ecozone
-#TREATMENT = 0.99
-#ECOZONE = 0
+TREATMENT = 0.99
+ECOZONE = 0
 
 #TREATMENT = input("ENTER Treatment rate:")
 #ECOZONE = input("Enter Ecozone Value:")
