@@ -8,7 +8,6 @@
 import sys
 sys.path.append("include")
 
-#import head as hd
 import os
 from ascFile import *
 

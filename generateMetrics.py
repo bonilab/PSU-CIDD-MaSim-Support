@@ -2,9 +2,7 @@
 
 # This module contains functions relevent to getting metrics from ASC files.
 
-#from Scripts.Calibration.include.ascFile import *
-
-import head as hd
+from ascFile import *
 from pathlib import Path
 
 

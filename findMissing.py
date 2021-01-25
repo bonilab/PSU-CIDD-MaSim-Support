@@ -4,10 +4,9 @@
 #
 # This script finds the combination that are missing from a calibration.
 
-#import csv
-import head as hd
-from pathlib import Path
+import csv
 
+from pathlib import Path
 
 BETAVALUES = Path("data/calibration.csv")
 
