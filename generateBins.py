@@ -4,11 +4,10 @@
 #
 # This script generates the bins that need to be run to determine the beta values
 
-#import os
-#from Scripts.Calibration.include.ascFile import *
-import head as hd
-from pathlib import Path
+import os
 
+from ascFile import *
+from pathlib import Path
 
 # Define the major influences of the beta values
 PFPR_FILE       = Path("../../GIS/rwa_pfpr2to10.asc")
