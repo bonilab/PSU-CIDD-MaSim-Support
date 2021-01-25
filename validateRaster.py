@@ -1,23 +1,26 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # validate_raster.py
 #
 # This script is intended to validate raster files to ensure they are aligned correctly.
-#import os
 
-#from Scripts.Calibration.include.ascFile import *
-import head as hd
+# Add the common include directory before importing our custom libraries
+import sys
+sys.path.append("include")
 
+#import head as hd
+import os
+from ascFile import *
 
 def compare(one, two):
     # Load the ASC files
-    [ oneHeader, oneValues ] = hd.load_asc(one)
-    [ twoHeader, twoValues ] = hd.load_asc(two)
+    [ oneHeader, oneValues ] = load_asc(one)
+    [ twoHeader, twoValues ] = load_asc(two)
 
     # Check the files
     result = True
-    result = result and hd.compare_header(oneHeader, twoHeader)
-    result = result and hd.compare_data(oneValues, twoValues, oneHeader['nodata'])
+    result = result and compare_header(oneHeader, twoHeader)
+    result = result and compare_data(oneValues, twoValues, oneHeader['nodata'])
     return result
 
 
@@ -33,35 +36,35 @@ def main(path):
 
         # If the first one has not been set, do so and continue
         if first == '':
-            print ("Using {} as reference".format(filename))
-            first = hd.os.path.join(path, filename)
+            print("Using {} as reference".format(filename))
+            first = os.path.join(path, filename)
             continue
 
         # We now have two paths, so compare the first versus the new one
-        second = hd.os.path.join(path, filename)
+        second = os.path.join(path, filename)
         if not compare(first, second):
             error = True
-            print ('Error with alignment between {} and {}'.format(first, second))
+            print('Error with alignment between {} and {}'.format(first, second))
 
         # Update the count
         count = count + 1
     
     # Print the status
-    print ("{} files checked".format(count))
+    print("{} files checked".format(count))
 
     if not error:
-        print ("No errors detected")
+        print("No errors detected")
 
 
 if __name__ == '__main__':
-    if len(hd.sys.argv) != 2:
-        print ("Usage: ./validateRaster.py [path]")
-        print ("path - path to GIS files relative to this script")
-        print ("\nExample: ./validateRaster.py ../GIS\n")
+    if len(sys.argv) != 2:
+        print("Usage: ./validateRaster.py [path]")
+        print("path - path to GIS files relative to this script")
+        print("\nExample: ./validateRaster.py ../GIS\n")
         exit(0)
 
     # Parse the parameters
-    path = hd.sys.argv[1]
+    path = sys.argv[1]
 
     # Main entry point
     main(path)

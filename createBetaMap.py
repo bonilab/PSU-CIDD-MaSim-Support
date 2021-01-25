@@ -46,7 +46,7 @@ def create_beta_map(configuration):
     # Prepare to track the distribution
     distribution = [0] * 5
 
-    print ("Determining betas for {} rows, {} columns".format(ascheader['nrows'], ascheader['ncols']))
+    print("Determining betas for {} rows, {} columns".format(ascheader['nrows'], ascheader['ncols']))
 
     # Scan each of the rows 
     for row in range(0, ascheader['nrows']):
@@ -90,21 +90,21 @@ def create_beta_map(configuration):
         progressBar(row + 1, ascheader['nrows'])
                 
     # Write the results
-    print ("\n Max epsilon: {} / {}".format(maxEpsilon, maxValues))
-    print ("Epsilon Distribution")
+    print("\n Max epsilon: {} / {}".format(maxEpsilon, maxValues))
+    print("Epsilon Distribution")
     total = 0
     for ndx in range(0, len(distribution)):
-        print ("{:>6} : {}".format(pow(10, -(ndx + 1)), distribution[ndx]))
+        print("{:>6} : {}".format(pow(10, -(ndx + 1)), distribution[ndx]))
         total += distribution[ndx]
-    print ("Total Cells: {}".format(total))
+    print("Total Cells: {}".format(total))
 
     # Create the directory if need be
     if not os.path.isdir('out'): os.mkdir('out')
 
     # Save the maps        
-    print ("\nSaving {}".format('out/epsilons_beta.asc'))
+    print("\nSaving {}".format('out/epsilons_beta.asc'))
     write_asc(ascheader, epsilons, 'out/epsilons_beta.asc')
-    print ("Saving {}".format('out/mean_beta.asc'))
+    print("Saving {}".format('out/mean_beta.asc'))
     write_asc(ascheader, meanBeta, 'out/mean_beta.asc')
 
 
@@ -202,7 +202,7 @@ if __name__ == "__main__":
             zeroFilter = False
             print ("Zero filter disabled")
         if sys.argv[3] not in ["0", "1"]:
-            print ("Flag for filter must be 0 (false) or 1 (true)")
+            print("Flag for filter must be 0 (false) or 1 (true)")
             exit(1)
 
     main(configuration, studyId, zeroFilter)
