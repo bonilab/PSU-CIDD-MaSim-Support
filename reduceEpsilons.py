@@ -7,11 +7,14 @@
 
 # Add the common include directory before importing our custom libraries
 
+import sys
+sys.path.append("include")
+
 from pathlib import Path
 import csv
-from include.ascFile import *
-from include.calibrationLib import *
-from include.utility import *
+from ascFile import *
+from calibrationLib import *
+from utility import *
 
 # TODO Figure out a better way to store these locations, maybe a library that finds them?
 # Country specific inputs
@@ -22,8 +25,8 @@ CALIBRATION = "data/calibration.csv"
 POPULATIONVALUES = "GIS/rwa_population.asc"
 
 # TODO RWA has only a single treatment rate and ecozone
-#TREATMENT = 0.99
-#ECOZONE = 0
+TREATMENT = 0.99
+ECOZONE = 0
 
 #TREATMENT = input("ENTER Treatment rate:")
 #ECOZONE = input("Enter Ecozone Value:")
@@ -128,13 +131,6 @@ def main(tolerance, step, username):
 
     print ("Evaluating epsilons for {} rows, {} columns".format(ascheader['nrows'], ascheader['ncols']))
 
-    # Get the ecological zone and configuration
-    # TODO This is a quick way of doing things which is fine for countries with single values
-    # TODO However, in the case of more complex countries this will need to be parsed out and binned
-    TREATMENT = configuration["raster_db"]["p_treatment_for_less_than_5_by_location"][0]
-    ECOZONE = len(configuration["seasonal_info"]["base"]) - 1  # Zero indexed
-
-
     # Scan each of the epsilons
     for row in range(0, ascheader['nrows']):
         for col in range(0, ascheader['ncols']):
@@ -165,19 +161,6 @@ if __name__ == "__main__":
         print("step - float, increment +/- 10x around known beta (maximum 0.00001)")
         print("username - the user who will be running the calibration on the cluster")
         exit(0)
-        # Parse the parameters
-        configuration = sys.argv[1]
-        studyId = int(sys.argv[2])
-
-        # Parse out the zero filter if one is provided, otherwise default True
-        zeroFilter = True
-        if len(sys.argv) == 4:
-            if sys.argv[3] == "0":
-                zeroFilter = False
-                print("Zero filter disabled")
-            if sys.argv[3] not in ["0", "1"]:
-                print("Flag for filter must be 0 (false) or 1 (true)")
-                exit(1)
                 
     # Parse the parameters
     tolerance = float(sys.argv[1])
@@ -194,4 +177,4 @@ if __name__ == "__main__":
         print("{} exceeds maximum step of 0.00001".format(step))
         exit(1)
 
-    main(tolerance, step, username, configuration)
+    main(tolerance, step, username)

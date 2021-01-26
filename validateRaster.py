@@ -6,9 +6,11 @@
 
 # Add the common include directory before importing our custom libraries
 
+import sys
+sys.path.append("include")
 
 import os
-from include.ascFile import *
+from ascFile import *
 
 def compare(one, two):
     # Load the ASC files

@@ -3,10 +3,10 @@
 # generateBins.py
 #
 # This script generates the bins that need to be run to determine the beta values
-
-import os
 import sys
-from include.ascFile import *
+sys.path.append("include")
+import os
+from ascFile import *
 from pathlib import Path
 
 # Define the major influences of the beta values
