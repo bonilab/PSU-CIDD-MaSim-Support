@@ -165,7 +165,7 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
 
 # Main entry point for the script
 def main(configuration, studyId, zeroFilter):
-    # TODO Error handling
+    # Load the configuration
     try:
         with open(configuration, "r") as ymlfile:
             cfg = yaml.load(ymlfile)
