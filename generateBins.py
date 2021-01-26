@@ -15,11 +15,11 @@ POPULATION_FILE = "GIS/rwa_population.asc"
 
 # TODO Determine how to do this computationally
 # Reference values for Rwanda
-#ZONE = 0
-#TREATMENT = 0.56
+ZONE = 0
+TREATMENT = 0.56
 
-TREATMENT = input("ENTER Treatment rate:")
-ZONE = input("Enter Zone Value:")
+#TREATMENT = input("ENTER Treatment rate:")
+#ZONE = input("Enter Zone Value:")
 
 # TODO Determine the bins computationally
 # Following bins are for Rwanda
