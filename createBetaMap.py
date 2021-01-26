@@ -12,9 +12,9 @@ from pathlib import Path
 # Add the common include directory before importing our custom libraries
 sys.path.append("include")
 
-from ascFile import *
-from calibrationLib import *
-from utility import *
+from include.ascFile import *
+from include.calibrationLib import *
+from include.utility import *
 
 
 # TODO Grab all of this from a config file

@@ -7,7 +7,6 @@
 
 # Add the common include directory before importing our custom libraries
 
-
 from pathlib import Path
 import csv
 from include.ascFile import *
