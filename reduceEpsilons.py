@@ -90,7 +90,7 @@ def writeBetas(lookup, username):
 
     # Save the missing values as a CSV file
     print("Preparing inputs, {}".format(RESULTS))
-    with open(RESULTS, "w") as csvfile:
+    with open(RESULTS, "wb") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(reduced)
 
