@@ -1,14 +1,10 @@
 # calibrationLib.py
 #
 # This module includes functions that are intended for use with calibration functions.
-from include.database import *
-from pathlib import Path
 import csv
 import os
 
-
-# Path and name of file to save beta values to
-BETAVALUES = Path("data/calibration.csv")
+from database import *
 
 
 # Get the bin that the value belongs to
@@ -64,7 +60,7 @@ def load_betas(filename):
 #
 # filterZero is an optional argument (default True) that prevents beta values 
 #   associated with zero as a local minima from being returned.
-def query_betas(connection, studyId, filterZero = True):
+def query_betas(connection, studyId, filterZero = True, filename = "data/calibration.csv"):
     
     # Permit beta = 0 when PfPR = 0, but filter the beta out otherwise since 
     # the PfPR should never quite reach zero during seasonal transmission
@@ -103,11 +99,12 @@ def query_betas(connection, studyId, filterZero = True):
     rows = select(connection, sql, {'studyId': studyId})
 
     # Create the directory if need be
-    if not os.path.isdir('data'): os.mkdir('data')
+    directory = os.path.dirname(os.path.abspath(filename))
+    if not os.path.isdir(directory): os.mkdir(directory)
 
     # Save the values to a CSV file
-    print("Saving beta values to: {}".format(BETAVALUES))
-    with open(BETAVALUES, "w") as csvfile:
+    print("Saving beta values to: {}".format(filename))
+    with open(filename, "w") as csvfile:
         csvfile.write(header)
         for row in rows:
             line = ','.join(str(row[ndx]) for ndx in range(0, len(row)))

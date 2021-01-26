@@ -17,6 +17,9 @@ from calibrationLib import *
 from utility import *
 
 
+# Default path for beta values
+BETAVALUES = "data/calibration.csv"
+
 # TODO Grab all of this from a config file
 PFPRVALUES = "GIS/rwa_pfpr2to10.asc"
 POPULATIONVALUES = "GIS/rwa_population.asc"
@@ -173,7 +176,7 @@ def main(configuration, studyId, zeroFilter):
         print("File not found")
         pass
 
-    query_betas(cfg["connection_string"], studyId, zeroFilter)
+    query_betas(cfg["connection_string"], studyId, zeroFilter, filename = BETAVALUES)
     create_beta_map(cfg)
 
 
