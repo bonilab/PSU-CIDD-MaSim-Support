@@ -5,6 +5,7 @@
 # This script is intended to validate raster files to ensure they are aligned correctly.
 
 # Add the common include directory before importing our custom libraries
+
 import sys
 sys.path.append("include")
 

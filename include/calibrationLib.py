@@ -1,7 +1,7 @@
 # calibrationLib.py
 #
 # This module includes functions that are intended for use with calibration functions.
-from database import *
+from include.database import *
 from pathlib import Path
 import csv
 import os

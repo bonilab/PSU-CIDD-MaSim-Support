@@ -6,6 +6,7 @@
 # file to prepare 
 
 # Add the common include directory before importing our custom libraries
+
 import sys
 sys.path.append("include")
 
@@ -24,8 +25,8 @@ CALIBRATION = "data/calibration.csv"
 POPULATIONVALUES = "GIS/rwa_population.asc"
 
 # TODO RWA has only a single treatment rate and ecozone
-#TREATMENT = 0.99
-#ECOZONE = 0
+TREATMENT = 0.99
+ECOZONE = 0
 
 #TREATMENT = input("ENTER Treatment rate:")
 #ECOZONE = input("Enter Ecozone Value:")
@@ -160,7 +161,7 @@ if __name__ == "__main__":
         print("step - float, increment +/- 10x around known beta (maximum 0.00001)")
         print("username - the user who will be running the calibration on the cluster")
         exit(0)
-
+                
     # Parse the parameters
     tolerance = float(sys.argv[1])
     step = float(sys.argv[2])
