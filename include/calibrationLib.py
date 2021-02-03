@@ -3,27 +3,153 @@
 # This module includes functions that are intended for use with calibration functions.
 import csv
 import os
+import yaml
 
+from ascFile import *
 from database import *
 
+YAML_SENTINEL = -1
 
 # Get the bin that the value belongs to
 def get_bin(value, bins):
+    # If the value is a bin, then return it
+    if value in bins: return value
+
     # Sort the bins and step through them
     bins = sorted(bins)
     for item in bins:
-        if value < item:
-            return item
+        if value < item: return item
 
     # For values greater than the largest bin, return that one
-    if item >= max(bins):
-        return max(bins)
+    if item >= max(bins): return max(bins)
 
     # Throw an error if we couldn't find a match (shouldn't happen)
     raise Exception("Matching bin not found for value: " + str(value))
 
 
-# Read the relevent data from the CSV file into a dictionary
+# Generate a reference raster using the data in the filename and the value provided
+def generate_raster(filename, value):
+    [ ascHeader, ascData ] = load_asc(filename)
+    for row in range(0, ascHeader['nrows']):
+        for col in range(0, ascHeader['ncols']):
+            if ascData[row][col] == ascHeader['nodata']: continue
+            ascData[row][col] = value
+    return ascData
+
+
+# Get the climate zones that are defined in the configuration.
+#
+# configurationYaml - The loaded configuration to examine.
+# gisPath - The path to append to GIS files in the configuration.
+#
+# Returns a matrix contianing the climate zones, locations without
+#   a zone will use the common nodata value.
+def get_climate_zones(configurationYaml, gisPath):
+    # Start by checking if there is a raster defined, if so just load and return that
+    if 'ecoclimatic_raster' in configurationYaml['raster_db']:
+        filename = str(configurationYaml['raster_db']['ecoclimatic_raster'])
+        filename = os.path.join(gisPath, filename)
+        [ ascHeader, ascData ] = load_asc(filename)
+        return ascData
+
+    # There is not, make sure there is a single zone defined before continuing
+    if len(configurationYaml["seasonal_info"]["base"]) != 1:
+        print("Multiple climate zones, but no raster defined.")
+        exit(1)
+
+    # Get the zone value
+    ecozone = len(configurationYaml["seasonal_info"]["base"]) - 1   # Zero indexed
+
+    # Districts need to be defined, so use that as our template raster
+    filename = str(configurationYaml['raster_db']['district_raster'])
+    filename = os.path.join(gisPath, filename)
+    return generate_raster(filename, ecozone)
+
+
+# Extract the treatments from the configuration that is supplied.
+#
+# configurationYaml - The loaded configuration to examine.
+# gisPath - The path to append to GIS files in the configuration.
+#
+# Returns [results, needsBinning] where results are the parsed treatments
+#   and needsBinning indicates that the treatments need to be binned if True.
+def get_treatments_list(configurationYaml, gisPath):
+    # Start by checking the district level treatment values, note the zero index
+    underFive = float(configurationYaml['raster_db']['p_treatment_for_less_than_5_by_location'][0])
+    overFive = float(configurationYaml['raster_db']['p_treatment_for_more_than_5_by_location'][0])
+    
+    # If both are not equal to the sentinel then they are set via a raster
+    if not (underFive == overFive == YAML_SENTINEL):
+        results = []
+        if underFive != YAML_SENTINEL:
+            results.append(underFive)
+        if overFive != YAML_SENTINEL:
+            results.append(overFive)
+        return results, False
+
+    # Get the unique under five treatments
+    filename = str(configurationYaml['raster_db']['pr_treatment_under5'])
+    filename = os.path.join(gisPath, filename)
+    [ ascHeader, ascData ] = load_asc(filename)
+    underFive = list(set(i for j in ascData for i in j))
+    underFive.remove(-9999)
+
+    # Get the unique over five treatments
+    filename = str(configurationYaml['raster_db']['pr_treatment_over5'])
+    filename = os.path.join(gisPath, filename)
+    [ ascHeader, ascData ] = load_asc(filename)
+    overFive = list(set(i for j in ascData for i in j)) 
+    overFive.remove(-9999)
+
+    # Get the unique district ids
+    filename = str(configurationYaml['raster_db']['district_raster'])
+    filename = os.path.join(gisPath, filename)
+    [ ascHeader, ascData ] = load_asc(filename)
+    districts = list(set(i for j in ascData for i in j)) 
+    districts.remove(-9999)
+
+    # If either treatment list is greater than districts, binning is needed
+    # NOTE This is just a rough heuristic for the time being
+    needsBinning = (len(underFive) > len(districts)) or (len(overFive) > len(districts))
+
+    # Merge the under five and over five into a single set and return
+    results = set(underFive + overFive)
+    return results, needsBinning
+
+
+# Get the treatment raster that is defined in the configuration
+#
+# configurationYaml - The loaded configuration to examine.
+# gisPath - The path to append to GIS files in the configuration.
+#
+# Returns a matrix contianing the climate zones, locations without
+#   a zone will use the common nodata value.
+def get_treatments_raster(configurationYaml, gisPath):
+    # Start by checking if there is a raster defined, if so just load and return that
+    if 'pr_treatment_under5' in configurationYaml['raster_db']:
+        filename = str(configurationYaml['raster_db']['pr_treatment_under5'])
+        filename = os.path.join(gisPath, filename)
+        [ ascHeader, ascData ] = load_asc(filename)
+        return ascData
+
+    # There is not, make sure there is a single value defined before continuing
+    underFive = float(configurationYaml['raster_db']['p_treatment_for_less_than_5_by_location'][0])
+    overFive = float(configurationYaml['raster_db']['p_treatment_for_more_than_5_by_location'][0])
+
+    # There is not, make sure there is a single zone defined before continuing
+    if underFive != overFive:
+        print("Different treatments defined for under and over five, not supported.")
+        exit(1)
+
+    # Generate and return the reference raster
+    filename = str(configurationYaml['raster_db']['district_raster'])
+    filename = os.path.join(gisPath, filename)
+    return generate_raster(filename, underFive)
+
+
+# Read the relevent data from the CSV file into a dictionary.
+#
+# filename - The file, with or without the path attached, to be loaded.
 def load_betas(filename):
     lookup = {}
     with open(filename) as csvfile:
@@ -52,6 +178,19 @@ def load_betas(filename):
             lookup[zone][population][treatment].append([ float(row['pfpr']) / 100, float(row['beta']) ])
 
     return lookup
+
+
+# Load the configuration file provided and return the parsed YAML
+#
+# configuration - The YAML file, with or without the path, to be parsed.
+def load_configuration(configuration):
+    try:
+        with open(configuration, "r") as ymlfile:
+            cfg = yaml.load(ymlfile)
+            return cfg
+    except Exception:
+        print("Configuration file not found")
+        exit(1)
 
 
 # Query the database at the given location for the beta values in the given 

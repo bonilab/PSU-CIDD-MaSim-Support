@@ -1,91 +1,134 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # generateBins.py
 #
 # This script generates the bins that need to be run to determine the beta values
-import sys
-sys.path.append("include")
 import os
-from ascFile import *
+import sys
+
 from pathlib import Path
 
-# Define the major influences of the beta values
-PFPR_FILE       = "/GIS/rwa_pfpr2to10.asc"
-POPULATION_FILE = "GIS/rwa_population.asc"
+sys.path.append("include")
+from ascFile import *
+from calibrationLib import *
 
-# TODO Determine how to do this computationally
-# Reference values for Rwanda
-ZONE = 0
-TREATMENT = 0.56
 
-#TREATMENT = input("ENTER Treatment rate:")
-#ZONE = input("Enter Zone Value:")
+# TODO Still need a good way of supplying these
+PFPR_FILE       = "rwa_pfpr2to10.asc"
+POPULATION_FILE = "rwa_population.asc"
+
 
 # TODO Determine the bins computationally
 # Following bins are for Rwanda
-populationBins = [2125, 5640, 8989, 12108, 15577, 20289, 27629, 49378, 95262, 286928]
+POPULATION_BINS = [2125, 5640, 8989, 12108, 15577, 20289, 27629, 49378, 95262, 286928]
 
 
-def getBin(value, bins):
-    bins.sort()
-    for item in bins:
-        if value < item: return item
-    if item >= max(bins):
-        return max(bins)
+def process(configuration, gisPath = ""):
+    # Load the configuration
+    cfg = load_configuration(configuration)
 
+    # TODO Add the stuff for the population bins!
 
-def process():
+    # Get the access to treatments rate
+    [treatments, needsBinning] = get_treatments_list(cfg, gisPath)
+    if treatments == -1:
+        print("Unable to load determine the treatments in the configuration.")
+        exit(1)
+    
+    # TODO Add stuff for binning the treatments as needed!
+    if needsBinning:
+        print("Treatments need binning, not currently supported")
+        exit(1)
+
+    # Load the climate and treatment rasters
+    climate = get_climate_zones(cfg, gisPath)
+    treatment = get_treatments_raster(cfg, gisPath)
+
     # Load the relevent data
-    [ ascHeader, pfpr ] = load_asc(PFPR_FILE)
-    [ ascHeader, population ] = load_asc(POPULATION_FILE)
+    filename = os.path.join(gisPath, PFPR_FILE)
+    [ ascHeader, pfpr ] = load_asc(filename)
+    filename = os.path.join(gisPath, POPULATION_FILE)
+    [ ascHeader, population ] = load_asc(filename)
 
     # Prepare our results
-    ranges = {}
+    pfprRanges = {}
+    zoneTreatments = {}
 
     # Process the data
     for row in range(0, ascHeader['nrows']):
         for col in range(0, ascHeader['ncols']):
 
             # Press on if there is nothing to do
-            if population[row][col] == ascHeader['nodata']: continue
+            zone = climate[row][col]
+            if zone == ascHeader['nodata']: continue
 
-            # Get the bin
-            popBin = getBin(population[row][col], populationBins)
+            # Note the bins
+            popBin = int(get_bin(population[row][col], POPULATION_BINS))
+            treatBin = get_bin(treatment[row][col], treatments)
 
             # Add to the dictionary as needed
-            if popBin not in ranges: ranges[popBin] = []
+            if zone not in pfprRanges:
+                pfprRanges[zone] = {}            
+            if popBin not in pfprRanges[zone]:
+                pfprRanges[zone][popBin] = []
+            if zone not in zoneTreatments:
+                zoneTreatments[zone] = []
             
             # Add to our data sets
-            ranges[popBin].append(pfpr[row][col])
+            pfprRanges[zone][popBin].append(pfpr[row][col])
+            if treatBin not in zoneTreatments[zone]:
+                zoneTreatments[zone].append(treatBin)
 
-    return [ ranges ]
+    return [ pfprRanges, zoneTreatments ]
 
 
-def save(ranges, filename, username):
+def save(pfpr, treatments, filename, username):
     with open(filename, 'w') as script:
         # Print the front matter
-        script.write("#!/bin/bash\n\n")
-        script.write("source ./calibrationLib.sh\n")
-        value = " ".join([str(x) for x in sorted(populationBins)])
-        script.write("generateAsc \"\\\"{}\\\"\"\n".format(value))
-        script.write("run {} \"\\\"{}\\\"\" \"\\\"{}\\\"\" {}".format(ZONE, value, TREATMENT, username))
+        script.write("#!/bin/bash\n")
+        script.write("source ./calibrationLib.sh\n\n")
 
+        # Print the ASC file generation commands
+        script.write("generateAsc \"\\\"{}\\\"\"\n".format(
+            " ".join([str(x) for x in sorted(POPULATION_BINS)])))
+        script.write("generateZoneAsc \"\\\"{}\\\"\"\n\n".format(
+            " ".join([str(x) for x in sorted(pfpr.keys())])))
+
+        # Print the zone matter
+        for zone in pfpr.keys():
+            script.write("run {} \"\\\"{}\\\"\" \"\\\"{}\\\"\" {}".format(
+                zone, 
+                " ".join([str(x) for x in sorted(POPULATION_BINS)]), 
+                " ".join([str(x) for x in sorted(treatments[zone])]), 
+                username))
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print ("Usage: ./generateBins.py [username]")
-        print ("username - the user who will be running the calibration on the cluster")
+    if len(sys.argv) < 3:
+        print("Usage: ./generateBins.py [configuration] [username] [gis]")
+        print("configuration - the configuration file to be loaded")
+        print("username - the user who will be running the calibration on the cluster")
+        print("gis - Optional, the directory that GIS file can be found in")
         exit(0)
 
     # Parse the parameters
-    username = str(sys.argv[1])
+    configuration = str(sys.argv[1])
+    username = str(sys.argv[2])
+
+    # Get the GIS files path
+    if len(sys.argv) == 4:
+        gisPath = str(sys.argv[3])
 
     # Process and print the relevent ranges for the user
-    [ ranges ] = process()
-    for population in sorted(ranges):
-        print ("{} - {} to {} PfPR".format(population, min(ranges[population]), max(ranges[population])))
+    [ pfpr, treatments ] = process(configuration, gisPath)
+    for zone in pfpr.keys():
+        print("Climate Zone {}".format(zone))
+        print("Treatments: {}".format(sorted(treatments[zone])))
+        print("Populations: {}".format(sorted(pfpr[zone].keys())))
+        for popBin in sorted(pfpr[zone].keys()):
+            print("{} - {} to {} PfPR".format(popBin, min(pfpr[zone][popBin]), max(pfpr[zone][popBin])))
+        print
 
     # Save the basic script
     if not os.path.isdir('out'): os.mkdir('out')
-    save(ranges, 'out/calibration.sh', username)
+    save(pfpr, treatments, 'out/calibration.sh', username)

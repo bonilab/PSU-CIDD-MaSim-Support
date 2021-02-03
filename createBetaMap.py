@@ -5,7 +5,6 @@
 # This module reads an ASC file that contains the PfPR for the two to ten age
 # bracket and generates three ASC files with beta values.
 import sys
-import yaml
 
 from pathlib import Path
 
@@ -168,14 +167,7 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
 
 # Main entry point for the script
 def main(configuration, studyId, zeroFilter):
-    # Load the configuration
-    try:
-        with open(configuration, "r") as ymlfile:
-            cfg = yaml.load(ymlfile)
-    except Exception:
-        print("File not found")
-        pass
-
+    cfg = load_configuration(configuration)
     query_betas(cfg["connection_string"], studyId, zeroFilter, filename = BETAVALUES)
     create_beta_map(cfg)
 
