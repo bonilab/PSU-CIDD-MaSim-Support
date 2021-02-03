@@ -73,6 +73,7 @@ def load_asc(filename):
 
         return [ ascheader, ascdata ]
 
+
 # Write an ASC file using the data provided
 def write_asc(ascheader, ascdata, filename):
     with open(filename, 'w') as ascfile:
