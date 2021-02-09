@@ -13,10 +13,10 @@ PATH=$PATH:`pwd`
 ```
 
 **Via Configuration**
-#. Open `.bashrc` (`vi ~/.bashrc`)
-#. Add the line `PATH=$PATH:path_to_repository` where `path_to_repository` is the full path to the root of the repository.
-#. Save and close
-#. Reload `.bashrc` (`source ~/.bashrc`)
+1. Open `.bashrc` (`vi ~/.bashrc`)
+2. Add the line `PATH=$PATH:path_to_repository` where `path_to_repository` is the full path to the root of the repository.
+3. Save and close
+4. Reload `.bashrc` (`source ~/.bashrc`)
 
 ### Repository Organization
 
