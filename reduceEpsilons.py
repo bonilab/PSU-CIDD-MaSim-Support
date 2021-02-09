@@ -8,8 +8,8 @@ import csv
 import sys
 import yaml
 
-# Add the common include directory before importing our custom libraries
-sys.path.append("include")
+# Import our libraries
+sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
 from ascFile import *
 from calibrationLib import *
