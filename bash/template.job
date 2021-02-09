@@ -1,9 +1,8 @@
 #!/bin/bash
 
 #PBS -A mfb9_b_g_sc_default
-#PBS -l nodes=1:ppn=1
-#PBS -l feature=rhel7
 #PBS -l pmem=64gb
+#PBS -l nodes=1:ppn=1:rhel7:stmem
 #PBS -l walltime=24:00:00
 
 # Change to the directory we launched the script from and launch the simulation
