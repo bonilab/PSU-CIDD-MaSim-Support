@@ -4,6 +4,7 @@
 #
 # This module reads an ASC file that contains the PfPR for the two to ten age
 # bracket and generates three ASC files with beta values.
+import os
 import sys
 
 from pathlib import Path
@@ -19,19 +20,21 @@ from utility import *
 # Default path for beta values
 BETAVALUES = "data/calibration.csv"
 
-# TODO Grab all of this from a config file
-PFPRVALUES = "GIS/rwa_pfpr2to10.asc"
-POPULATIONVALUES = "GIS/rwa_population.asc"
+# TODO Still need a good way of supplying these
+PFPR_FILE       = "rwa_pfpr2to10.asc"
+POPULATION_FILE = "rwa_population.asc"
 
 # Starting epsilon and delta to be used
 EPSILON = 0.00001
 MAX_EPSILON = 0.1
 
 
-def create_beta_map(configuration):
+def create_beta_map(configuration, gisPath):
     # Load the relevent data
-    [ ascheader, pfpr ] = load_asc(PFPRVALUES)
-    [ ascheader, population ] = load_asc(POPULATIONVALUES)
+    filename = os.path.join(gisPath, PFPR_FILE)
+    [ ascheader, pfpr ] = load_asc(filename)
+    filename = os.path.join(gisPath, POPULATION_FILE)    
+    [ ascheader, population ] = load_asc(filename)
     lookup = load_betas(BETAVALUES)
 
     # Get the ecological zone and configuration
@@ -166,10 +169,10 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
     
 
 # Main entry point for the script
-def main(configuration, studyId, zeroFilter):
+def main(configuration, gisPath, studyId, zeroFilter):
     cfg = load_configuration(configuration)
     query_betas(cfg["connection_string"], studyId, zeroFilter, filename = BETAVALUES)
-    create_beta_map(cfg)
+    create_beta_map(cfg, gisPath)
 
 
 if __name__ == "__main__":
@@ -178,9 +181,10 @@ if __name__ == "__main__":
     # 1: Configuration file
     # 2: Study identification number
     # 3: Optional zero filter
-    if len(sys.argv) not in (3, 4):
-        print("Usage: ./createBetaMap.py [configuration] [study] [filter]")
+    if len(sys.argv) not in (4, 5):
+        print("Usage: ./createBetaMap.py [configuration] [gis] [study] [filter]")
         print("configuration - the configuration file to be loaded")
+        print("gis - the path to the directory that the GIS files can be found in")
         print("study  - the database id of the study to use for the reference beta values")
         print("filter - optional default true (1), false (0) means zeroed minima should not be filtered")
         print("\nExample ./createBetaMap.py ../country/config.yml 1")
@@ -189,6 +193,7 @@ if __name__ == "__main__":
     # Parse the parameters
     configuration = sys.argv[1]
     studyId = int(sys.argv[2])
+    gisPath = str(sys.argv[3])
 
     # Parse out the zero filter if one is provided, otherwise default True
     zeroFilter = True
@@ -200,4 +205,4 @@ if __name__ == "__main__":
             print("Flag for filter must be 0 (false) or 1 (true)")
             exit(1)
 
-    main(configuration, studyId, zeroFilter)
+    main(configuration, gisPath, studyId, zeroFilter)
