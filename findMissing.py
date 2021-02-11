@@ -1,10 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # findMissing.py
 #
 # This script finds the combination that are missing from a calibration.
-
 import csv
+import os
 
 from pathlib import Path
 
@@ -91,4 +91,7 @@ def main():
 
 
 if __name__ == "__main__":
+    if not os.path.exists(BETAVALUES):
+        print("{} does not appear to exist, has createBetaMap.py been run?".format(BETAVALUES))
+        exit(1)
     main()
