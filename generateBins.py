@@ -109,15 +109,15 @@ if __name__ == '__main__':
     if len(sys.argv) != 4:
         print("Usage: ./generateBins.py [configuration] [username] [gis]")
         print("configuration - the configuration file to be loaded")
-        print("username - the user who will be running the calibration on the cluster")
         print("gis - the directory that GIS file can be found in")
+        print("username - the user who will be running the calibration on the cluster")
         exit(0)
 
     # Parse the parameters
     configuration = str(sys.argv[1])
-    username = str(sys.argv[2])
-    gisPath = str(sys.argv[3])
-
+    gisPath = str(sys.argv[2])
+    username = str(sys.argv[3])
+    
     # Process and print the relevent ranges for the user
     [ pfpr, treatments ] = process(configuration, gisPath)
     for zone in pfpr.keys():
