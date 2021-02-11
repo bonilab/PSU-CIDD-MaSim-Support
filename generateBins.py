@@ -107,7 +107,7 @@ def save(pfpr, treatments, filename, username):
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:
-        print("Usage: ./generateBins.py [configuration] [username] [gis]")
+        print("Usage: ./generateBins.py [configuration] [gis] [username]")
         print("configuration - the configuration file to be loaded")
         print("gis - the directory that GIS file can be found in")
         print("username - the user who will be running the calibration on the cluster")
