@@ -192,9 +192,9 @@ if __name__ == "__main__":
 
     # Parse the parameters
     configuration = sys.argv[1]
-    studyId = int(sys.argv[2])
-    gisPath = str(sys.argv[3])
-
+    gisPath = str(sys.argv[2])
+    studyId = int(sys.argv[3])
+    
     # Parse out the zero filter if one is provided, otherwise default True
     zeroFilter = True
     if len(sys.argv) == 4:
