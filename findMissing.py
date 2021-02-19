@@ -5,12 +5,13 @@
 # This script finds the combination that are missing from a calibration.
 import csv
 import os
+import sys
 
 from pathlib import Path
 
-BETAVALUES = Path("data/calibration.csv")
-
-RESULTS = Path("out/missing.csv")
+# Output file paths
+RESULTS = "missing.csv"
+SCRIPT = "script.sh"
 
 # Prepare the variables
 population = set()
@@ -47,14 +48,14 @@ def check(zone):
                     missing.append([zone, ndx, ndy, ndz])
 
 
-def main():
+def main(filename, username):
     global missing, raw, population, treatment, beta
 
     # We aren't in a zone yet
     zone = None
 
     # Start by reading the raw population, treatment rate, and beta
-    with open(BETAVALUES) as csvfile:
+    with open(filename) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             # Set the zone if not set
@@ -89,9 +90,32 @@ def main():
         writer = csv.writer(csvfile)
         writer.writerows(missing)
 
+    # Parse out the unique values for the script
+    zones = set()
+    populations = set()
+    for row in range(1, len(missing)):
+        zones.add(missing[row][0])
+        populations.add(missing[row][1])
+
+    # Save the script to disk
+    print("Preparing script, {}".format(SCRIPT))
+    with open(SCRIPT, "w") as script:
+        script.write("#!/bin/bash\n")
+        script.write("source ./calibrationLib.sh\n")
+        value = " ".join([str(x) for x in sorted(populations)])
+        script.write("generateAsc \"\\\"{}\\\"\"\n".format(value.strip()))
+        value = " ".join([str(x) for x in sorted(zones)])
+        script.write("generateZoneAsc \"\\\"{}\\\"\"\n".format(value.strip()))
+        script.write("runCsv '{}' {}\n".format(RESULTS, username))    
+
 
 if __name__ == "__main__":
-    if not os.path.exists(BETAVALUES):
-        print("{} does not appear to exist, has createBetaMap.py been run?".format(BETAVALUES))
-        exit(1)
-    main()
+    if len(sys.argv) != 3:
+        print("Usage: findMissing [calibration] [username]")
+        print("calibration - the calibration file to be examined")
+        print("username - the user who will be running the calibration on the cluster")
+        exit(0)
+
+    filename = str(sys.argv[1])
+    username = str(sys.argv[2])
+    main(filename, username)
