@@ -91,7 +91,7 @@ def writeBetas(lookup, username):
 
     # Save the missing values as a CSV file
     print("Preparing inputs, {}".format(RESULTS))
-    with open(RESULTS, "wb") as csvfile:
+    with open(RESULTS, "w") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(reduced)
 
@@ -159,7 +159,7 @@ def main(configuration, gisPath, tolerance, step, username):
 
 if __name__ == "__main__":
     if len(sys.argv) != 6:
-        print("Usage: ./reduceEpsilons.py [configuration] [tolerance] [step] [username]")
+        print("Usage: ./reduceEpsilons.py [configuration] [GIS] [tolerance] [step] [username]")
         print("configuration - the configuration file to be loaded")
         print("gis - the directory that GIS file can be found in")        
         print("tolerance - float, maximum epsilon")
