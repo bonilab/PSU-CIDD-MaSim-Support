@@ -17,7 +17,7 @@ from include.calibrationLib import *
 # TODO Still need a good way of supplying these
 PFPR_FILE       = "rwa_pfpr2to10.asc"
 POPULATION_FILE = "rwa_population.asc"
-
+TREATMENT_FILE = "rwa_treatment.asc"
 
 # TODO Determine the bins computationally
 # Following bins are for Rwanda
@@ -29,7 +29,7 @@ def process(configuration, gisPath = ""):
 
     # getting data ready for binning
     # data should be 1-dimensional array, python list or iterable
-    myArray = np.loadtxt("GIS\\rwa_population.asc", skiprows=6)
+    myArray = np.loadtxt(POPULATION_FILE, skiprows=6)
     array_1d = myArray.flatten()
 
     # TODO Add the stuff for the population bins!
@@ -56,14 +56,14 @@ def process(configuration, gisPath = ""):
 
         # getting data ready for binning
         # data should be 1-dimensional array, python list or iterable
-        treat = np.loadtxt("GIS\\rwa_treatment.asc", skiprows=6)
+        treat = np.loadtxt(TREATMENT_FILE, skiprows=6)
         treat_1d = treat.flatten()
 
         # GVF Implementation
         gvf = 0.0
         nclasses = 20
         while gvf < 0.8:
-            gvf = goodness_of_variance_fit(treat_1d, nclasses)
+            gvf_t = goodness_of_variance_fit(treat_1d, nclasses)
             nclasses += 1
         print("The value of Goodness of Variance fit is:", gvf)
         if (gvf < 0.7):
