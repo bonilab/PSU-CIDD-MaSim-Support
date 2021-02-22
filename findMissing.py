@@ -55,7 +55,9 @@ def main(filename, username):
     zone = None
 
     # Start by reading the raw population, treatment rate, and beta
+
     with open(filename) as csvfile:
+
         reader = csv.DictReader(csvfile)
         for row in reader:
             # Set the zone if not set
@@ -86,7 +88,9 @@ def main(filename, username):
 
     # Save the missing values as a CSV file
     print ("Saving {}".format(RESULTS))
+
     with open(RESULTS, "w") as csvfile:
+
         writer = csv.writer(csvfile)
         writer.writerows(missing)
 

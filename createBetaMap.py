@@ -12,9 +12,9 @@ from pathlib import Path
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
-from ascFile import *
-from calibrationLib import *
-from utility import *
+from include.ascFile import *
+from include.calibrationLib import *
+from include.utility import *
 
 
 # Default path for beta values

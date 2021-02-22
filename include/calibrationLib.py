@@ -5,8 +5,8 @@ import csv
 import os
 import yaml
 
-from ascFile import *
-from database import *
+from include.ascFile import *
+from include.database import *
 
 YAML_SENTINEL = -1
 

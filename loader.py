@@ -11,7 +11,7 @@ import os
 import psycopg2
 import sys
 
-from Scripts.Loader.utility import *
+from include.utility import *
 
 # Connection string for the database
 CONNECTION = "host=masimdb.vmhost.psu.edu dbname=rwanda user=sim password=sim"
@@ -266,9 +266,9 @@ def select(sql, parameters):
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        print "Usage: ./loader.py [studyId] [startDay]"
-        print "studyId  - database id of the study"
-        print "startDay - the first model day to start processing data for"
+        print ("Usage: ./loader.py [studyId] [startDay]")
+        print ("studyId  - database id of the study")
+        print ("startDay - the first model day to start processing data for")
         exit(0)
 
     # Prepare the environment
