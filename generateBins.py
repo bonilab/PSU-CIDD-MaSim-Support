@@ -16,9 +16,12 @@ import numpy as np
 #plt.style.use('seaborn-poster')
 #%matplotlib inline
 
-sys.path.append("include")
-from include.ascFile import *
-from include.calibrationLib import *
+
+# Import our libraries
+sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
+
+from ascFile import *
+from calibrationLib import *
 
 
 # TODO Still need a good way of supplying these
@@ -160,22 +163,21 @@ def save(pfpr, treatments, filename, username):
 
 if __name__ == '__main__':
 
+
     if len(sys.argv) < 3:
         print("Usage: ./generateBins.py [configuration] [username] [gis]")
+
         print("configuration - the configuration file to be loaded")
+        print("gis - the directory that GIS file can be found in")
         print("username - the user who will be running the calibration on the cluster")
-        print("gis - Optional, the directory that GIS file can be found in")
         exit(0)
 
 
     # Parse the parameters
     configuration = str(sys.argv[1])
-    username = str(sys.argv[2])
-
-    # Get the GIS files path
-    if len(sys.argv) == 4:
-        gisPath = str(sys.argv[3])
-
+    gisPath = str(sys.argv[2])
+    username = str(sys.argv[3])
+    
     # Process and print the relevent ranges for the user
     [ pfpr, treatments ] = process( configuration, gisPath)
     for zone in pfpr.keys():

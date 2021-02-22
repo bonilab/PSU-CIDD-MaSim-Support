@@ -33,7 +33,6 @@ def compare_header(one, two, printError = True):
 # If printError is set, then errors will be printed to stderr
 def compare_data(one, two, nodata, printError = True):
     result = True
-
     for row in range(0, len(one)):
         for col in range(0, len(one[row])):
             # Set the values
@@ -46,8 +45,6 @@ def compare_data(one, two, nodata, printError = True):
                 if printError: 
                     hd.sys.stderr.write('Mismatched nodata at {}, {}\n'.format(row, col))
                     hd.sys.stderr.write('One: {}, Two {}\n'.format(a, b))
-
-
     return result
 
 
@@ -65,7 +62,7 @@ def load_asc(filename):
         ascheader['cellsize'] = float(lines[4].split()[1])
         ascheader['nodata'] = int(lines[5].split()[1])
 
-        # Read the rest of the enteries
+        # Read the rest of the entries
         ascdata = []
         for ndx in range(6, ascheader['nrows'] + 6):
             row = [ float(value) for value in lines[ndx].split() ]

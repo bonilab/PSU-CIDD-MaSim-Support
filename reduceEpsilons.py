@@ -5,11 +5,12 @@
 # This module takes the inputs used by createBetaMap.py as well as the epsilon
 # file to prepare. 
 import csv
+import os
 import sys
 import yaml
 
-# Add the common include directory before importing our custom libraries
-sys.path.append("include")
+# Import our libraries
+sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
 from include.ascFile import *
 from include.calibrationLib import *
@@ -18,7 +19,7 @@ from include.utility import *
 # TODO Figure out a better way to store these locations, maybe a library that finds them?
 # Country specific inputs
 CALIBRATION = "data/calibration.csv"
-POPULATIONVALUES = "GIS/rwa_population.asc"
+POPULATION_FILE = "rwa_population.asc"
 
 # TODO RWA has only a single treatment rate and ecozone
 TREATMENT = 0.99
@@ -90,7 +91,7 @@ def writeBetas(lookup, username):
 
     # Save the missing values as a CSV file
     print("Preparing inputs, {}".format(RESULTS))
-    with open(RESULTS, "wb") as csvfile:
+    with open(RESULTS, "w") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(reduced)
 
@@ -105,7 +106,7 @@ def writeBetas(lookup, username):
         script.write("runCsv '{}' {}\n".format(RESULTS[4:], username))
         
 
-def main(configuration, tolerance, step, username):
+def main(configuration, gisPath, tolerance, step, username):
     global parameters
 
     # Load the configuration
@@ -123,7 +124,8 @@ def main(configuration, tolerance, step, username):
     ecozone = len(cfg["seasonal_info"]["base"]) - 1   # Zero indexed
 
     # Load the relevent data
-    [ ascheader, population ] = load_asc(POPULATIONVALUES)
+    filename = os.path.join(gisPath, POPULATION_FILE)    
+    [ ascheader, population ] = load_asc(filename)
     lookup = load_betas(CALIBRATION)
 
     # Read the epsilons file in
@@ -156,9 +158,10 @@ def main(configuration, tolerance, step, username):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 5:
-        print("Usage: ./reduceEpsilons.py [configuration] [tolerance] [step] [username]")
+    if len(sys.argv) != 6:
+        print("Usage: ./reduceEpsilons.py [configuration] [GIS] [tolerance] [step] [username]")
         print("configuration - the configuration file to be loaded")
+        print("gis - the directory that GIS file can be found in")        
         print("tolerance - float, maximum epsilon")
         print("step - float, increment +/- 10x around known beta (maximum 0.00001)")
         print("username - the user who will be running the calibration on the cluster")
@@ -166,9 +169,10 @@ if __name__ == "__main__":
                 
     # Parse the parameters
     configuration = sys.argv[1]
-    tolerance = float(sys.argv[2])
-    step = float(sys.argv[3])
-    username = str(sys.argv[4])
+    gisPath = str(sys.argv[2])
+    tolerance = float(sys.argv[3])
+    step = float(sys.argv[4])
+    username = str(sys.argv[5])
 
     # Step cannot be greater than one
     if step >= 1:
@@ -180,4 +184,4 @@ if __name__ == "__main__":
         print("{} exceeds maximum step of 0.00001".format(step))
         exit(1)
 
-    main(configuration, tolerance, step, username)
+    main(configuration, gisPath, tolerance, step, username)

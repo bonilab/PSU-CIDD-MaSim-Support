@@ -3,14 +3,14 @@
 # validate_raster.py
 #
 # This script is intended to validate raster files to ensure they are aligned correctly.
-
-# Add the common include directory before importing our custom libraries
-
-import sys
-sys.path.append("include")
-
 import os
-from include.ascFile import *
+import sys
+
+
+# Import our libraries
+sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
+
+from ascFile import *
 
 def compare(one, two):
     # Load the ASC files

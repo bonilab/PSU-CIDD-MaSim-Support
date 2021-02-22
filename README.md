@@ -1,8 +1,22 @@
 # PSU-CIDD-MaSim-Support
 
-This repository contains analysis files used for modeling the prevalence of malaria (*P. falciparum*) in in various countries using the main malarial simulation.
+This repository contains analysis files used for modeling the prevalence of malaria (*P. falciparum*) in in various countries using the main malarial simulation. 
 
 The main repository for the simulation can be found at [maciekboni/PSU-CIDD-Malaria-Simulation](https://github.com/maciekboni/PSU-CIDD-Malaria-Simulation)
+
+### Usage
+Presently these scripts are only tested to run on Linux or Windows vis the Windows Subsystem for Linux. In order to run these scripts you will first need to `git clone` the repository to your local computer. Once cloned you can access them by adding them to the `PATH` variable:
+
+**Per Session**, from the root of the repository
+```bash
+PATH=$PATH:`pwd`
+```
+
+**Via Configuration**
+1. Open `.bashrc` (`vi ~/.bashrc`)
+2. Add the line `PATH=$PATH:path_to_repository` where `path_to_repository` is the full path to the root of the repository.
+3. Save and close
+4. Reload `.bashrc` (`source ~/.bashrc`)
 
 ### Repository Organization
 
