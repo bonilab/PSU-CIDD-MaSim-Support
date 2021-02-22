@@ -26,3 +26,7 @@ bash/ - The `bash` directory contains Bash scripts as well as job files that may
 
 include/ - The `include` directory contains Python scripts that contain shared code and cannot be run on their own.
 
+### Jenks
+
+pip install jenkspy
+
