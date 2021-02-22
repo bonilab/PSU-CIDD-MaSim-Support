@@ -2,18 +2,18 @@
 
 # This module contains functions relevent to getting metrics from ASC files.
 
-from ascFile import *
+from include.ascFile import *
 from pathlib import Path
 
 
 def calculate(populationFile):
-    WEIGHTEDPFPR = Path("C:\\Users\\pua66\\PycharmProjects\\PSU-CIDD-Rwanda\\out\\weighted_pfpr.csv")#("out/weighted_pfpr.csv")
+    WEIGHTEDPFPR = Path("out/weighted_pfpr.csv")
 
     NUMERATOR = 0
     DENOMINATOR = 1
-    [ ascheader, district ] = hd.load_asc("C:\\Users\\pua66\\PycharmProjects\\PSU-CIDD-Rwanda\\GIS\\rwa_district.asc")#("../../GIS/rwa_district.asc")
-    [ ascheader, pfpr ] = hd.load_asc("C:\\Users\\pua66\\PycharmProjects\\PSU-CIDD-Rwanda\\GIS\\rwa_pfpr2to10.asc")#("../../GIS/rwa_pfpr2to10.asc")
-    [ ascheader, population ] = hd.load_asc(populationFile)
+    [ ascheader, district ] = load_asc("GIS/rwa_district.asc")
+    [ ascheader, pfpr ] = load_asc("GIS/rwa_pfpr2to10.asc")
+    [ ascheader, population ] = load_asc(populationFile)
 
     data = {}
     totalPopulation = 0
@@ -53,7 +53,7 @@ def calculate(populationFile):
 
 
 def simulatePopulation(fileName, rate, years, start):
-    [ ascheader, data ] = hd.load_asc(fileName)
+    [ ascheader, data ] = load_asc(fileName)
 
     # Apply the population adjustment
     initial = 0
@@ -82,4 +82,4 @@ def simulatePopulation(fileName, rate, years, start):
 
 
 if __name__ == '__main__':
-    calculate("C:\\Users\\pua66\\PycharmProjects\\PSU-CIDD-Rwanda\\GIS\\rwa_population.asc")#("../../GIS/rwa_population.asc")
+    calculate("GIS/rwa_population.asc")

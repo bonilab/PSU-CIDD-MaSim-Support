@@ -10,7 +10,7 @@ import sys
 sys.path.append("include")
 
 import os
-from ascFile import *
+from include.ascFile import *
 
 def compare(one, two):
     # Load the ASC files
