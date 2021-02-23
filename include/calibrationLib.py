@@ -12,8 +12,8 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
-from ascFile import *
-from database import *
+from ascFile import load_asc
+from database import select
 
 YAML_SENTINEL = -1
 
@@ -25,10 +25,12 @@ def get_bin(value, bins):
     # Sort the bins and step through them
     bins = sorted(bins)
     for item in bins:
-        if value < item: return item
+        if value < item:
+            return item
 
     # For values greater than the largest bin, return that one
-    if item >= max(bins): return max(bins)
+    if item >= max(bins):
+        return max(bins)
 
     # Throw an error if we couldn't find a match (shouldn't happen)
     raise Exception("Matching bin not found for value: " + str(value))
@@ -39,7 +41,8 @@ def generate_raster(filename, value):
     [ ascHeader, ascData ] = load_asc(filename)
     for row in range(0, ascHeader['nrows']):
         for col in range(0, ascHeader['ncols']):
-            if ascData[row][col] == ascHeader['nodata']: continue
+            if ascData[row][col] == ascHeader['nodata']:
+                continue
             ascData[row][col] = value
     return ascData
 
@@ -56,7 +59,7 @@ def get_climate_zones(configurationYaml, gisPath):
     if 'ecoclimatic_raster' in configurationYaml['raster_db']:
         filename = str(configurationYaml['raster_db']['ecoclimatic_raster'])
         filename = os.path.join(gisPath, filename)
-        [ ascHeader, ascData ] = load_asc(filename)
+        [_, ascData] = load_asc(filename)
         return ascData
 
     # There is not, make sure there is a single zone defined before continuing
@@ -84,7 +87,7 @@ def get_treatments_list(configurationYaml, gisPath):
     # Start by checking the district level treatment values, note the zero index
     underFive = float(configurationYaml['raster_db']['p_treatment_for_less_than_5_by_location'][0])
     overFive = float(configurationYaml['raster_db']['p_treatment_for_more_than_5_by_location'][0])
-    
+
     # If both are not equal to the sentinel then they are set via a raster
     if not (underFive == overFive == YAML_SENTINEL):
         results = []
@@ -97,21 +100,21 @@ def get_treatments_list(configurationYaml, gisPath):
     # Get the unique under five treatments
     filename = str(configurationYaml['raster_db']['pr_treatment_under5'])
     filename = os.path.join(gisPath, filename)
-    [ ascHeader, ascData ] = load_asc(filename)
+    [_, ascData] = load_asc(filename)
     underFive = list(set(i for j in ascData for i in j))
     underFive.remove(-9999)
 
     # Get the unique over five treatments
     filename = str(configurationYaml['raster_db']['pr_treatment_over5'])
     filename = os.path.join(gisPath, filename)
-    [ ascHeader, ascData ] = load_asc(filename)
+    [_, ascData] = load_asc(filename)
     overFive = list(set(i for j in ascData for i in j)) 
     overFive.remove(-9999)
 
     # Get the unique district ids
     filename = str(configurationYaml['raster_db']['district_raster'])
     filename = os.path.join(gisPath, filename)
-    [ ascHeader, ascData ] = load_asc(filename)
+    [_, ascData] = load_asc(filename)
     districts = list(set(i for j in ascData for i in j)) 
     districts.remove(-9999)
 
@@ -136,7 +139,7 @@ def get_treatments_raster(configurationYaml, gisPath):
     if 'pr_treatment_under5' in configurationYaml['raster_db']:
         filename = str(configurationYaml['raster_db']['pr_treatment_under5'])
         filename = os.path.join(gisPath, filename)
-        [ ascHeader, ascData ] = load_asc(filename)
+        [_, ascData] = load_asc(filename)
         return ascData
 
     # There is not, make sure there is a single value defined before continuing
@@ -165,17 +168,17 @@ def load_betas(filename):
 
             # Add a new entry for the zone
             zone = int(row['zone'])
-            if not zone in lookup:
+            if zone not in lookup:
                 lookup[zone] = {}
 
             # Add a new entry for the population
             population = float(row['population'])
-            if not population in lookup[zone]:
+            if population not in lookup[zone]:
                 lookup[zone][population] = {}
             
             # Add a new entry for the treatment
             treatment = float(row['access'])
-            if not treatment in lookup[zone][population]:
+            if treatment not in lookup[zone][population]:
                 lookup[zone][population][treatment] = []
 
             # Ignore the zeros unless the beta is also zero
@@ -192,8 +195,8 @@ def load_betas(filename):
 # configuration - The YAML file, with or without the path, to be parsed.
 def load_configuration(configuration):
     try:
-        with open(configuration, "r") as ymlfile:
-            cfg = yaml.load(ymlfile)
+        with open(configuration, "r") as yamlfile:
+            cfg = yaml.load(yamlfile)
             return cfg
     except Exception:
         print("Configuration file not found")
@@ -206,11 +209,12 @@ def load_configuration(configuration):
 #
 # filterZero is an optional argument (default True) that prevents beta values 
 #   associated with zero as a local minima from being returned.
-def query_betas(connection, studyId, filterZero = True, filename = "data/calibration.csv"):
+def query_betas(connection, studyId, filterZero=True, filename="data/calibration.csv"):
     
     # Permit beta = 0 when PfPR = 0, but filter the beta out otherwise since 
-    # the PfPR should never quite reach zero during seasonal transmission
-    SQL = """
+    # the PfPR should never quite reach zero during seasonal transmission, note the 
+    # regular expression flag for Python.
+    SQL = r"""
         SELECT replicateid, zone, population, access, beta, eir, 
             CASE WHEN zone IN (0, 1) THEN max ELSE pfpr2to10 END AS pfpr,
             min, pfpr2to10, max
