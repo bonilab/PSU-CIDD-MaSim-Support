@@ -26,3 +26,4 @@ bash/ - The `bash` directory contains Bash scripts as well as job files that may
 
 include/ - The `include` directory contains Python scripts that contain shared code and cannot be run on their own.
 
+.pep8speaks.yml - Configuration file for [pep8speaks](https://github.com/OrkoHunter/pep8speaks) which uses codes from [pycodestyle](https://github.com/PyCQA/pycodestyle/blob/master/docs/intro.rst).
