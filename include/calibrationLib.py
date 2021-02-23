@@ -8,8 +8,11 @@ import yaml
 from jenkspy import jenks
 import jenkspy
 import numpy as np
-from include.ascFile import *
-from include.database import *
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
+
+from ascFile import *
+from database import *
 
 YAML_SENTINEL = -1
 
