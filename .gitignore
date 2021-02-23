@@ -13,3 +13,4 @@ __pycache__
 
 # Ignore IDE directories
 .idea
+.vscode
