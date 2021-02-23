@@ -177,11 +177,6 @@ def main(configuration, gisPath, studyId, zeroFilter):
 
 if __name__ == "__main__":
     # Check the command line
-    # 0: Script
-    # 1: Configuration file
-    # 3: GIS path
-    # 4: Study identification number
-    # 5: Optional zero filter
     if len(sys.argv) not in (4, 5):
         print("Usage: ./createBetaMap.py [configuration] [gis] [studyid] [filter]")
         print("configuration - the configuration file to be loaded")
