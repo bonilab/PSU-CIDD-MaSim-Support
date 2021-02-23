@@ -29,8 +29,8 @@ def process(configuration, gisPath = ""):
 
     # TODO Add the stuff for the population bins!
     # GVF Implementation
-    b = bin_asc(filename)
-    gvf = goodness_of_variance_fit(b, 14)
+    binning = bin_asc(filename)
+    gvf = goodness_of_variance_fit(binning, 14)
     print("The value of Goodness of Variance fit is:", gvf)
     if (gvf < 0.7):
         print("Warning: GVF too low")

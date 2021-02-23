@@ -91,15 +91,6 @@ def write_asc(ascheader, ascdata, filename):
             ascfile.write('\n')
 
 
-# getting data ready for binning
-def bin_asc(filename):
 
-    # data should be 1-dimensional array, python list or iterable
-
-    with open(filename) as ascfile:
-        myArray = np.loadtxt(ascfile, skiprows=6)
-
-    array_1d = myArray.flatten()
-    return array_1d
 
 
