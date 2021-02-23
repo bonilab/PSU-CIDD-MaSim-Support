@@ -12,9 +12,9 @@ from pathlib import Path
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
-from include.ascFile import *
-from include.calibrationLib import *
-from include.utility import *
+from ascFile import *
+from calibrationLib import *
+from utility import *
 
 
 # Default path for beta values
@@ -179,13 +179,14 @@ if __name__ == "__main__":
     # Check the command line
     # 0: Script
     # 1: Configuration file
-    # 2: Study identification number
-    # 3: Optional zero filter
+    # 3: GIS path
+    # 4: Study identification number
+    # 5: Optional zero filter
     if len(sys.argv) not in (4, 5):
-        print("Usage: ./createBetaMap.py [configuration] [gis] [study] [filter]")
+        print("Usage: ./createBetaMap.py [configuration] [gis] [studyid] [filter]")
         print("configuration - the configuration file to be loaded")
         print("gis - the path to the directory that the GIS files can be found in")
-        print("study  - the database id of the study to use for the reference beta values")
+        print("studyid  - the database id of the study to use for the reference beta values")
         print("filter - optional default true (1), false (0) means zeroed minima should not be filtered")
         print("\nExample ./createBetaMap.py ../country/config.yml 1")
         exit(0)
@@ -197,11 +198,11 @@ if __name__ == "__main__":
     
     # Parse out the zero filter if one is provided, otherwise default True
     zeroFilter = True
-    if len(sys.argv) == 4:
-        if sys.argv[3] == "0":
+    if len(sys.argv) == 5:
+        if sys.argv[5] == "0":
             zeroFilter = False
             print("Zero filter disabled")
-        if sys.argv[3] not in ["0", "1"]:
+        if sys.argv[5] not in ["0", "1"]:
             print("Flag for filter must be 0 (false) or 1 (true)")
             exit(1)
 
