@@ -34,14 +34,12 @@ def process(configuration, gisPath = ""):
 
     # TODO Add the stuff for the population bins!
     # GVF Implementation
-    gvf = 0.0
-    nclasses = 20
-    while gvf < 0.8:
-        gvf = goodness_of_variance_fit(array_1d, nclasses)
-        nclasses += 1
+
+    gvf = goodness_of_variance_fit(array_1d, 14)
     print("The value of Goodness of Variance fit is:", gvf)
     if (gvf < 0.7):
         print("Warning: GVF too low")
+
 
     # Get the access to treatments rate
     [treatments, needsBinning] = get_treatments_list(cfg, gisPath)
