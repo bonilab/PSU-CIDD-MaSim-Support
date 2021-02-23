@@ -2,29 +2,29 @@
 # 
 # This module contains some common functions for working with ASC files.
 import sys
-
+import numpy as np
 
 # Compare the two header files, return True if they are the same, False otherwise. 
 # If printError is set, then errors will be printed to stderr
 def compare_header(one, two, printError = True):
     result = True
     if one['ncols'] != two['ncols']:
-        if printError: hd.sys.stderr.write('{} != {} ncols\n'.format(one['ncols'], two['ncols']))
+        if printError: sys.stderr.write('{} != {} ncols\n'.format(one['ncols'], two['ncols']))
         result = False
     if one['nrows'] != two['nrows']:
-        if printError: hd.sys.stderr.write('{} != {} nrows\n'.format(one['nrows'], two['nrows']))
+        if printError: sys.stderr.write('{} != {} nrows\n'.format(one['nrows'], two['nrows']))
         result = False
     if one['xllcorner'] != two['xllcorner']:
-        if printError: hd.sys.stderr.write('{} != {} xllcorner\n'.format(one['xllcorner'], two['xllcorner']))
+        if printError: sys.stderr.write('{} != {} xllcorner\n'.format(one['xllcorner'], two['xllcorner']))
         result = False
     if one['yllcorner'] != two['yllcorner']:
-        if printError: hd.sys.stderr.write('{} != {} yllcorner\n'.format(one['yllcorner'], two['yllcorner']))
+        if printError: sys.stderr.write('{} != {} yllcorner\n'.format(one['yllcorner'], two['yllcorner']))
         result = False
     if one['cellsize'] != two['cellsize']:
-        if printError: hd.sys.stderr.write('{} != {} cellsize\n'.format(one['cellsize'], two['cellsize']))
+        if printError: sys.stderr.write('{} != {} cellsize\n'.format(one['cellsize'], two['cellsize']))
         result = False
     if one['nodata'] != two['nodata']:
-        if printError: hd.sys.stderr.write('{} != {} nodata\n'.format(one['nodata'], two['nodata']))
+        if printError: sys.stderr.write('{} != {} nodata\n'.format(one['nodata'], two['nodata']))
         result = False                                
     return result
 
@@ -43,8 +43,8 @@ def compare_data(one, two, nodata, printError = True):
             if (a == nodata and a != b) or (b == nodata and a != b):
                 result = False
                 if printError: 
-                    hd.sys.stderr.write('Mismatched nodata at {}, {}\n'.format(row, col))
-                    hd.sys.stderr.write('One: {}, Two {}\n'.format(a, b))
+                    sys.stderr.write('Mismatched nodata at {}, {}\n'.format(row, col))
+                    sys.stderr.write('One: {}, Two {}\n'.format(a, b))
     return result
 
 
@@ -89,3 +89,17 @@ def write_asc(ascheader, ascdata, filename):
             row = ' '.join(row)
             ascfile.write(row)
             ascfile.write('\n')
+
+
+# getting data ready for binning
+def bin_asc(filename):
+
+    # data should be 1-dimensional array, python list or iterable
+
+    with open(filename) as ascfile:
+        myArray = np.loadtxt(ascfile, skiprows=6)
+
+    array_1d = myArray.flatten()
+    return array_1d
+
+

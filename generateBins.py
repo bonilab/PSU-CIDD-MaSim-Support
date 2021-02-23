@@ -4,7 +4,7 @@
 # This script generates the bins that need to be run to determine the beta values
 import os
 import sys
-import numpy as np
+#import numpy as np
 
 
 # Import our libraries
@@ -27,15 +27,10 @@ def process(configuration, gisPath = ""):
     cfg = load_configuration(configuration)
     filename = os.path.join(gisPath, PFPR_FILE)
 
-    # getting data ready for binning
-    # data should be 1-dimensional array, python list or iterable
-    myArray = np.loadtxt(load_asc(filename), skiprows=6)
-    array_1d = myArray.flatten()
-
     # TODO Add the stuff for the population bins!
     # GVF Implementation
-
-    gvf = goodness_of_variance_fit(array_1d, 14)
+    b = bin_asc(filename)
+    gvf = goodness_of_variance_fit(b, 14)
     print("The value of Goodness of Variance fit is:", gvf)
     if (gvf < 0.7):
         print("Warning: GVF too low")
