@@ -10,14 +10,13 @@ import numpy as np
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
-from include.ascFile import *
-from include.calibrationLib import *
+from ascFile import *
+from calibrationLib import *
 
 
 # TODO Still need a good way of supplying these
 PFPR_FILE       = "rwa_pfpr2to10.asc"
 POPULATION_FILE = "rwa_population.asc"
-TREATMENT_FILE = "rwa_treatment.asc"
 
 # TODO Determine the bins computationally
 # Following bins are for Rwanda
@@ -26,10 +25,11 @@ POPULATION_BINS = [2125, 5640, 8989, 12108, 15577, 20289, 27629, 49378, 95262, 2
 def process(configuration, gisPath = ""):
     # Load the configuration
     cfg = load_configuration(configuration)
+    filename = os.path.join(gisPath, PFPR_FILE)
 
     # getting data ready for binning
     # data should be 1-dimensional array, python list or iterable
-    myArray = np.loadtxt(POPULATION_FILE, skiprows=6)
+    myArray = np.loadtxt(load_asc(filename), skiprows=6)
     array_1d = myArray.flatten()
 
     # TODO Add the stuff for the population bins!
@@ -53,21 +53,6 @@ def process(configuration, gisPath = ""):
     if needsBinning:
         print("Treatments need binning, not currently supported")
         exit(1)
-
-        # getting data ready for binning
-        # data should be 1-dimensional array, python list or iterable
-        treat = np.loadtxt(TREATMENT_FILE, skiprows=6)
-        treat_1d = treat.flatten()
-
-        # GVF Implementation
-        gvf = 0.0
-        nclasses = 20
-        while gvf < 0.8:
-            gvf_t = goodness_of_variance_fit(treat_1d, nclasses)
-            nclasses += 1
-        print("The value of Goodness of Variance fit is:", gvf)
-        if (gvf < 0.7):
-            print("Warning: GVF too low")
 
 
     # Load the climate and treatment rasters
