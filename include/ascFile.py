@@ -32,7 +32,7 @@ def compare_header(one, two, printError=True):
     if one['nodata'] != two['nodata']:
         if printError:
             sys.stderr.write('{} != {} nodata\n'.format(one['nodata'], two['nodata']))
-        result = False                                
+        result = False
     return result
 
 
