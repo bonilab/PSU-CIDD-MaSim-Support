@@ -12,8 +12,8 @@ import yaml
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
-from include.ascFile import *
-from include.calibrationLib import *
+from include.ascFile import load_asc
+from include.calibrationLib import get_bin, load_betas
 from include.utility import *
 
 # TODO Figure out a better way to store these locations, maybe a library that finds them?
@@ -82,7 +82,8 @@ def writeBetas(lookup, username):
             for treatment in sorted(parameters[zone][population]):
                 betas = getLookupBetas(lookup, zone, population, treatment)
                 for beta in sorted(parameters[zone][population][treatment]):
-                    if beta not in betas: reduced.append([zone, population, treatment, beta])
+                    if beta not in betas:
+                        reduced.append([zone, population, treatment, beta])
 
     # Double check to see if the list was cleared out
     if len(reduced) == 0:
@@ -111,8 +112,8 @@ def main(configuration, gisPath, tolerance, step, username):
 
     # Load the configuration
     try:
-        with open(configuration, "r") as ymlfile:
-            cfg = yaml.load(ymlfile)
+        with open(configuration, "r") as yamlfile:
+            cfg = yaml.load(yamlfile)
     except Exception:
         print("File not found")
         pass
