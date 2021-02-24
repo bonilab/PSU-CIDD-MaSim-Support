@@ -4,8 +4,6 @@
 # This script generates the bins that need to be run to determine the beta values
 import os
 import sys
-#import numpy as np
-
 
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
@@ -15,14 +13,15 @@ from calibrationLib import *
 
 
 # TODO Still need a good way of supplying these
-PFPR_FILE       = "rwa_pfpr2to10.asc"
+PFPR_FILE = "rwa_pfpr2to10.asc"
 POPULATION_FILE = "rwa_population.asc"
 
 # TODO Determine the bins computationally
 # Following bins are for Rwanda
 POPULATION_BINS = [2125, 5640, 8989, 12108, 15577, 20289, 27629, 49378, 95262, 286928]
 
-def process(configuration, gisPath = ""):
+
+def process(configuration, gisPath=""):
     # Load the configuration
     cfg = load_configuration(configuration)
     filename = os.path.join(gisPath, PFPR_FILE)
@@ -34,7 +33,6 @@ def process(configuration, gisPath = ""):
     print("The value of Goodness of Variance fit is:", gvf)
     if (gvf < 0.7):
         print("Warning: GVF too low")
-
 
     # Get the access to treatments rate
     [treatments, needsBinning] = get_treatments_list(cfg, gisPath)
@@ -54,9 +52,9 @@ def process(configuration, gisPath = ""):
 
     # Load the relevent data
     filename = os.path.join(gisPath, PFPR_FILE)
-    [ ascHeader, pfpr ] = load_asc(filename)
+    [ascHeader, pfpr] = load_asc(filename)
     filename = os.path.join(gisPath, POPULATION_FILE)
-    [ ascHeader, population ] = load_asc(filename)
+    [ascHeader, population] = load_asc(filename)
 
     # Prepare our results
     pfprRanges = {}
@@ -68,7 +66,8 @@ def process(configuration, gisPath = ""):
 
             # Press on if there is nothing to do
             zone = climate[row][col]
-            if zone == ascHeader['nodata']: continue
+            if zone == ascHeader['nodata']: 
+                continue
 
             # Note the bins
             popBin = int(get_bin(population[row][col], POPULATION_BINS))
@@ -76,7 +75,7 @@ def process(configuration, gisPath = ""):
 
             # Add to the dictionary as needed
             if zone not in pfprRanges:
-                pfprRanges[zone] = {}            
+                pfprRanges[zone] = {}
             if popBin not in pfprRanges[zone]:
                 pfprRanges[zone][popBin] = []
             if zone not in zoneTreatments:
@@ -87,7 +86,7 @@ def process(configuration, gisPath = ""):
             if treatBin not in zoneTreatments[zone]:
                 zoneTreatments[zone].append(treatBin)
 
-    return [ pfprRanges, zoneTreatments ]
+    return [pfprRanges, zoneTreatments]
 
 
 def save(pfpr, treatments, filename, username):
@@ -105,31 +104,27 @@ def save(pfpr, treatments, filename, username):
         # Print the zone matter
         for zone in pfpr.keys():
             script.write("run {} \"\\\"{}\\\"\" \"\\\"{}\\\"\" {}".format(
-                zone, 
-                " ".join([str(x) for x in sorted(POPULATION_BINS)]), 
-                " ".join([str(x) for x in sorted(treatments[zone])]), 
+                zone,
+                " ".join([str(x) for x in sorted(POPULATION_BINS)]),
+                " ".join([str(x) for x in sorted(treatments[zone])]),
                 username))
 
 
 if __name__ == '__main__':
-
-
     if len(sys.argv) < 3:
         print("Usage: ./generateBins.py [configuration] [username] [gis]")
-
         print("configuration - the configuration file to be loaded")
         print("gis - the directory that GIS file can be found in")
         print("username - the user who will be running the calibration on the cluster")
         exit(0)
 
-
     # Parse the parameters
     configuration = str(sys.argv[1])
     gisPath = str(sys.argv[2])
     username = str(sys.argv[3])
-    
+
     # Process and print the relevent ranges for the user
-    [ pfpr, treatments ] = process( configuration, gisPath)
+    [pfpr, treatments] = process(configuration, gisPath)
     for zone in pfpr.keys():
         print("Climate Zone {}".format(zone))
         print("Treatments: {}".format(sorted(treatments[zone])))
@@ -139,6 +134,6 @@ if __name__ == '__main__':
         print
 
     # Save the basic script
-    if not os.path.isdir('out'): os.mkdir('out')
+    if not os.path.isdir('out'):
+        os.mkdir('out')
     save(pfpr, treatments, 'out/calibration.sh', username)
-
