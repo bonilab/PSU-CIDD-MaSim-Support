@@ -88,9 +88,7 @@ def main(filename, username):
 
     # Save the missing values as a CSV file
     print ("Saving {}".format(RESULTS))
-
     with open(RESULTS, "w") as csvfile:
-
         writer = csv.writer(csvfile)
         writer.writerows(missing)
 
