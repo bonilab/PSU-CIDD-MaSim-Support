@@ -39,12 +39,11 @@ def process(configuration, gisPath=""):
     if treatments == -1:
         print("Unable to load determine the treatments in the configuration.")
         exit(1)
-    
+
     # TODO Add stuff for binning the treatments as needed!
     if needsBinning:
         print("Treatments need binning, not currently supported")
         exit(1)
-
 
     # Load the climate and treatment rasters
     climate = get_climate_zones(cfg, gisPath)
@@ -66,7 +65,7 @@ def process(configuration, gisPath=""):
 
             # Press on if there is nothing to do
             zone = climate[row][col]
-            if zone == ascHeader['nodata']: 
+            if zone == ascHeader['nodata']:
                 continue
 
             # Note the bins
@@ -80,7 +79,7 @@ def process(configuration, gisPath=""):
                 pfprRanges[zone][popBin] = []
             if zone not in zoneTreatments:
                 zoneTreatments[zone] = []
-            
+
             # Add to our data sets
             pfprRanges[zone][popBin].append(pfpr[row][col])
             if treatBin not in zoneTreatments[zone]:
