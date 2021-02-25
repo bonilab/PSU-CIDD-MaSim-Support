@@ -121,7 +121,6 @@ def process_frequencies(replicates, subset):
             if currentRate is not None: 
                 save_frequencies(data, currentRate)
                 del data
-            replicateCount = 0
             currentRate = replicate[0]
             data = {}
 
@@ -215,7 +214,7 @@ def save_summary(rate, replicateId, burnIn):
     filename = FILE_TEMPLATE.format(rate, replicateId) 
     with open(filename, "wb") as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(["replicateId", "days", "district", "infectedindividuals", "occurrences", "clinicaloccurrrences", "weightedoccurrences"])
+        writer.writerow(["replicateId", "days", "district", "infectedindividuals", "occurrences", "clinicaloccurrences", "weightedoccurrences"])
         for row in data:
             data = [replicateId] + list(row)
             writer.writerow(data)
