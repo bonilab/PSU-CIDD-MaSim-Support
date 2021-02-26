@@ -10,8 +10,8 @@ import sys
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
-from ascFile import *
-from calibrationLib import *
+from include.ascFile import *
+from include.calibrationLib import *
 
 
 # TODO Still need a good way of supplying these
@@ -30,10 +30,23 @@ def process(configuration, gisPath = ""):
     # TODO Add the stuff for the population bins!
     # GVF Implementation
     binning = bin_asc(filename)
-    gvf = goodness_of_variance_fit(binning, 14)
-    print("The value of Goodness of Variance fit is:", gvf)
-    if (gvf < 0.7):
-        print("Warning: GVF too low")
+    #gvf = goodness_of_variance_fit(binning, 14)
+    #print("The value of Goodness of Variance fit is:", gvf)
+    #if gvf < 0.7:
+    #    print("Warning: GVF too low")
+
+    list_one = []
+    list_two = []
+    for x in range(5, 26):
+        GVF = goodness_of_variance_fit(binning, x)
+        if GVF < 0.7:
+            print("Warning: GVF too low")
+
+        if GVF >= 0.94:
+            list_one.append(x)
+            list_two.append(GVF)
+    print("Total number of bins", list_one[0])
+    print("The value of Goodness of variance fit", list_two[0])
 
 
     # Get the access to treatments rate
