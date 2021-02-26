@@ -8,8 +8,8 @@ import sys
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
-from include.ascFile import *
-from include.calibrationLib import *
+from ascFile import *
+from calibrationLib import *
 
 
 # TODO Still need a good way of supplying these
