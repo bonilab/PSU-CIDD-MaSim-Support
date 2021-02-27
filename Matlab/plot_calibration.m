@@ -1,15 +1,17 @@
-% plot_beta_calibration.m
+% plot_calibration.m
 %
 % Generate a scatter plot of the EIR vs. PfPR, categorized by the popuation
 % bin that the data is in.
-clear;
 
-% Load the data
-data = csvread('data/calibration.csv', 1);
-population = transpose(unique(data(:, 3)));
-
-plot_eir_calibration(data, population);
-%plot_beta_calibration(data, population);
+function [] = plot_calibration(data, population, type) 
+    if strcmp(type, 'beta')
+        plot_beta_calibration(data, population);
+    elseif strcmp(type, 'eir')
+        plot_eir_calibration(data, population);
+    else
+        error('Unknown plot type: %s', type);
+    end     
+end
 
 % Plot the beta vs. PfPR values
 function [] = plot_beta_calibration(data, population)
