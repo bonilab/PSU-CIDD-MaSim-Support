@@ -32,24 +32,27 @@ def process(configuration, gisPath=""):
 
     list_bins = []
     list_GVF = []
+    X_MIN = 5
+    X_MAX = 30
     # Assuming the range for bins to be between 5 and 30 (computing the optimal number of bins w.r.t. GVF), to avoid overfitting or underfitting of data
-    for x in range(5, 30):
-        GVF = goodness_of_variance_fit(binning, x)
+    for x in range(X_MIN, X_MAX):
+        GVF, list_bins = goodness_of_variance_fit(binning, x)
         # GVF less than 0.7 might not be the best fit for data; GVF ~ 0 (No fit), GVF ~ 1 (Perfect fit)
         if GVF < 0.7:
             print ("Bins=", x,"GVF = ", GVF, "Warning: GVF too low")
         # Storing the values of bins and GVF in a list
         list_bins.append(x)
         list_GVF.append(GVF)
-    # computing difference between GVF values and storing them as (key, value) pairs in dictionary
-    diff_GVF = {list_bins[i]: abs(list_GVF[i] - list_GVF[i - 1]) for i in range(len(list_bins))}
-    for key, value in diff_GVF.items():
-        # taking such value of bin for which the difference between consecutive GVF values is greater than or equal to 0.1
-        if value >= 0.1:
-            print("Total number of bins", key)
-            # corresponding to the computed bin(key), finding the value of GVF
-            GVF = goodness_of_variance_fit(binning, key)
-            print("The value of Goodness of variance fit", GVF)
+
+    # computing difference between GVF value
+    for i in range(len(list_GVF)):
+        # taking such value for which the difference between consecutive GVF values is greater than or equal to 0.1
+        if abs(list_GVF[i] - list_GVF[i - 1]) >= 0.1:
+            print("The value of Goodness of variance fit", list_GVF[i])
+            # corresponding to value of GVF, returning all bins
+            print("The value of bins", list_bins[:i + X_MIN])
+            break
+
 
     # Get the access to treatments rate
     [treatments, needsBinning] = get_treatments_list(cfg, gisPath)

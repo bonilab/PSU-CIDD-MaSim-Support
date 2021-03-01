@@ -285,7 +285,7 @@ def goodness_of_variance_fit(array, classes):
     # goodness of variance fit
     gvf = (sdam - sdcm) / sdam
 
-    return gvf
+    return gvf, classes
 
 def classify(value, breaks):
     for i in range(1, len(breaks)):
