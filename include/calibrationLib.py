@@ -294,7 +294,7 @@ def classify(value, breaks):
     return len(breaks) - 1
 
 # getting data ready for binning
-def bin_asc(filename):
+def data_bin(filename):
 
     # data should be 1-dimensional array, python list or iterable
 

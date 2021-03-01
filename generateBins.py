@@ -20,7 +20,6 @@ POPULATION_FILE = "rwa_population.asc"
 # Following bins are for Rwanda
 POPULATION_BINS = [2125, 5640, 8989, 12108, 15577, 20289, 27629, 49378, 95262, 286928]
 
-
 def process(configuration, gisPath=""):
     # Load the configuration
     cfg = load_configuration(configuration)
@@ -28,20 +27,17 @@ def process(configuration, gisPath=""):
 
     # TODO Add the stuff for the population bins!
     # GVF Implementation
-    binning = bin_asc(filename)
+    binning = data_bin(filename)
 
-    list_bins = []
     list_GVF = []
+    pop_bins = []
     X_MIN = 5
     X_MAX = 30
     # Assuming the range for bins to be between 5 and 30 (computing the optimal number of bins w.r.t. GVF), to avoid overfitting or underfitting of data
     for x in range(X_MIN, X_MAX):
-        GVF, list_bins = goodness_of_variance_fit(binning, x)
-        # GVF less than 0.7 might not be the best fit for data; GVF ~ 0 (No fit), GVF ~ 1 (Perfect fit)
-        if GVF < 0.7:
-            print ("Bins=", x,"GVF = ", GVF, "Warning: GVF too low")
+        GVF, pop_bins = goodness_of_variance_fit(binning, x)
         # Storing the values of bins and GVF in a list
-        list_bins.append(x)
+        pop_bins.append(x)
         list_GVF.append(GVF)
 
     # computing difference between GVF value
@@ -49,10 +45,17 @@ def process(configuration, gisPath=""):
         # taking such value for which the difference between consecutive GVF values is greater than or equal to 0.1
         if abs(list_GVF[i] - list_GVF[i - 1]) >= 0.1:
             print("The value of Goodness of variance fit", list_GVF[i])
+            # updating list with the new values of GVF such that it satisfy the condition
+            list_GVF = list_GVF[i]
             # corresponding to value of GVF, returning all bins
-            print("The value of bins", list_bins[:i + X_MIN])
+            print("The value of bins", pop_bins[:i + X_MIN])
+            # Getting the value for population bins
+            # updating the list with population bins
+            pop_bins = pop_bins[:i + X_MIN]
             break
-
+    # GVF less than 0.7 might not be the best fit for data; GVF ~ 0 (No fit), GVF ~ 1 (Perfect fit)
+    if list_GVF < 0.7:
+        print("GVF too low")
 
     # Get the access to treatments rate
     [treatments, needsBinning] = get_treatments_list(cfg, gisPath)
