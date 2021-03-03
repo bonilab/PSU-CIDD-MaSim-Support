@@ -1,23 +1,31 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
+# generateMetrics.py
+#
 # This module contains functions relevent to getting metrics from ASC files.
+import sys
 
-from include.ascFile import *
-from pathlib import Path
+from os import path
 
+from include.ascFile import load_asc
 
-def calculate(populationFile):
-    WEIGHTEDPFPR = Path("out/weighted_pfpr.csv")
+# Note some constants
+NUMERATOR = 0
+DENOMINATOR = 1
 
-    NUMERATOR = 0
-    DENOMINATOR = 1
-    [ ascheader, district ] = load_asc("GIS/rwa_district.asc")
-    [ ascheader, pfpr ] = load_asc("GIS/rwa_pfpr2to10.asc")
-    [ ascheader, population ] = load_asc(populationFile)
+def calculate(gisPath, prefix):
 
+    # Attempt to load the files
+    filename = "{}/{}_district.asc".format(gisPath, prefix)
+    [ascheader, district] = load(filename, "district")        
+    filename = "{}/{}_pfpr2to10.asc".format(gisPath, prefix)
+    [_, pfpr] = load(filename, "PfPR")
+    filename = "{}/{}_population.asc".format(gisPath, prefix)
+    [_, population] = load(filename, "population")
+
+    # Loop over the data that's been loaded
     data = {}
     totalPopulation = 0
-
     for row in range(ascheader['nrows']):
         for col in range(ascheader['ncols']):
             # Continue if there is no data
@@ -34,11 +42,12 @@ def calculate(populationFile):
             data[key][DENOMINATOR] += population[row][col]
             totalPopulation += population[row][col]
 
+    # Write the weighted values to disk
     numerator = 0
     denominator = 0
-
-    with open(WEIGHTEDPFPR, 'w') as out:
-        for key in data.keys():
+    print("Saving data to: weighted_pfpr.csv")
+    with open("weighted_pfpr.csv", 'w') as out:
+        for key in sorted(data.keys()):
             numerator += data[key][NUMERATOR]
             denominator += data[key][DENOMINATOR]
             result = round((data[key][NUMERATOR] / data[key][DENOMINATOR]) * 100, 2)
@@ -52,34 +61,24 @@ def calculate(populationFile):
     print("Population: {:,}\n".format(totalPopulation))
 
 
-def simulatePopulation(fileName, rate, years, start):
-    [ ascheader, data ] = load_asc(fileName)
-
-    # Apply the population adjustment
-    initial = 0
-    for row in range(ascheader['nrows']):
-        for col in range(ascheader['ncols']):
-            if data[row][col] == ascheader['nodata']: continue
-            data[row][col] *= 0.25
-            initial += data[row][col]
-    print ("{}: {}".format(start, int(round(initial / 0.25))))
-
-    # Apply the population growth
-    for year in range(years):
-        population = 0
-        for row in range(ascheader['nrows']):
-            for col in range(ascheader['ncols']):
-                # Pass if there is no data
-                if data[row][col] == ascheader['nodata']: continue
-
-                # Update the population in this cell
-                data[row][col] = data[row][col] * (1 + rate)
-
-                # Update the running total
-                population += data[row][col]
-
-        print ("{}: {}".format(start + year + 1, int(round(population / 0.25))))
+def load(filename, fileType):
+    if not path.exists(filename):
+        print("Could not find {} file, tried: {}".format(fileType, filename))
+        exit(1)
+    return load_asc(filename)    
 
 
 if __name__ == '__main__':
-    calculate("GIS/rwa_population.asc")
+    # Check the command line
+    if len(sys.argv) != 3:
+        print("Usage: ./generateMetrics [gis] [prefix]")
+        print("gis - the path to the directory that the GIS files can be found in")
+        print("prefix - the country code prefix used")
+        print("\nExample ./generateMetrics.py ../GIS bfa")
+        exit(0)
+
+    # Parse the parameters
+    gisPath = str(sys.argv[1])
+    prefix = str(sys.argv[2])
+
+    calculate(gisPath, prefix)
