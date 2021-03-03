@@ -13,11 +13,11 @@ from include.ascFile import load_asc
 NUMERATOR = 0
 DENOMINATOR = 1
 
-def calculate(gisPath, prefix):
+def calculate(gisPath, prefix, division):
 
     # Attempt to load the files
-    filename = "{}/{}_district.asc".format(gisPath, prefix)
-    [ascheader, district] = load(filename, "district")        
+    filename = "{}/{}_{}.asc".format(gisPath, prefix, division)
+    [ascheader, district] = load(filename, division)        
     filename = "{}/{}_pfpr2to10.asc".format(gisPath, prefix)
     [_, pfpr] = load(filename, "PfPR")
     filename = "{}/{}_population.asc".format(gisPath, prefix)
@@ -45,13 +45,14 @@ def calculate(gisPath, prefix):
     # Write the weighted values to disk
     numerator = 0
     denominator = 0
-    print("Saving data to: weighted_pfpr.csv")
-    with open("weighted_pfpr.csv", 'w') as out:
+    filename = "weighted_pfpr_{}.csv".format(division)
+    print("Saving data to: {}".format(filename))
+    with open(filename, 'w') as out:
         for key in sorted(data.keys()):
             numerator += data[key][NUMERATOR]
             denominator += data[key][DENOMINATOR]
             result = round((data[key][NUMERATOR] / data[key][DENOMINATOR]) * 100, 2)
-            message = "District: {0}, PfPR: {1}%".format(int(key), result)
+            message = "{}: {}, PfPR: {}%".format(division.capitalize(), int(key), result)
             
             out.write("{},{}\n".format(int(key), result))
             print(message)
@@ -70,15 +71,22 @@ def load(filename, fileType):
 
 if __name__ == '__main__':
     # Check the command line
-    if len(sys.argv) != 3:
-        print("Usage: ./generateMetrics [gis] [prefix]")
+    if len(sys.argv) not in (3, 4):
+        print("Usage: ./generateMetrics [gis] [prefix] [division]")
         print("gis - the path to the directory that the GIS files can be found in")
         print("prefix - the country code prefix used")
+        print("division (optional) - district or providence, default district")
         print("\nExample ./generateMetrics.py ../GIS bfa")
         exit(0)
 
     # Parse the parameters
     gisPath = str(sys.argv[1])
     prefix = str(sys.argv[2])
+    division = "district"
+    if len(sys.argv) == 4:
+        if str(sys.argv[3]) not in ("district", "province"):
+            print("Unknown division: {}".format(str(sys.argv[3])))
+            exit(0)
+        division = str(sys.argv[3])
 
-    calculate(gisPath, prefix)
+    calculate(gisPath, prefix, division)
