@@ -43,7 +43,7 @@ def process(configuration, gisPath=""):
     # computing difference between GVF value
     for i in range(len(list_GVF)):
         # taking such value for which the difference between consecutive GVF values is greater than or equal to 0.1
-        if abs(list_GVF[i] - list_GVF[i - 1]) >= 0.1:
+        if abs(list_GVF[i] - list_GVF[i - 1]) <= 0.1:
             print("The value of Goodness of variance fit", list_GVF[i])
             # updating list with the new values of GVF such that it satisfy the condition
             list_GVF = list_GVF[i]

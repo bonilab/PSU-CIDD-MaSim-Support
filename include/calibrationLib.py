@@ -301,5 +301,8 @@ def data_bin(filename):
     with open(filename) as ascfile:
         myArray = np.loadtxt(ascfile, skiprows=6)
 
+    myArray[myArray == -9999] = np.nan
+    myArray = myArray[~np.isnan(myArray)]
     array_1d = myArray.flatten()
+
     return array_1d
