@@ -13,7 +13,7 @@ import yaml
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
 from include.ascFile import load_asc
-from include.calibrationLib import get_bin, load_betas
+from include.calibrationLib import get_bin, load_betas, load_configuration, get_climate_zones, get_treatments_raster
 from include.utility import *
 
 # TODO Figure out a better way to store these locations, maybe a library that finds them?
@@ -110,28 +110,19 @@ def writeBetas(lookup, username):
 def main(configuration, gisPath, tolerance, step, username):
     global parameters
 
-    # Load the configuration
-    try:
-        with open(configuration, "r") as yamlfile:
-            cfg = yaml.load(yamlfile)
-    except Exception:
-        print("File not found")
-        pass
+    # Load the configuration, and potentially raster data
+    cfg = load_configuration(configuration)
+    climate = get_climate_zones(cfg, gisPath)
+    treatment = get_treatments_raster(cfg, gisPath)
 
-    # Get the ecological zone and configuration
-    # TODO This is a quick way of doing things which is fine for countries with single values
-    # TODO However, in the case of more complex countries this will need to be parsed out and binned
-    treatment = cfg["raster_db"]["p_treatment_for_less_than_5_by_location"][0]
-    ecozone = len(cfg["seasonal_info"]["base"]) - 1   # Zero indexed
-
-    # Load the relevent data
+    # Load the relevent raster data
     filename = os.path.join(gisPath, POPULATION_FILE)    
-    [ ascheader, population ] = load_asc(filename)
+    [ascheader, population] = load_asc(filename)
     lookup = load_betas(CALIBRATION)
 
     # Read the epsilons file in
-    [ ascheader, beta ] = load_asc(BETAVALUES )
-    [ ascheader, epsilon ] = load_asc(EPSILONVALUES)
+    [_, beta] = load_asc(BETAVALUES )
+    [_, epsilon] = load_asc(EPSILONVALUES)
 
     print ("Evaluating epsilons for {} rows, {} columns".format(ascheader['nrows'], ascheader['ncols']))
 
@@ -146,7 +137,7 @@ def main(configuration, gisPath, tolerance, step, username):
             if value < tolerance: continue
 
             # Update the running list
-            addBeta(lookup, step, ecozone, beta[row][col], population[row][col], treatment)
+            addBeta(lookup, step, climate[row][col], beta[row][col], population[row][col], treatment[row][col])
 
         # Note the progress
         progressBar(row + 1, ascheader['nrows'])
@@ -162,7 +153,7 @@ if __name__ == "__main__":
     if len(sys.argv) != 6:
         print("Usage: ./reduceEpsilons.py [configuration] [GIS] [tolerance] [step] [username]")
         print("configuration - the configuration file to be loaded")
-        print("gis - the directory that GIS file can be found in")        
+        print("gis - the directory that GIS files can be found in")        
         print("tolerance - float, maximum epsilon")
         print("step - float, increment +/- 10x around known beta (maximum 0.00001)")
         print("username - the user who will be running the calibration on the cluster")

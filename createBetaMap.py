@@ -12,9 +12,9 @@ from pathlib import Path
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
-from ascFile import *
-from calibrationLib import *
-from utility import *
+from include.ascFile import load_asc, write_asc
+from include.calibrationLib import get_bin, get_climate_zones, get_treatments_raster, load_betas, load_configuration, query_betas
+from include.utility import *
 
 
 # Default path for beta values
@@ -28,20 +28,17 @@ POPULATION_FILE = "rwa_population.asc"
 EPSILON = 0.00001
 MAX_EPSILON = 0.1
 
-
 def create_beta_map(configuration, gisPath):
-    # Load the relevent data
+    # Load the relevent raster files
     filename = os.path.join(gisPath, PFPR_FILE)
-    [ ascheader, pfpr ] = load_asc(filename)
+    [ascHeader, pfpr] = load_asc(filename)
     filename = os.path.join(gisPath, POPULATION_FILE)    
-    [ ascheader, population ] = load_asc(filename)
-    lookup = load_betas(BETAVALUES)
+    [_, population] = load_asc(filename)
 
-    # Get the ecological zone and configuration
-    # TODO This is a quick way of doing things which is fine for countries with single values
-    # TODO However, in the case of more complex countries this will need to be parsed out and binned
-    treatment = configuration["raster_db"]["p_treatment_for_less_than_5_by_location"][0]
-    ecozone = len(configuration["seasonal_info"]["base"]) - 1   # Zero indexed
+    # Defer to the library to load the rest
+    climate = get_climate_zones(configuration, gisPath)
+    treatments = get_treatments_raster(configuration, gisPath)
+    lookup = load_betas(BETAVALUES)
 
     # Prepare for the ASC data
     epsilons = []
@@ -51,26 +48,25 @@ def create_beta_map(configuration, gisPath):
     # Prepare to track the distribution
     distribution = [0] * 5
 
-    print("Determining betas for {} rows, {} columns".format(ascheader['nrows'], ascheader['ncols']))
-
     # Scan each of the rows 
-    for row in range(0, ascheader['nrows']):
+    print("Determining betas for {} rows, {} columns".format(ascHeader['nrows'], ascHeader['ncols']))
+    for row in range(0, ascHeader['nrows']):
 
         # Append the empty rows
         epsilons.append([])
         meanBeta.append([])
 
         # Scan each of the PfPR values    
-        for col in range(0, ascheader['ncols']):
+        for col in range(0, ascHeader['ncols']):
 
             # Append nodata and continue
-            if pfpr[row][col] == ascheader['nodata']:
-                epsilons[row].append(ascheader['nodata'])
-                meanBeta[row].append(ascheader['nodata'])
+            if pfpr[row][col] == ascHeader['nodata']:
+                epsilons[row].append(ascHeader['nodata'])
+                meanBeta[row].append(ascHeader['nodata'])
                 continue
 
             # Get the beta values
-            [values, epsilon] = get_betas(ecozone, pfpr[row][col], population[row][col], treatment, lookup)
+            [values, epsilon] = get_betas(climate[row][col], pfpr[row][col], population[row][col], treatments[row][col], lookup)
 
             # Update the distribution
             for exponent in range(1, len(distribution) + 1):
@@ -92,7 +88,7 @@ def create_beta_map(configuration, gisPath):
             meanBeta[row].append(sum(values) / len(values))
 
         # Note the progress
-        progressBar(row + 1, ascheader['nrows'])
+        progressBar(row + 1, ascHeader['nrows'])
                 
     # Write the results
     print("\n Max epsilon: {} / {}".format(maxEpsilon, maxValues))
@@ -108,9 +104,9 @@ def create_beta_map(configuration, gisPath):
 
     # Save the maps        
     print("\nSaving {}".format('out/epsilons_beta.asc'))
-    write_asc(ascheader, epsilons, 'out/epsilons_beta.asc')
+    write_asc(ascHeader, epsilons, 'out/epsilons_beta.asc')
     print("Saving {}".format('out/mean_beta.asc'))
-    write_asc(ascheader, meanBeta, 'out/mean_beta.asc')
+    write_asc(ascHeader, meanBeta, 'out/mean_beta.asc')
 
 
 # Get the beta values that generate the PfPR for the given population and 
