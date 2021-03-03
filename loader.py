@@ -11,10 +11,11 @@ import os
 import psycopg2
 import sys
 
-from include.utility import *
+sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
-# Connection string for the database
-CONNECTION = "host=masimdb.vmhost.psu.edu dbname=rwanda user=sim password=sim"
+from utility import *
+from database import *
+
 
 # Default path template for downloaded replicates
 PATH_TEMPLATE = "out/{}"
@@ -247,22 +248,6 @@ def main(studyId, burnIn, subset):
         if len(studies) > 1:
             print("{} of {} studies complete".format(counter, len(studies)))
             counter += 1
-
-
-def select(sql, parameters):
-    # Open the connection
-    connection = psycopg2.connect(CONNECTION)
-    cursor = connection.cursor()
-
-    # Execute the query, note the rows
-    cursor.execute(sql, parameters)
-    rows = cursor.fetchall()
-
-    # Clean-up and return
-    cursor.close()
-    connection.close()
-    return rows
-
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
