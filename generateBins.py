@@ -92,7 +92,7 @@ def process(configuration, gisPath=""):
                 continue
 
             # Note the bins
-            popBin = int(get_bin(population[row][col], POPULATION_BINS))
+            popBin = int(get_bin(population[row][col], pop_bins))
             treatBin = get_bin(treatment[row][col], treatments)
 
             # Add to the dictionary as needed

@@ -297,11 +297,14 @@ def classify(value, breaks):
 def data_bin(filename):
 
     # data should be 1-dimensional array, python list or iterable
+    # extracting nodata values
+    header, data = load_asc(filename)
+    nodataVal = header.get('nodata')
 
     with open(filename) as ascfile:
         myArray = np.loadtxt(ascfile, skiprows=6)
 
-    myArray[myArray == -9999] = np.nan
+    myArray[myArray == nodataVal] = np.nan
     myArray = myArray[~np.isnan(myArray)]
     array_1d = myArray.flatten()
 
