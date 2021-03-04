@@ -1,9 +1,16 @@
 # calibrationLib.py
-#
+#GVF Source: https://medium.com/analytics-vidhya/jenks-natural-breaks-best-range-finder-algorithm-8d1907192051
+
 # This module includes functions that are intended for use with calibration functions.
 import csv
 import os
 import yaml
+from jenkspy import jenks
+import jenkspy
+import numpy as np
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
 from ascFile import load_asc
 from database import select
@@ -252,3 +259,53 @@ def query_betas(connection, studyId, filterZero=True, filename="data/calibration
         for row in rows:
             line = ','.join(str(row[ndx]) for ndx in range(0, len(row)))
             csvfile.write("{}\n".format(line))
+
+def goodness_of_variance_fit(array, classes):
+    # get the break points
+    classes = jenkspy.jenks_breaks(array, classes)
+
+    # do the actual classification
+    classified = np.array([classify(i, classes) for i in array])
+
+    # max value of zones
+    maxz = max(classified)
+
+    # nested list of zone indices
+    zone_indices = [[idx for idx, val in enumerate(classified) if zone + 1 == val] for zone in range(maxz)]
+
+    # sum of squared deviations from array mean
+    sdam = np.sum((array - array.mean()) ** 2)
+
+    # sorted polygon stats
+    array_sort = [np.array([array[index] for index in zone]) for zone in zone_indices]
+
+    # sum of squared deviations of class means
+    sdcm = sum([np.sum((classified - classified.mean()) ** 2) for classified in array_sort])
+
+    # goodness of variance fit
+    gvf = (sdam - sdcm) / sdam
+
+    return gvf, classes
+
+def classify(value, breaks):
+    for i in range(1, len(breaks)):
+        if value < breaks[i]:
+            return i
+    return len(breaks) - 1
+
+# getting data ready for binning
+def data_bin(filename):
+
+    # data should be 1-dimensional array, python list or iterable
+    # extracting nodata values
+    header, data = load_asc(filename)
+    nodataVal = header.get('nodata')
+
+    with open(filename) as ascfile:
+        myArray = np.loadtxt(ascfile, skiprows=6)
+
+    myArray[myArray == nodataVal] = np.nan
+    myArray = myArray[~np.isnan(myArray)]
+    array_1d = myArray.flatten()
+
+    return array_1d
