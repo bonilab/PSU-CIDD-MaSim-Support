@@ -8,75 +8,45 @@ import sys
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
-from ascFile import *
-from calibrationLib import *
+from include.ascFile import load_asc
+from include.calibrationLib import get_bin, get_climate_zones, get_treatments_list, get_treatments_raster, load_configuration
+from include.stats import goodness_of_variance_fit
 
 
 # TODO Still need a good way of supplying these
 PFPR_FILE = "rwa_pfpr2to10.asc"
 POPULATION_FILE = "rwa_population.asc"
 
-# TODO Determine the bins computationally
-# Following bins are for Rwanda
-POPULATION_BINS = [2125, 5640, 8989, 12108, 15577, 20289, 27629, 49378, 95262, 286928]
 
 def process(configuration, gisPath=""):
     # Load the configuration
     cfg = load_configuration(configuration)
-    filename = os.path.join(gisPath, PFPR_FILE)
+    filename = os.path.join(gisPath, POPULATION_FILE)
 
-    # TODO Add the stuff for the population bins!
-    # GVF Implementation
-    binning = data_bin(filename)
+    # Load and bin the population
+    filename = os.path.join(gisPath, POPULATION_FILE)
+    [ascHeader, population] = load_asc(filename)
+    data = list(i for j in population for i in j)
+    data = list(i for i in data if i != ascHeader['nodata'])
+    populationBreaks = bin_data(data)
 
-    list_GVF = []
-    pop_bins = []
-    X_MIN = 5
-    X_MAX = 30
-    # Assuming the range for bins to be between 5 and 30 (computing the optimal number of bins w.r.t. GVF), to avoid overfitting or underfitting of data
-    for x in range(X_MIN, X_MAX):
-        GVF, pop_bins = goodness_of_variance_fit(binning, x)
-        # Storing the values of bins and GVF in a list
-        pop_bins.append(x)
-        list_GVF.append(GVF)
-
-    # computing difference between GVF value
-    for i in range(len(list_GVF)):
-        # taking such value for which the difference between consecutive GVF values is greater than or equal to 0.1
-        if abs(list_GVF[i] - list_GVF[i - 1]) <= 0.1:
-            print("The value of Goodness of variance fit", list_GVF[i])
-            # updating list with the new values of GVF such that it satisfy the condition
-            list_GVF = list_GVF[i]
-            # corresponding to value of GVF, returning all bins
-            print("The value of bins", pop_bins[:i + X_MIN])
-            # Getting the value for population bins
-            # updating the list with population bins
-            pop_bins = pop_bins[:i + X_MIN]
-            break
-    # GVF less than 0.7 might not be the best fit for data; GVF ~ 0 (No fit), GVF ~ 1 (Perfect fit)
-    if list_GVF < 0.7:
-        print("GVF too low")
-
-    # Get the access to treatments rate
+    # Get the access to treatments rate and bin if need be
     [treatments, needsBinning] = get_treatments_list(cfg, gisPath)
     if treatments == -1:
         print("Unable to load determine the treatments in the configuration.")
         exit(1)
-
-    # TODO Add stuff for binning the treatments as needed!
     if needsBinning:
-        print("Treatments need binning, not currently supported")
-        exit(1)
+        data = list(i for j in treatments for i in j)
+        data = list(i for i in data if i != ascHeader['nodata'])
+        treatments = bin_data(data)
+    
+    # Load the PfPR data
+    filename = os.path.join(gisPath, PFPR_FILE)
+    [_, pfpr] = load_asc(filename)
 
     # Load the climate and treatment rasters
     climate = get_climate_zones(cfg, gisPath)
     treatment = get_treatments_raster(cfg, gisPath)
-
-    # Load the relevent data
-    filename = os.path.join(gisPath, PFPR_FILE)
-    [ascHeader, pfpr] = load_asc(filename)
-    filename = os.path.join(gisPath, POPULATION_FILE)
-    [ascHeader, population] = load_asc(filename)
 
     # Prepare our results
     pfprRanges = {}
@@ -92,7 +62,7 @@ def process(configuration, gisPath=""):
                 continue
 
             # Note the bins
-            popBin = int(get_bin(population[row][col], pop_bins))
+            popBin = int(get_bin(population[row][col], populationBreaks))
             treatBin = get_bin(treatment[row][col], treatments)
 
             # Add to the dictionary as needed
@@ -108,10 +78,30 @@ def process(configuration, gisPath=""):
             if treatBin not in zoneTreatments[zone]:
                 zoneTreatments[zone].append(treatBin)
 
-    return [pfprRanges, zoneTreatments]
+    return [pfprRanges, zoneTreatments, populationBreaks]
 
 
-def save(pfpr, treatments, filename, username):
+# Bin the data provided using Jenks natural breaks optimization
+def bin_data(data, minimumClasses=5, maximumClasses=30, delta=0.01):
+
+    # Iterate from the the minimum to the maximum number classes and 
+    # return the breaks with the lowest goodness of variance fit (GVF)
+    previousGvf = 0
+    for classes in range(minimumClasses, maximumClasses + 1):
+        gvf, breaks = goodness_of_variance_fit(data, classes)
+        if abs(previousGvf - gvf) <= delta:
+            # Note that the first index contains the lower bound
+            return breaks[1:]
+        previousGvf = gvf
+
+    # If we get here, warn the user but press on
+    print(classes, maximumClasses)
+    if classes == maximumClasses:
+        print("Unable to find optimal fit, classes = {}, GVF = {}".format(classes, gvf))
+        return breaks[1:]
+
+
+def save(pfpr, treatments, populationBreaks, filename, username):
     with open(filename, 'w') as script:
         # Print the front matter
         script.write("#!/bin/bash\n")
@@ -119,7 +109,7 @@ def save(pfpr, treatments, filename, username):
 
         # Print the ASC file generation commands
         script.write("generateAsc \"\\\"{}\\\"\"\n".format(
-            " ".join([str(x) for x in sorted(POPULATION_BINS)])))
+            " ".join([str(x) for x in sorted(populationBreaks)])))
         script.write("generateZoneAsc \"\\\"{}\\\"\"\n\n".format(
             " ".join([str(x) for x in sorted(pfpr.keys())])))
 
@@ -127,14 +117,14 @@ def save(pfpr, treatments, filename, username):
         for zone in pfpr.keys():
             script.write("run {} \"\\\"{}\\\"\" \"\\\"{}\\\"\" {}".format(
                 zone,
-                " ".join([str(x) for x in sorted(POPULATION_BINS)]),
+                " ".join([str(x) for x in sorted(populationBreaks)]),
                 " ".join([str(x) for x in sorted(treatments[zone])]),
                 username))
 
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print("Usage: ./generateBins.py [configuration] [username] [gis]")
+        print("Usage: ./generateBins.py [configuration] [gis] [username]")
         print("configuration - the configuration file to be loaded")
         print("gis - the directory that GIS file can be found in")
         print("username - the user who will be running the calibration on the cluster")
@@ -146,7 +136,7 @@ if __name__ == '__main__':
     username = str(sys.argv[3])
 
     # Process and print the relevent ranges for the user
-    [pfpr, treatments] = process(configuration, gisPath)
+    [pfpr, treatments, populationBreaks] = process(configuration, gisPath)
     for zone in pfpr.keys():
         print("Climate Zone {}".format(zone))
         print("Treatments: {}".format(sorted(treatments[zone])))
@@ -158,4 +148,4 @@ if __name__ == '__main__':
     # Save the basic script
     if not os.path.isdir('out'):
         os.mkdir('out')
-    save(pfpr, treatments, 'out/calibration.sh', username)
+    save(pfpr, treatments, populationBreaks, 'out/calibration.sh', username)
