@@ -3,9 +3,9 @@
 # This module provides a wrapper for basic database functionality.
 import psycopg2
 
-def select(connection, sql, parameters):
+def select(connectionString, sql, parameters):
     # Open the connection
-    connection = psycopg2.connect(connection)
+    connection = psycopg2.connect(connectionString)
     cursor = connection.cursor()
 
     # Execute the query, note the rows
