@@ -32,7 +32,7 @@ COMPLETE = 5
 
 # Return the components of the frequency data for each cell after the burn-in period is complete
 def get_frequency_subset(replicateId, subset):
-    sql = """   
+    sql = """
         SELECT dayselapsed, l.x, l.y, infectedindividuals,
             sum(clinicaloccurrences) AS clinicaloccurrences,
             sum(weightedoccurrences) AS weightedoccurrences
@@ -46,13 +46,13 @@ def get_frequency_subset(replicateId, subset):
             WHERE md.replicateid = %(replicateId)s AND md.dayselapsed in ({})
             GROUP BY md.id, mgd.locationid) one
         INNER JOIN (
-            SELECT md.id, msd.locationid, msd.infectedindividuals 
+            SELECT md.id, msd.locationid, msd.infectedindividuals
             FROM sim.monthlydata md
                 INNER JOIN sim.monthlysitedata msd ON msd.monthlydataid = md.id
             WHERE md.replicateid = %(replicateId)s AND md.dayselapsed in ({})) two ON one.id = two.id AND one.locationid = two.locationid
         INNER JOIN sim.location l on l.id = one.locationid
         GROUP BY dayselapsed, l.x, l.y, infectedindividuals""".format(subset, subset)
-    return select(sql, {'replicateId':replicateId, 'startDay':startDay})
+    return select(sql, {'replicateId': replicateId, 'startDay': startDay})
 
 
 # Get a list of all of the studies (i.e., configurations) associated with this studyId
@@ -61,7 +61,7 @@ def get_studies(studyId):
     SELECT c.id, replace(c.filename, '.yml', '') AS filename
     FROM sim.configuration c
     WHERE c.studyid = %(studyId)s"""
-    return select(sql, {'studyId':studyId})
+    return select(sql, {'studyId': studyId})
 
 
 # Return all of the replicates for the given configuration id
@@ -72,7 +72,7 @@ def get_replicates(configurationId, label):
 	    CASE WHEN r.endtime IS NULL THEN 0 ELSE 1 END As complete
     FROM sim.configuration c INNER JOIN sim.replicate r ON r.configurationid = c.id
     WHERE c.id = %(configurationId)s"""
-    return select(sql, {'configurationId':configurationId, 'label':label})
+    return select(sql, {'configurationId': configurationId, 'label': label})
 
 
 # Get the summary data for the given replicate after the burn-in period is complete
@@ -94,13 +94,13 @@ def get_summary(replicateId, startDay):
             WHERE md.replicateid = %(replicateId)s AND md.dayselapsed > %(startDay)s
             GROUP BY md.id, mgd.locationid) one
         INNER JOIN (
-            SELECT md.id, msd.locationid, msd.infectedindividuals 
+            SELECT md.id, msd.locationid, msd.infectedindividuals
             FROM sim.monthlydata md
                 INNER JOIN sim.monthlysitedata msd ON msd.monthlydataid = md.id
             WHERE md.replicateid = %(replicateId)s AND md.dayselapsed > %(startDay)s) two ON one.id = two.id AND one.locationid = two.locationid
         INNER JOIN sim.location l on l.id = one.locationid
         GROUP BY dayselapsed, l.district"""
-    return select(sql, {'replicateId':replicateId, 'startDay':startDay})
+    return select(sql, {'replicateId': replicateId, 'startDay': startDay})
 
 
 # Process the frequency data by aggregating it together across all cells and replicates for each rate
@@ -109,7 +109,7 @@ def process_frequencies(replicates, subset):
     print("Processing {} replicate frequencies...".format(len(replicates)))
     nrows = replicates[0][1]
     ncols = replicates[0][2]
-    
+
     # Note the progress
     total = 0
     progressBar(total, len(replicates) + 1)
@@ -120,7 +120,7 @@ def process_frequencies(replicates, subset):
 
         # Reset the replicate count on a new row
         if currentRate != replicate[0]:
-            if currentRate is not None: 
+            if currentRate is not None:
                 save_frequencies(data, currentRate)
                 del data
             currentRate = replicate[0]
@@ -129,7 +129,8 @@ def process_frequencies(replicates, subset):
         # Run a short query to see if we have anything to work with
         for row in get_frequency_subset(replicate[REPLICATEID], subset):
             days = row[0]
-            if days not in data: data[days] = [[[0, 0, 0] for _ in range(nrows)] for _ in range(ncols)]
+            if days not in data:
+                data[days] = [[[0, 0, 0] for _ in range(nrows)] for _ in range(ncols)]
             c = row[1]
             r = row[2]
 
@@ -146,7 +147,7 @@ def process_frequencies(replicates, subset):
 
     # Save the last data set
     save_frequencies(data, currentRate)
-    progressBar(total + 1, len(replicates) + 1) 
+    progressBar(total + 1, len(replicates) + 1)
 
 
 # Process the summary data by appending it for each complete replicate and day
@@ -162,19 +163,20 @@ def process_summaries(replicates, burnIn):
     for replicate in replicates:
 
         # Only download complete summaries
-        if replicate[COMPLETE] == False: continue
+        if replicate[COMPLETE] == False:
+            continue
 
         # Check to see if the work has already been done
         filename = FILE_TEMPLATE.format(replicate[LABEL], replicate[REPLICATEID])
         if not os.path.exists(filename):
             save_summary(replicate[LABEL], replicate[REPLICATEID], burnIn)
-        
+
         # Note the progress
         total = total + 1
         progressBar(total, len(replicates) + 1)
 
     # Note that we are done
-    progressBar(len(replicates) + 1, len(replicates) + 1) 
+    progressBar(len(replicates) + 1, len(replicates) + 1)
 
 
 def save_frequencies(data, rate):
@@ -192,10 +194,11 @@ def save_frequencies(data, rate):
 
                     # If the count is still zero, press on
                     count = data[day][row][col][2]
-                    if count == 0: continue
+                    if count == 0:
+                        continue
 
                     infectedindividuals = data[day][row][col][0]
-                    weightedoccurrences = data[day][row][col][1]                   
+                    weightedoccurrences = data[day][row][col][1]
 
                     # Save the average of the frequencies recorded
                     frequency = (weightedoccurrences / count) / (infectedindividuals / count)
@@ -206,14 +209,15 @@ def save_frequencies(data, rate):
 def save_summary(rate, replicateId, burnIn):
     # Create the path if it doesn't exist
     path = PATH_TEMPLATE.format(rate)
-    if not os.path.exists(path): os.makedirs(path)
+    if not os.path.exists(path):
+        os.makedirs(path)
 
     # Load the data
-    data = get_summary(replicateId, burnIn)   
+    data = get_summary(replicateId, burnIn)
 
     # Save the data to disk as a CSV file, replicateid is redundant, but useful
     # when scripting to avoid messing around with the filename in Matlab
-    filename = FILE_TEMPLATE.format(rate, replicateId) 
+    filename = FILE_TEMPLATE.format(rate, replicateId)
     with open(filename, "wb") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["replicateId", "days", "district", "infectedindividuals", "occurrences", "clinicaloccurrences", "weightedoccurrences"])
@@ -232,45 +236,48 @@ def main(configuration, studyId, burnIn, subset):
     if len(studies) == 0:
         print("No studies to process!")
         return
-    
+
     # Let the user know what is going on
     if len(studies) == 1:
         print("Processing study...")
     else:
         print("Processing {} studies...".format(len(studies)))
-    
+
     counter = 1
     for study in studies:
         # Process the replicates for this study
         replicates = get_replicates(study[0], study[1])
         process_frequencies(replicates, subset)
         process_summaries(replicates, burnIn)
-        
+
         # Update the status for the user
         if len(studies) > 1:
             print("{} of {} studies complete".format(counter, len(studies)))
             counter += 1
 
 if __name__ == '__main__':
+
+
     if len(sys.argv) != 3:
-        print ("Usage: ./loader.py [configuration] [studyId] [startDay]")
+        print("Usage: ./loader.py [configuration] [studyId] [startDay]")
         print("configuration - the configuration file to be loaded")
-        print ("studyId  - database id of the study")
-        print ("startDay - the first model day to start processing data for")
+        print("studyId  - database id of the study")
+        print("startDay - the first model day to start processing data for")
         exit(0)
 
     # Prepare the environment
-    if not os.path.exists("out"): 
+    if not os.path.exists("out"):
         os.makedirs("out")
     else:
-        for filename in glob.glob("out/*summary*.csv"): os.remove(filename)
+        for filename in glob.glob("out/*summary*.csv"):
+            os.remove(filename)
 
     # Parse the parameters
     configuration = sys.argv[1]
     studyId = int(sys.argv[1])
     startDay = int(sys.argv[2])
 
-
     # January every five years starting in 2025 - 5844, 7670, 9496, 11322
     main(configuration, studyId, startDay, "5844, 7670, 9496, 11322")
+
 
