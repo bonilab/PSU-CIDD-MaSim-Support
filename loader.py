@@ -14,7 +14,8 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
 from include.utility import *
-from database import *
+from include.database import *
+from include.calibrationLib import *
 
 
 # Default path template for downloaded replicates
@@ -221,8 +222,10 @@ def save_summary(rate, replicateId, burnIn):
             writer.writerow(data)
 
 
-def main(studyId, burnIn, subset):
+def main(configuration, studyId, burnIn, subset):
 
+    # Load the configuration
+    cfg = load_configuration(configuration)
     # Get the studies
     print("Querying for studies...")
     studies = get_studies(studyId)
@@ -250,7 +253,8 @@ def main(studyId, burnIn, subset):
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        print ("Usage: ./loader.py [studyId] [startDay]")
+        print ("Usage: ./loader.py [configuration] [studyId] [startDay]")
+        print("configuration - the configuration file to be loaded")
         print ("studyId  - database id of the study")
         print ("startDay - the first model day to start processing data for")
         exit(0)
@@ -262,9 +266,11 @@ if __name__ == '__main__':
         for filename in glob.glob("out/*summary*.csv"): os.remove(filename)
 
     # Parse the parameters
+    configuration = sys.argv[1]
     studyId = int(sys.argv[1])
     startDay = int(sys.argv[2])
 
+
     # January every five years starting in 2025 - 5844, 7670, 9496, 11322
-    main(studyId, startDay, "5844, 7670, 9496, 11322")
+    main(configuration, studyId, startDay, "5844, 7670, 9496, 11322")
 
