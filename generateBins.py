@@ -1,8 +1,10 @@
 #!/usr/bin/python3
+
 # generateBins.py
 #
 # This script generates the bins that need to be run to determine the beta values
 import os
+import re
 import sys
 
 # Import our libraries
@@ -13,19 +15,13 @@ from include.calibrationLib import get_bin, get_climate_zones, get_treatments_li
 from include.stats import goodness_of_variance_fit
 
 
-# TODO Still need a good way of supplying these
-PFPR_FILE = "rwa_pfpr2to10.asc"
-POPULATION_FILE = "rwa_population.asc"
-
-
-def process(configuration, gisPath=""):
+def process(configuration, gisPath, prefix):
     # Load the configuration
     cfg = load_configuration(configuration)
-    filename = os.path.join(gisPath, POPULATION_FILE)
 
     # Load and bin the population
-    filename = os.path.join(gisPath, POPULATION_FILE)
-    [ascHeader, population] = load_asc(filename)
+    filename = "{}/{}_population.asc".format(gisPath, prefix)
+    [ascHeader, population] = load(filename, "population")
     data = list(i for j in population for i in j)
     data = list(i for i in data if i != ascHeader['nodata'])
     populationBreaks = bin_data(data)
@@ -41,8 +37,8 @@ def process(configuration, gisPath=""):
         treatments = bin_data(data)
     
     # Load the PfPR data
-    filename = os.path.join(gisPath, PFPR_FILE)
-    [_, pfpr] = load_asc(filename)
+    filename = "{}/{}_pfpr2to10.asc".format(gisPath, prefix)
+    [_, pfpr] = load(filename, "PfPR")
 
     # Load the climate and treatment rasters
     climate = get_climate_zones(cfg, gisPath)
@@ -79,6 +75,14 @@ def process(configuration, gisPath=""):
                 zoneTreatments[zone].append(treatBin)
 
     return [pfprRanges, zoneTreatments, populationBreaks]
+
+
+# Helper function, load the ASC file indciated
+def load(filename, fileType):
+    if not os.path.exists(filename):
+        print("Could not find {} file, tried: {}".format(fileType, filename))
+        exit(1)
+    return load_asc(filename)    
 
 
 # Bin the data provided using Jenks natural breaks optimization
@@ -135,8 +139,15 @@ if __name__ == '__main__':
     gisPath = str(sys.argv[2])
     username = str(sys.argv[3])
 
+    # Check to see if it looks like there is a country prefix
+    prefix = re.search(r"^([a-z]{3})-.*\.yml", configuration)
+    if prefix is None:
+        print("Unknown or malformed country code prefix for configuration")
+        exit(0)
+    prefix = prefix.group(1)
+
     # Process and print the relevent ranges for the user
-    [pfpr, treatments, populationBreaks] = process(configuration, gisPath)
+    [pfpr, treatments, populationBreaks] = process(configuration, gisPath, prefix)
     for zone in pfpr.keys():
         print("Climate Zone {}".format(zone))
         print("Treatments: {}".format(sorted(treatments[zone])))
