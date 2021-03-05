@@ -1,15 +1,16 @@
-# Ignore compiled Python file
+# Ignore Python specific files
 *.pyc
 __pycache__
+*config.py
+
+# Ignore Matlab specific files
+/Matlab/*.asv
 
 # Ignore script output files
 /**/out
 
 # Ignore data directories
 /**/data
-
-# Ignore Config
-*config.py
 
 # Ignore IDE directories
 .idea
