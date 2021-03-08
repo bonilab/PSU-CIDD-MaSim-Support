@@ -49,7 +49,8 @@ def get_frequency_subset(replicateId, subset):
             SELECT md.id, msd.locationid, msd.infectedindividuals
             FROM sim.monthlydata md
                 INNER JOIN sim.monthlysitedata msd ON msd.monthlydataid = md.id
-            WHERE md.replicateid = %(replicateId)s AND md.dayselapsed in ({})) two ON one.id = two.id AND one.locationid = two.locationid
+            WHERE md.replicateid = %(replicateId)s AND md.dayselapsed in ({})) two ON one.id = two.id 
+            AND one.locationid = two.locationid
         INNER JOIN sim.location l on l.id = one.locationid
         GROUP BY dayselapsed, l.x, l.y, infectedindividuals""".format(subset, subset)
     return select(sql, {'replicateId': replicateId, 'startDay': startDay})
@@ -97,7 +98,8 @@ def get_summary(replicateId, startDay):
             SELECT md.id, msd.locationid, msd.infectedindividuals
             FROM sim.monthlydata md
                 INNER JOIN sim.monthlysitedata msd ON msd.monthlydataid = md.id
-            WHERE md.replicateid = %(replicateId)s AND md.dayselapsed > %(startDay)s) two ON one.id = two.id AND one.locationid = two.locationid
+            WHERE md.replicateid = %(replicateId)s AND md.dayselapsed > %(startDay)s) two ON one.id = two.id 
+            AND one.locationid = two.locationid
         INNER JOIN sim.location l on l.id = one.locationid
         GROUP BY dayselapsed, l.district"""
     return select(sql, {'replicateId': replicateId, 'startDay': startDay})
@@ -163,7 +165,7 @@ def process_summaries(replicates, burnIn):
     for replicate in replicates:
 
         # Only download complete summaries
-        if replicate[COMPLETE] == False:
+        if replicate[COMPLETE] is False:
             continue
 
         # Check to see if the work has already been done
@@ -220,7 +222,8 @@ def save_summary(rate, replicateId, burnIn):
     filename = FILE_TEMPLATE.format(rate, replicateId)
     with open(filename, "wb") as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(["replicateId", "days", "district", "infectedindividuals", "occurrences", "clinicaloccurrences", "weightedoccurrences"])
+        writer.writerow(["replicateId", "days", "district", "infectedindividuals",
+                         "occurrences", "clinicaloccurrences", "weightedoccurrences"])
         for row in data:
             data = [replicateId] + list(row)
             writer.writerow(data)
@@ -255,10 +258,10 @@ def main(configuration, studyId, burnIn, subset):
             print("{} of {} studies complete".format(counter, len(studies)))
             counter += 1
 
+
 if __name__ == '__main__':
 
-
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print("Usage: ./loader.py [configuration] [studyId] [startDay]")
         print("configuration - the configuration file to be loaded")
         print("studyId  - database id of the study")
@@ -274,10 +277,8 @@ if __name__ == '__main__':
 
     # Parse the parameters
     configuration = sys.argv[1]
-    studyId = int(sys.argv[1])
-    startDay = int(sys.argv[2])
+    studyId = int(sys.argv[2])
+    startDay = int(sys.argv[3])
 
     # January every five years starting in 2025 - 5844, 7670, 9496, 11322
     main(configuration, studyId, startDay, "5844, 7670, 9496, 11322")
-
-
