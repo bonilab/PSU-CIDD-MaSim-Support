@@ -49,7 +49,7 @@ def get_frequency_subset(replicateId, subset):
             SELECT md.id, msd.locationid, msd.infectedindividuals
             FROM sim.monthlydata md
                 INNER JOIN sim.monthlysitedata msd ON msd.monthlydataid = md.id
-            WHERE md.replicateid = %(replicateId)s AND md.dayselapsed in ({})) two ON one.id = two.id 
+            WHERE md.replicateid = %(replicateId)s AND md.dayselapsed in ({})) two ON one.id = two.id
             AND one.locationid = two.locationid
         INNER JOIN sim.location l on l.id = one.locationid
         GROUP BY dayselapsed, l.x, l.y, infectedindividuals""".format(subset, subset)
@@ -70,7 +70,7 @@ def get_replicates(configurationId, label):
     sql = """
     SELECT %(label)s as label,
         nrows, ncols, c.id AS configurationid, r.id AS replicateid,
-	    CASE WHEN r.endtime IS NULL THEN 0 ELSE 1 END As complete
+        CASE WHEN r.endtime IS NULL THEN 0 ELSE 1 END As complete
     FROM sim.configuration c INNER JOIN sim.replicate r ON r.configurationid = c.id
     WHERE c.id = %(configurationId)s"""
     return select(sql, {'configurationId': configurationId, 'label': label})
@@ -98,7 +98,7 @@ def get_summary(replicateId, startDay):
             SELECT md.id, msd.locationid, msd.infectedindividuals
             FROM sim.monthlydata md
                 INNER JOIN sim.monthlysitedata msd ON msd.monthlydataid = md.id
-            WHERE md.replicateid = %(replicateId)s AND md.dayselapsed > %(startDay)s) two ON one.id = two.id 
+            WHERE md.replicateid = %(replicateId)s AND md.dayselapsed > %(startDay)s) two ON one.id = two.id
             AND one.locationid = two.locationid
         INNER JOIN sim.location l on l.id = one.locationid
         GROUP BY dayselapsed, l.district"""
