@@ -29,6 +29,7 @@ LABEL = 0
 REPLICATEID = 4
 COMPLETE = 5
 
+
 # Return the components of the frequency data for each cell after the burn-in period is complete
 def get_frequency_subset(connection, replicateId, subset):
     sql = """
