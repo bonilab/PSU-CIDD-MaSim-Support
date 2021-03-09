@@ -29,9 +29,8 @@ LABEL = 0
 REPLICATEID = 4
 COMPLETE = 5
 
-
 # Return the components of the frequency data for each cell after the burn-in period is complete
-def get_frequency_subset(replicateId, subset):
+def get_frequency_subset(connection, replicateId, subset):
     sql = """
         SELECT dayselapsed, l.x, l.y, infectedindividuals,
             sum(clinicaloccurrences) AS clinicaloccurrences,
@@ -53,31 +52,31 @@ def get_frequency_subset(replicateId, subset):
             AND one.locationid = two.locationid
         INNER JOIN sim.location l on l.id = one.locationid
         GROUP BY dayselapsed, l.x, l.y, infectedindividuals""".format(subset, subset)
-    return select(sql, {'replicateId': replicateId, 'startDay': startDay})
+    return select(connection, sql, {'replicateId': replicateId, 'startDay': startDay})
 
 
 # Get a list of all of the studies (i.e., configurations) associated with this studyId
-def get_studies(studyId):
+def get_studies(connection, studyId):
     sql = """
     SELECT c.id, replace(c.filename, '.yml', '') AS filename
     FROM sim.configuration c
     WHERE c.studyid = %(studyId)s"""
-    return select(sql, {'studyId': studyId})
+    return select(connection, sql, {'studyId': studyId})
 
 
 # Return all of the replicates for the given configuration id
-def get_replicates(configurationId, label):
+def get_replicates(connection, configurationId, label):
     sql = """
     SELECT %(label)s as label,
         nrows, ncols, c.id AS configurationid, r.id AS replicateid,
         CASE WHEN r.endtime IS NULL THEN 0 ELSE 1 END As complete
     FROM sim.configuration c INNER JOIN sim.replicate r ON r.configurationid = c.id
     WHERE c.id = %(configurationId)s"""
-    return select(sql, {'configurationId': configurationId, 'label': label})
+    return select(connection, sql, {'configurationId': configurationId, 'label': label})
 
 
 # Get the summary data for the given replicate after the burn-in period is complete
-def get_summary(replicateId, startDay):
+def get_summary(connection, replicateId, startDay):
     sql = """
         SELECT dayselapsed, l.district,
             sum(infectedindividuals) AS infectedindividuals,
@@ -102,7 +101,7 @@ def get_summary(replicateId, startDay):
             AND one.locationid = two.locationid
         INNER JOIN sim.location l on l.id = one.locationid
         GROUP BY dayselapsed, l.district"""
-    return select(sql, {'replicateId': replicateId, 'startDay': startDay})
+    return select(connection, sql, {'replicateId': replicateId, 'startDay': startDay})
 
 
 # Process the frequency data by aggregating it together across all cells and replicates for each rate
@@ -235,7 +234,7 @@ def main(configuration, studyId, burnIn, subset):
     cfg = load_configuration(configuration)
     # Get the studies
     print("Querying for studies...")
-    studies = get_studies(studyId)
+    studies = get_studies(cfg, studyId)
     if len(studies) == 0:
         print("No studies to process!")
         return
