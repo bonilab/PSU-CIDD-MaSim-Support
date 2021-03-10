@@ -171,7 +171,7 @@ def process_summaries(connection, replicates, burnIn):
         # Check to see if the work has already been done
         filename = FILE_TEMPLATE.format(replicate[LABEL], replicate[REPLICATEID])
         if not os.path.exists(filename):
-            save_summary(connection,replicate[LABEL], replicate[REPLICATEID], burnIn)
+            save_summary(connection, replicate[LABEL], replicate[REPLICATEID], burnIn)
 
         # Note the progress
         total = total + 1
