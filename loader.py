@@ -106,7 +106,7 @@ def get_summary(connection, replicateId, startDay):
 
 
 # Process the frequency data by aggregating it together across all cells and replicates for each rate
-def process_frequencies(replicates, subset):
+def process_frequencies(connection, replicates, subset):
     # Update the user and note common data
     print("Processing {} replicate frequencies...".format(len(replicates)))
     nrows = replicates[0][1]
@@ -129,7 +129,7 @@ def process_frequencies(replicates, subset):
             data = {}
 
         # Run a short query to see if we have anything to work with
-        for row in get_frequency_subset(replicate[REPLICATEID], subset):
+        for row in get_frequency_subset(connection, replicate[REPLICATEID], subset):
             days = row[0]
             if days not in data:
                 data[days] = [[[0, 0, 0] for _ in range(nrows)] for _ in range(ncols)]
@@ -153,7 +153,7 @@ def process_frequencies(replicates, subset):
 
 
 # Process the summary data by appending it for each complete replicate and day
-def process_summaries(replicates, burnIn):
+def process_summaries(connection, replicates, burnIn):
     # Update the user
     print("Processing {} replicate summaries...".format(len(replicates)))
 
@@ -171,7 +171,7 @@ def process_summaries(replicates, burnIn):
         # Check to see if the work has already been done
         filename = FILE_TEMPLATE.format(replicate[LABEL], replicate[REPLICATEID])
         if not os.path.exists(filename):
-            save_summary(replicate[LABEL], replicate[REPLICATEID], burnIn)
+            save_summary(connection,replicate[LABEL], replicate[REPLICATEID], burnIn)
 
         # Note the progress
         total = total + 1
@@ -182,7 +182,7 @@ def process_summaries(replicates, burnIn):
 
 
 def save_frequencies(data, rate):
-    with open("out/{}-frequency-map.csv".format(rate), "wb") as csvfile:
+    with open("out/{}-frequency-map.csv".format(rate), "w") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["days", "row", "col", "frequency"])
 
@@ -208,19 +208,19 @@ def save_frequencies(data, rate):
 
 
 # Query for the summary information and save it to disk
-def save_summary(rate, replicateId, burnIn):
+def save_summary(connection, rate, replicateId, burnIn):
     # Create the path if it doesn't exist
     path = PATH_TEMPLATE.format(rate)
     if not os.path.exists(path):
         os.makedirs(path)
 
     # Load the data
-    data = get_summary(replicateId, burnIn)
+    data = get_summary(connection, replicateId, burnIn)
 
     # Save the data to disk as a CSV file, replicateid is redundant, but useful
     # when scripting to avoid messing around with the filename in Matlab
     filename = FILE_TEMPLATE.format(rate, replicateId)
-    with open(filename, "wb") as csvfile:
+    with open(filename, "w") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["replicateId", "days", "district", "infectedindividuals",
                          "occurrences", "clinicaloccurrences", "weightedoccurrences"])
@@ -235,7 +235,7 @@ def main(configuration, studyId, burnIn, subset):
     cfg = load_configuration(configuration)
     # Get the studies
     print("Querying for studies...")
-    studies = get_studies(cfg, studyId)
+    studies = get_studies(cfg["connection_string"], studyId)
     if len(studies) == 0:
         print("No studies to process!")
         return
@@ -249,9 +249,9 @@ def main(configuration, studyId, burnIn, subset):
     counter = 1
     for study in studies:
         # Process the replicates for this study
-        replicates = get_replicates(study[0], study[1])
-        process_frequencies(replicates, subset)
-        process_summaries(replicates, burnIn)
+        replicates = get_replicates(cfg["connection_string"], study[0], study[1])
+        process_frequencies(cfg["connection_string"], replicates, subset)
+        process_summaries(cfg["connection_string"], replicates, burnIn)
 
         # Update the status for the user
         if len(studies) > 1:
