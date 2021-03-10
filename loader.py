@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 ##
 # loader.py
@@ -13,9 +13,9 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
-from include.utility import *
-from include.database import *
-from include.calibrationLib import *
+from include.utility import progressBar
+from include.database import select
+from include.calibrationLib import load_configuration
 
 
 # Default path template for downloaded replicates
