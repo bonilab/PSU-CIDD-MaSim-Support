@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 ##
 # loader.py
@@ -13,9 +13,9 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
-from include.utility import *
-from include.database import *
-from include.calibrationLib import *
+from include.utility import progressBar
+from include.database import select
+from include.calibrationLib import load_configuration
 
 
 # Default path template for downloaded replicates
@@ -25,9 +25,9 @@ PATH_TEMPLATE = "out/{}"
 FILE_TEMPLATE = "out/{}/{}-summary.csv"
 
 # Indices in getReplicates query
-LABEL = 0
-REPLICATEID = 4
-COMPLETE = 5
+INDEX_LABEL = 0
+INDEX_REPLICATEID = 4
+INDEX_COMPLETE = 5
 
 
 # Return the components of the frequency data for each cell after the burn-in period is complete
@@ -129,7 +129,7 @@ def process_frequencies(connection, replicates, subset):
             data = {}
 
         # Run a short query to see if we have anything to work with
-        for row in get_frequency_subset(connection, replicate[REPLICATEID], subset):
+        for row in get_frequency_subset(connection, replicate[INDEX_REPLICATEID], subset):
             days = row[0]
             if days not in data:
                 data[days] = [[[0, 0, 0] for _ in range(nrows)] for _ in range(ncols)]
@@ -165,13 +165,13 @@ def process_summaries(connection, replicates, burnIn):
     for replicate in replicates:
 
         # Only download complete summaries
-        if replicate[COMPLETE] is False:
+        if replicate[INDEX_COMPLETE] is False:
             continue
 
         # Check to see if the work has already been done
-        filename = FILE_TEMPLATE.format(replicate[LABEL], replicate[REPLICATEID])
+        filename = FILE_TEMPLATE.format(replicate[INDEX_LABEL], replicate[INDEX_REPLICATEID])
         if not os.path.exists(filename):
-            save_summary(connection, replicate[LABEL], replicate[REPLICATEID], burnIn)
+            save_summary(connection, replicate[INDEX_LABEL], replicate[INDEX_REPLICATEID], burnIn)
 
         # Note the progress
         total = total + 1

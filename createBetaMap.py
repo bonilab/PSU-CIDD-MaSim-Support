@@ -195,10 +195,10 @@ if __name__ == "__main__":
     # Parse out the zero filter if one is provided, otherwise default True
     zeroFilter = True
     if len(sys.argv) == 5:
-        if sys.argv[5] == "0":
+        if sys.argv[4] == "0":
             zeroFilter = False
             print("Zero filter disabled")
-        if sys.argv[5] not in ["0", "1"]:
+        if sys.argv[4] not in ["0", "1"]:
             print("Flag for filter must be 0 (false) or 1 (true)")
             exit(1)
 

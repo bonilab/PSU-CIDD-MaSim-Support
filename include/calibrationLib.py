@@ -210,6 +210,9 @@ def query_betas(connection, studyId, filterZero=True, filename="data/calibration
     # Permit beta = 0 when PfPR = 0, but filter the beta out otherwise since 
     # the PfPR should never quite reach zero during seasonal transmission, note the 
     # regular expression flag for Python.
+    #
+    # TODO The WHERE clause of the query has been adjusted for Rwanda, we need a more
+    #      general way of supplying the data OR knowledge that the frame is acceptable.
     SQL = r"""
         SELECT replicateid, zone, population, access, beta, eir, 
             CASE WHEN zone IN (0, 1) THEN max ELSE pfpr2to10 END AS pfpr,
@@ -228,8 +231,8 @@ def query_betas(connection, studyId, filterZero=True, filename="data/calibration
                 INNER JOIN sim.replicate r on r.configurationid = c.id
                 INNER JOIN sim.monthlydata md on md.replicateid = r.id
                 INNER JOIN sim.monthlysitedata msd on msd.monthlydataid = md.id
-            WHERE studyid = %(studyId)s AND md.dayselapsed >= (4352 - 366)
-            GROUP BY replicateid, filename) iq {}           
+            WHERE studyid = %(studyId)s AND md.dayselapsed between 5144 and 5538
+            GROUP BY replicateid, filename) iq           
         ORDER BY zone, population, access, pfpr"""
     header = "replicateid,zone,population,access,beta,eir,pfpr,min,pfpr2to10,max\n"
 
