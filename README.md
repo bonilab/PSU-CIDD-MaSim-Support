@@ -11,6 +11,14 @@ The following dependnecies need to be installed for all of the scripts to operat
 - jenkspy: https://pypi.org/project/jenkspy/
 - numpy : https://pypi.org/project/numpy/
 
+### Downloading Requirements
+
+All the dependencies for all the scripts related to the project can be installed via `pip install`:
+
+```bash
+pip install -r requirements.txt
+```
+
 ### Usage
 Presently these scripts are only tested to run on Linux or Windows vis the Windows Subsystem for Linux. In order to run these scripts you will first need to `git clone` the repository to your local computer. Once cloned you can access them by adding them to the `PATH` variable:
 
