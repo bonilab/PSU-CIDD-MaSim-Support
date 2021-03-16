@@ -18,15 +18,20 @@ def select(connectionString, sql, parameters):
     except psycopg2.OperationalError as err:
 
         #print(f' Error Connecting : {err}')
-        sys.stderr.write ('Error Connecting: Connection Timed out')
+        sys.stderr.write('Error Connecting: Connection Timed out')
         # set connection to 'None' in case of error
         #connection = None
+        sys.exit(1)
+
+    except Exception as exp:
+        sys.stderr.write('Error Connecting')
 
     # connection is successful
     #if connection is not None:
 
     cursor = connection.cursor()
     # catch exception for invalid SQL statement
+
     try:
         # Execute the query, note the rows
         cursor.execute(sql, parameters)
@@ -40,8 +45,10 @@ def select(connectionString, sql, parameters):
         sys.stderr.write('Syntax Error')
             # rollback to previous transaction before starting another
             #connection.rollback()
+        sys.exit(1)
 
     rows = cursor.fetchall()
+
 
         # Clean-up and return
     cursor.close()
