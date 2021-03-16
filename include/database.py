@@ -7,7 +7,6 @@ import psycopg2
 
 def select(connectionString, sql, parameters):
 
-    flag = False
     # Open the connection
     try:
         # overriding connect_timeout to reduce wait time and exit in case of exception
@@ -19,8 +18,6 @@ def select(connectionString, sql, parameters):
 
         rows = cursor.fetchall()
 
-        flag = True
-
         # Clean-up and return
         cursor.close()
         connection.close()
@@ -29,13 +26,14 @@ def select(connectionString, sql, parameters):
 
     except psycopg2.OperationalError as err:
         sys.stderr.write(f'An error occurred connecting to the database: {err} ')
-
+        raise
 
     except psycopg2.DatabaseError as e:
         sys.stderr.write(f'Database Error: {e} ')
+        raise
 
-    if not flag:
-        raise SystemExit
+
+
 
 
 
