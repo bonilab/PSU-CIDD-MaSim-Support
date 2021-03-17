@@ -32,3 +32,19 @@ def select(connectionString, sql, parameters):
     except psycopg2.DatabaseError as err:
         sys.stderr.write(f'A general database error occurred: {err}')
         raise DatabaseError
+
+
+# db connection to get studyId
+def insert_returning(connectionString, sql, parameters):
+    connection = psycopg2.connect(connectionString)
+
+    cursor = connection.cursor()
+
+    cursor.execute(sql, (parameters['Name'],))
+    study_id = cursor.fetchone()[0]
+
+    connection.commit()
+
+    cursor.close()
+
+    return study_id
