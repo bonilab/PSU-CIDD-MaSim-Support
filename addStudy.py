@@ -45,17 +45,23 @@ def main():
     args = parser.parse_args()
     insq = args.studyname
     selq = args.selectq
-    cfg = load_configuration(args.conf_file)
 
-    if (insq):
-        # insert
-        studies = add_study(cfg, insq)
-        print("Study Id: " + str(studies))
+    try:
+        cfg = load_configuration(args.conf_file)
 
-    if (selq):
-        # select
-        rows = get_studies(cfg)
-        print(rows)
+        if (insq):
+            # insert
+            studies = add_study(cfg, insq)
+            print("Study Id: " + str(studies))
+
+        if (selq):
+            # select
+            rows = get_studies(cfg)
+            print(rows)
+
+    except DatabaseError:
+        sys.stderr.write("An unrecoverable database error occurred, exiting.\n")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

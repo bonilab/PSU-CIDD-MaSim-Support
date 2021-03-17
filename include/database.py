@@ -4,6 +4,7 @@
 import sys
 import psycopg2
 
+
 # Custom error for us to throw
 class DatabaseError(BaseException):
     pass
@@ -36,15 +37,28 @@ def select(connectionString, sql, parameters):
 
 # db connection to get studyId
 def insert_returning(connectionString, sql, parameters):
-    connection = psycopg2.connect(connectionString)
 
-    cursor = connection.cursor()
+    try:
+        # Open the connection, override any timeout provided with something shorter
+        # since we expect to be running interactively
+        connection = psycopg2.connect(connectionString, connect_timeout=1)
+        cursor = connection.cursor()
 
-    cursor.execute(sql, (parameters['Name'],))
-    study_id = cursor.fetchone()[0]
+        # Execute the query, note the rows
+        cursor.execute(sql, (parameters['Name'],))
+        study_id = cursor.fetchone()[0]
 
-    connection.commit()
+        # Clean-up and return
+        connection.commit()
 
-    cursor.close()
+        cursor.close()
 
-    return study_id
+        return study_id
+
+    except psycopg2.OperationalError as err:
+        sys.stderr.write(f'An error occurred connecting to the database: {err}')
+        raise DatabaseError
+
+    except psycopg2.DatabaseError as err:
+        sys.stderr.write(f'A general database error occurred: {err}')
+        raise DatabaseError
