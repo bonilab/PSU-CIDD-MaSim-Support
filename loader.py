@@ -13,8 +13,8 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
+import include.database as database
 from include.utility import progressBar
-from include.database import select, DatabaseError
 from include.calibrationLib import load_configuration
 
 
@@ -53,7 +53,7 @@ def get_frequency_subset(connection, replicateId, subset):
             AND one.locationid = two.locationid
         INNER JOIN sim.location l on l.id = one.locationid
         GROUP BY dayselapsed, l.x, l.y, infectedindividuals""".format(subset, subset)
-    return select(connection, sql, {'replicateId': replicateId, 'startDay': startDay})
+    return database.select(connection, sql, {'replicateId': replicateId, 'startDay': startDay})
 
 
 # Get a list of all of the studies (i.e., configurations) associated with this studyId
@@ -62,7 +62,7 @@ def get_studies(connection, studyId):
     SELECT c.id, replace(c.filename, '.yml', '') AS filename
     FROM sim.configuration c
     WHERE c.studyid = %(studyId)s"""
-    return select(connection, sql, {'studyId': studyId})
+    return database.select(connection, sql, {'studyId': studyId})
 
 
 # Return all of the replicates for the given configuration id
@@ -73,7 +73,7 @@ def get_replicates(connection, configurationId, label):
         CASE WHEN r.endtime IS NULL THEN 0 ELSE 1 END As complete
     FROM sim.configuration c INNER JOIN sim.replicate r ON r.configurationid = c.id
     WHERE c.id = %(configurationId)s"""
-    return select(connection, sql, {'configurationId': configurationId, 'label': label})
+    return database.select(connection, sql, {'configurationId': configurationId, 'label': label})
 
 
 # Get the summary data for the given replicate after the burn-in period is complete
@@ -102,7 +102,7 @@ def get_summary(connection, replicateId, startDay):
             AND one.locationid = two.locationid
         INNER JOIN sim.location l on l.id = one.locationid
         GROUP BY dayselapsed, l.district"""
-    return select(connection, sql, {'replicateId': replicateId, 'startDay': startDay})
+    return database.select(connection, sql, {'replicateId': replicateId, 'startDay': startDay})
 
 
 # Process the frequency data by aggregating it together across all cells and replicates for each rate
@@ -259,7 +259,7 @@ def main(configuration, studyId, burnIn, subset):
                 print("{} of {} studies complete".format(counter, len(studies)))
                 counter += 1
 
-    except DatabaseError:
+    except database.DatabaseError:
         sys.stderr.write("An unrecoverable database error occurred, exiting.\n")
         sys.exit(1)
 
