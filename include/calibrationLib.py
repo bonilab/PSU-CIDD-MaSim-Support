@@ -9,7 +9,7 @@ import yaml
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
 from ascFile import load_asc
-from database import select
+from database import select, DatabaseError
 
 YAML_SENTINEL = -1
 
@@ -243,9 +243,12 @@ def query_betas(connection, studyId, filterZero=True, filename="data/calibration
     else:
         sql = SQL.format("")
 
-    # Select for the beta values
-    print("Loading beta values for study id: {}".format(studyId))
-    rows = select(connection, sql, {'studyId': studyId})
+    try:
+        # Select for the beta values
+        print("Loading beta values for study id: {}".format(studyId))
+        rows = select(connection, sql, {'studyId': studyId})
+    except DatabaseError:
+        raise Exception("Error occurred while querying the database.")
 
     # Create the directory if need be
     directory = os.path.dirname(os.path.abspath(filename))

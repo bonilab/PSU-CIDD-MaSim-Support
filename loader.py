@@ -14,7 +14,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
 from include.utility import progressBar
-from include.database import select
+from include.database import select, DatabaseError
 from include.calibrationLib import load_configuration
 
 
@@ -230,12 +230,12 @@ def save_summary(connection, rate, replicateId, burnIn):
 
 
 def main(configuration, studyId, burnIn, subset):
-
-    # Load the configuration
-    cfg = load_configuration(configuration)
-    # Get the studies
-    print("Querying for studies...")
     try:
+        # Load the configuration
+        cfg = load_configuration(configuration)
+        
+        # Get the studies
+        print("Querying for studies...")
         studies = get_studies(cfg["connection_string"], studyId)
         if len(studies) == 0:
             print("No studies to process!")
@@ -259,8 +259,9 @@ def main(configuration, studyId, burnIn, subset):
                 print("{} of {} studies complete".format(counter, len(studies)))
                 counter += 1
 
-    except:
-        print("Error Connecting!")
+    except DatabaseError:
+        sys.stderr.write("An unrecoverable database error occurred, exiting.\n")
+        sys.exit(1)
 
 
 if __name__ == '__main__':

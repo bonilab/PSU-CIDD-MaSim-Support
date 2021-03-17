@@ -12,7 +12,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
 from include.calibrationLib import load_configuration
-from include.database import select
+from include.database import select, DatabaseError
 
 
 SELECT_REPLICATES = """
@@ -42,10 +42,9 @@ GROUP BY dayselapsed, district"""
 
 
 def main(configuration, studyId):
-
-    # Load the configuration, query for the list of replicates
-    cfg = load_configuration(configuration)
     try:
+        # Load the configuration, query for the list of replicates
+        cfg = load_configuration(configuration)
         replicates = select(cfg["connection_string"], SELECT_REPLICATES, {'studyId':studyId})
 
         # Display list, prompt user
@@ -74,8 +73,9 @@ def main(configuration, studyId):
                 line = ','.join(str(row[ndx]) for ndx in range(0, len(row)))
                 csvfile.write("{}\n".format(line))
 
-    except:
-        print("Error Connecting!")
+    except DatabaseError:
+        sys.stderr.write("An unrecoverable database error occurred, exiting.\n")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

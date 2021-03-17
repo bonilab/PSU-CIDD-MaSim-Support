@@ -14,7 +14,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
 from include.ascFile import load_asc, write_asc
 from include.calibrationLib import get_bin, get_climate_zones, get_treatments_raster, load_betas, load_configuration, query_betas
-from include.utility import *
+from include.utility import progressBar
 
 
 # Default path for beta values
@@ -166,8 +166,20 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
 
 # Main entry point for the script
 def main(configuration, gisPath, studyId, zeroFilter):
+    # Load the configuration
     cfg = load_configuration(configuration)
-    query_betas(cfg["connection_string"], studyId, zeroFilter, filename = BETAVALUES)
+
+    # Attempt to load the data from the database, if that fails, fall back to local file
+    try:
+        query_betas(cfg["connection_string"], studyId, zeroFilter, filename = BETAVALUES)    
+    except Exception as error:
+        if not os.path.exists(BETAVALUES):
+            sys.stderr.write("An unrecoverable error occurred: {}\nExiting\n".format(error))
+            sys.exit(1)
+        else:
+            print("Unable to refresh calibration data from database, using previous copy...")
+
+    # Proceed with creating beta map
     create_beta_map(cfg, gisPath)
 
 
