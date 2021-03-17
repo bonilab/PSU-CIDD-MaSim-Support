@@ -235,28 +235,32 @@ def main(configuration, studyId, burnIn, subset):
     cfg = load_configuration(configuration)
     # Get the studies
     print("Querying for studies...")
-    studies = get_studies(cfg["connection_string"], studyId)
-    if len(studies) == 0:
-        print("No studies to process!")
-        return
+    try:
+        studies = get_studies(cfg["connection_string"], studyId)
+        if len(studies) == 0:
+            print("No studies to process!")
+            return
 
-    # Let the user know what is going on
-    if len(studies) == 1:
-        print("Processing study...")
-    else:
-        print("Processing {} studies...".format(len(studies)))
+        # Let the user know what is going on
+        if len(studies) == 1:
+            print("Processing study...")
+        else:
+            print("Processing {} studies...".format(len(studies)))
 
-    counter = 1
-    for study in studies:
-        # Process the replicates for this study
-        replicates = get_replicates(cfg["connection_string"], study[0], study[1])
-        process_frequencies(cfg["connection_string"], replicates, subset)
-        process_summaries(cfg["connection_string"], replicates, burnIn)
+        counter = 1
+        for study in studies:
+            # Process the replicates for this study
+            replicates = get_replicates(cfg["connection_string"], study[0], study[1])
+            process_frequencies(cfg["connection_string"], replicates, subset)
+            process_summaries(cfg["connection_string"], replicates, burnIn)
 
-        # Update the status for the user
-        if len(studies) > 1:
-            print("{} of {} studies complete".format(counter, len(studies)))
-            counter += 1
+            # Update the status for the user
+            if len(studies) > 1:
+                print("{} of {} studies complete".format(counter, len(studies)))
+                counter += 1
+
+    except:
+        print("Error Connecting!")
 
 
 if __name__ == '__main__':

@@ -45,32 +45,37 @@ def main(configuration, studyId):
 
     # Load the configuration, query for the list of replicates
     cfg = load_configuration(configuration)
-    replicates = select(cfg["connection_string"], SELECT_REPLICATES, {'studyId':studyId})
+    try:
+        replicates = select(cfg["connection_string"], SELECT_REPLICATES, {'studyId':studyId})
 
-    # Display list, prompt user
-    if len(replicates) == 0:
-        print("No studies returned!")
-        exit(0)
-    print("Studies returned: ")
-    for replicate in replicates:
-        print("{}\t{}\t{}\t{}".format(replicate[0], replicate[1], replicate[2], replicate[3]))
+        # Display list, prompt user
+        if len(replicates) == 0:
+            print("No studies returned!")
+            exit(0)
 
-    # Prompt for replicate id
-    replicateId = int(input("Replicate to retrive: "))
+        print("Studies returned: ")
+        for replicate in replicates:
+            print("{}\t{}\t{}\t{}".format(replicate[0], replicate[1], replicate[2], replicate[3]))
 
-    # Load the data set, exit if nothing is returned
-    rows = select(cfg["connection_string"], SELECT_DATASET, {'replicateId':replicateId})
-    if len(rows) == 0:
-        print("No data returned!")
-        exit(0)
+        # Prompt for replicate id
+        replicateId = int(input("Replicate to retrive: "))
+
+        # Load the data set, exit if nothing is returned
+        rows = select(cfg["connection_string"], SELECT_DATASET, {'replicateId':replicateId})
+        if len(rows) == 0:
+            print("No data returned!")
+            exit(0)
     
-    # Save the replicate to disk
-    filename = "{}-verification-data.csv".format(replicateId)
-    print("Saving data set to: {}".format(filename))
-    with open(filename, "w") as csvfile:
-        for row in rows:
-            line = ','.join(str(row[ndx]) for ndx in range(0, len(row)))
-            csvfile.write("{}\n".format(line))
+        # Save the replicate to disk
+        filename = "{}-verification-data.csv".format(replicateId)
+        print("Saving data set to: {}".format(filename))
+        with open(filename, "w") as csvfile:
+            for row in rows:
+                line = ','.join(str(row[ndx]) for ndx in range(0, len(row)))
+                csvfile.write("{}\n".format(line))
+
+    except:
+        print("Error Connecting!")
 
 
 if __name__ == "__main__":
