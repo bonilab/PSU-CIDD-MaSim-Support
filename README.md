@@ -6,10 +6,16 @@ The main repository for the simulation can be found at [maciekboni/PSU-CIDD-Mala
 
 ### Dependencies
 
-The following dependencies need to be installed for all of the scripts to operate and can be installed via `pip install`: 
+The following dependencies need to be installed for all of the scripts to operate and can be installed indivdiually via `pip install`: 
 
 - jenkspy: https://pypi.org/project/jenkspy/
 - numpy : https://pypi.org/project/numpy/
+
+Or, all the dependencies can be installed via `pip install`:
+
+```bash
+pip install -r requirements.txt
+```
 
 ### Usage
 Presently these scripts are only tested to run on Linux or Windows vis the Windows Subsystem for Linux. In order to run these scripts you will first need to `git clone` the repository to your local computer. Once cloned you can access them by adding them to the `PATH` variable:
