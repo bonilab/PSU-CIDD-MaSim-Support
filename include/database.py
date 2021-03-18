@@ -35,7 +35,7 @@ def select(connectionString, sql, parameters):
         raise DatabaseError
 
 
-# db connection to get studyId
+# Executes provided INSERT statement, and returns result of the operation
 def insert_returning(connectionString, sql, parameters):
 
     try:
@@ -46,14 +46,14 @@ def insert_returning(connectionString, sql, parameters):
 
         # Execute the query, note the rows
         cursor.execute(sql, (parameters['Name'],))
-        study_id = cursor.fetchone()[0]
+        returnValue = cursor.fetchone()[0]
 
         # Clean-up and return
         connection.commit()
 
         cursor.close()
 
-        return study_id
+        return returnValue
 
     except psycopg2.OperationalError as err:
         sys.stderr.write(f'An error occurred connecting to the database: {err}')

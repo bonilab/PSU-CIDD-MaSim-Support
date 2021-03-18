@@ -23,8 +23,8 @@ from include.database import *
 def get_studies(configuration):
 
     # return "List to populate"
-    sql = 'SELECT * FROM STUDY'
-    return select(configuration["connection_string"], sql, '')
+    sql = 'SELECT id, name FROM STUDY'
+    return select(configuration, sql, '')
 
 
 # add studies
@@ -32,7 +32,7 @@ def add_study(configuration, stdName):
 
     sql = 'INSERT INTO study(Name) VALUES(%s) RETURNING id;'
 
-    return insert_returning(configuration["connection_string"], sql, {'Name': stdName})
+    return insert_returning(configuration, sql, {'Name': stdName})
 
 
 def main():
@@ -43,21 +43,26 @@ def main():
     parser.add_argument('-l', '--selectq', action='store_true', default=False)
     parser.add_argument('-c', action='store', dest='conf_file')
     args = parser.parse_args()
-    insq = args.studyname
-    selq = args.selectq
+    insertStudy = args.studyname
+    listStudy = args.selectq
 
     try:
         cfg = load_configuration(args.conf_file)
 
-        if (insq):
+        if insertStudy:
             # insert
-            studies = add_study(cfg, insq)
+            studies = add_study(cfg["connection_string"], insertStudy)
             print("Study Id: " + str(studies))
 
-        if (selq):
+        if listStudy:
             # select
-            rows = get_studies(cfg)
-            print(rows)
+            rows = get_studies(cfg["connection_string"])
+            if len(rows) >= 1:
+                for row in rows:
+                    print("({},{})".format(row[1], row[0]))
+            else:
+                print("Table is empty, exiting")
+                sys.exit(0)
 
     except DatabaseError:
         sys.stderr.write("An unrecoverable database error occurred, exiting.\n")
@@ -67,7 +72,7 @@ def main():
 if __name__ == "__main__":
     # Check the command line
     if len(sys.argv) < 4:
-        print("Usage: ./addStudy [configuration] [flag] [studyName]")
+        print("Usage: ./addStudy -c [configuration] [flag] [studyName]")
         print("configuration - the configuration file to be loaded")
         print("flag - the operation to be performed")
         print("studyName - the name of the study to be added")
