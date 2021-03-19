@@ -1,13 +1,9 @@
-# !/usr/bin/python3
+#!/usr/bin/python3
 
 # addStudy.py
-
-# python addStudy.py -c rwa_configuration.yml -l
-# python addStudy.py -c rwa_configuration.yml -a "studyName"
-
-# Adding new studies to the database
-
-# Import our libraries
+# 
+# Allows users to preform basic study management for the indicated configuration
+# (i.e., project database)
 import os
 import sys
 import argparse
@@ -15,69 +11,59 @@ import yaml
 import psycopg2
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
-from include.calibrationLib import *
-from include.database import *
+import include.database as database
+from include.calibrationLib import load_configuration
 
 
-# List all studies
-def get_studies(configuration):
-
-    # return "List to populate"
+# Get a list of all the studies from the database
+def get_studies(connectionString):
     sql = 'SELECT id, name FROM STUDY'
-    return select(configuration, sql, '')
+    return database.select(connectionString, sql, '')
 
 
-# add studies
-def add_study(configuration, stdName):
-
+# Add the indicated study to the database
+def add_study(connectionString, studyName):
     sql = 'INSERT INTO study(Name) VALUES(%s) RETURNING id;'
+    return database.insert_returning(connectionString, sql, {'Name': studyName})
 
-    return insert_returning(configuration, sql, {'Name': stdName})
 
-
-def main():
-    # Parse the parameters
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('-a', action='store', dest='studyname', default=None)
-    parser.add_argument('-l', '--selectq', action='store_true', default=False)
-    parser.add_argument('-c', action='store', dest='conf_file')
-    args = parser.parse_args()
-
+def main(args):
     try:
-        cfg = load_configuration(args.conf_file)
+        cfg = load_configuration(args.configuration)
 
-        if args.studyname:
-            # insert
-            studies = add_study(cfg["connection_string"], args.studyname)
-            print("Study Id: " + str(studies))
+        # Add the study if one was supplied
+        if args.add is not None:
+            studies = add_study(cfg["connection_string"], args.add)
+            print(f"Study Id: {studies}")
 
-        if args.selectq:
-            # select
+        # Display the formated list of studies in the database
+        if args.list:
             rows = get_studies(cfg["connection_string"])
-            if len(rows) >= 1:
-                layout = "{!s:10} {!s:14}"
-                print(layout.format("StudyName", "StudyId"))
 
-                for row in rows:
-                    print(layout.format(*(row[1], row[0])))
+            # Was nothing returned?
+            if len(rows) == 0:
+                print("No records returned")
+                return
 
-            else:
-                print("Table is empty")
+            # Display our resuts
+            layout = "{!s:20} {!s:14}"
+            print(layout.format("Study Name", "Study Id"))
+            print("-"*34)
+            for row in rows:
+                print(layout.format(*(row[1], row[0])))
 
-    except DatabaseError:
-        sys.stderr.write("An unrecoverable database error occurred, exiting.\n")
+    except database.DatabaseError:
+        # Defer to database library for error messages
         sys.exit(1)
 
 
 if __name__ == "__main__":
-    # Check the command line
-    if len(sys.argv) < 4:
-        print("Usage-listStudy: ./addStudy -c [configuration] -l")
-        print("Usage-addStudy: ./addStudy -c [configuration] -a [studyName]")
-        print("configuration - the configuration file to be loaded")
-        print("flag - the operation to be performed")
-        print("studyName - the name of the study to be added")
-        exit(0)
+    # Parse the parameters
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-a', '--add', action='store', default=None)
+    parser.add_argument('-c', action='store', dest='configuration')
+    parser.add_argument('-l', '--list', action='store_true')    
+    args = parser.parse_args()
 
-    main()
+    # Defer to main for everything else
+    main(args)
