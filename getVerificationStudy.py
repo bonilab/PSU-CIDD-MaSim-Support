@@ -5,6 +5,9 @@
 # Query for verification studies and prompt the use to supply the replicate 
 # id that they wish to download, the CSV file saved is formatted so it can be 
 # used with the Matlab plotting function.
+#
+# Note that results for the model burn-in period are include and may contain
+# invalid data.
 import os
 import sys
 
@@ -25,19 +28,23 @@ FROM sim.study s
 WHERE s.id = %(studyId)s
 ORDER BY r.id ASC"""
 
+# Note that we are left joining on the monthly site data since a beta of zero 
+# is valid and will result in no site data being stored during model execution.
+# This also means that the EIR may be set to the sentinel -9999 during the 
+# model burn-in period so plotting scripts will need to ensure that the 
+# rendering period is valid.
 SELECT_DATASET = """
 SELECT dayselapsed, district, 
-    sum(population) AS population,
-    avg(msd.eir) AS eir,
-    sum(population * pfprunder5) / sum(population) AS pfprunder5,
-    sum(population * pfpr2to10) / sum(population) AS pfpr2to10,
-    sum(population * pfprall) / sum(population) AS pfprall
+ 	sum(population) AS population,
+ 	avg(msd.eir) AS eir,
+ 	sum(population * pfprunder5) / sum(population) AS pfprunder5,
+ 	sum(population * pfpr2to10) / sum(population) AS pfpr2to10,
+ 	sum(population * pfprall) / sum(population) AS pfprall  
 FROM sim.replicate r
-    INNER JOIN sim.configuration c ON c.id = r.configurationid
-    INNER JOIN sim.monthlydata md ON md.replicateid = r.id
-    INNER JOIN sim.monthlysitedata msd ON msd.monthlydataid = md.id
-    INNER JOIN sim.location l ON l.id = msd.locationid
-WHERE r.id = %(replicateId)s AND eir NOT IN (0, -9999)
+  INNER JOIN sim.location l ON l.configurationid = r.configurationid
+  INNER JOIN sim.monthlydata md ON md.replicateid = r.id
+  LEFT JOIN sim.monthlysitedata msd ON (msd.locationid = l.id AND msd.monthlydataid = md.id)
+WHERE r.id = %(replicateId)s
 GROUP BY dayselapsed, district"""
 
 
