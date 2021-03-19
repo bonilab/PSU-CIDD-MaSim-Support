@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# addStudy.py
+# studyManager.py
 # 
 # Allows users to preform basic study management for the indicated configuration
 # (i.e., project database)
