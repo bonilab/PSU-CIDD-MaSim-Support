@@ -37,7 +37,6 @@ def select(connectionString, sql, parameters):
 
 # Executes provided INSERT statement, and returns result of the operation
 def insert_returning(connectionString, sql, parameters):
-
     try:
         # Open the connection, override any timeout provided with something shorter
         # since we expect to be running interactively
@@ -50,9 +49,7 @@ def insert_returning(connectionString, sql, parameters):
 
         # Clean-up and return
         connection.commit()
-
         cursor.close()
-
         return returnValue
 
     except psycopg2.OperationalError as err:
