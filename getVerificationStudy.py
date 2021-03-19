@@ -16,7 +16,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
 from include.calibrationLib import load_configuration
 from include.database import select, DatabaseError
-
+ 
 
 SELECT_REPLICATES = """
 SELECT r.id, c.filename, 
@@ -41,9 +41,9 @@ SELECT dayselapsed, district,
  	sum(population * pfpr2to10) / sum(population) AS pfpr2to10,
  	sum(population * pfprall) / sum(population) AS pfprall  
 FROM sim.replicate r
-  INNER JOIN sim.location l ON l.configurationid = r.configurationid
   INNER JOIN sim.monthlydata md ON md.replicateid = r.id
-  LEFT JOIN sim.monthlysitedata msd ON (msd.locationid = l.id AND msd.monthlydataid = md.id)
+  INNER JOIN sim.monthlysitedata msd ON msd.monthlydataid = md.id
+  INNER JOIN sim.location l ON l.id = msd.locationid
 WHERE r.id = %(replicateId)s
 GROUP BY dayselapsed, district"""
 
