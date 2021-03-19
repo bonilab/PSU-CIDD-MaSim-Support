@@ -63,8 +63,7 @@ def main():
                     print(layout.format(*(row[1], row[0])))
 
             else:
-                print("Table is empty, exiting")
-                sys.exit(0)
+                print("Table is empty")
 
     except DatabaseError:
         sys.stderr.write("An unrecoverable database error occurred, exiting.\n")

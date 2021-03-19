@@ -12,7 +12,7 @@ class DatabaseError(BaseException):
 
 def select(connectionString, sql, parameters):
     try:
-        # Open the connection, override any timeout provided with something shorter 
+        # Open the connection, override any timeout provided with something shorter
         # since we expect to be running interactively
         connection = psycopg2.connect(connectionString, connect_timeout=1)
         cursor = connection.cursor()
