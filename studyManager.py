@@ -45,7 +45,7 @@ def main(args):
                 print("No records returned")
                 return
 
-            # Display our resuts
+            # Display our results
             layout = "{!s:20} {!s:14}"
             print(layout.format("Study Name", "Study Id"))
             print("-"*34)
@@ -58,12 +58,17 @@ def main(args):
 
 
 if __name__ == "__main__":
-    # Parse the parameters
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-a', '--add', action='store', default=None)
-    parser.add_argument('-c', action='store', dest='configuration')
-    parser.add_argument('-l', '--list', action='store_true')    
-    args = parser.parse_args()
 
+    try:
+        # Parse the parameters
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-a', '--add', action='store', default=None)
+        parser.add_argument('-c', action='store', dest='configuration', required=True)
+        parser.add_argument('-l', '--list', action='store_true', default=False)
+        args = parser.parse_args()
+
+    except:
+        parser.print_help()
+        sys.exit(1)
     # Defer to main for everything else
     main(args)
