@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # studyManager.py
-# 
+#
 # Allows users to preform basic study management for the indicated configuration
 # (i.e., project database)
 import os
@@ -20,15 +20,18 @@ def get_studies(connectionString):
     sql = 'SELECT id, name FROM STUDY'
     return database.select(connectionString, sql, '')
 
+
 # Add the indicated study to the database
 def add_study(connectionString, studyName):
     sql = 'INSERT INTO study(Name) VALUES(%s) RETURNING id;'
     return database.insert_returning(connectionString, sql, {'Name': studyName})
 
+
 # Delete the indicated study from the database
 def remove_study(configuration, stdid):
     sql = 'DELETE FROM study WHERE id = %s;'
     return database.remove_record(configuration, sql, {'id': stdid})
+
 
 # Rename the study in the database
 def rename_studyname(configuration, stdid, newname):
@@ -65,7 +68,6 @@ def main(args):
             id = input("Enter study id:")
             sname = input("Enter new study name:")
             rename_studyname(cfg["connection_string"], id, sname)
-
 
         # Display the formated list of studies in the database
         if args.list:
