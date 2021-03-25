@@ -17,7 +17,7 @@ from include.calibrationLib import load_configuration
 
 # Get a list of all the studies from the database
 def get_studies(connectionString):
-    sql = 'SELECT id, name FROM STUDY'
+    sql = 'SELECT id, name FROM STUDY ORDER BY id ASC'
     return database.select(connectionString, sql, '')
 
 
@@ -46,9 +46,9 @@ def main(args):
                 return
 
             # Display our resuts
-            layout = "{!s:20} {!s:14}"
+            layout = "{!s:32} {!s:10}"
             print(layout.format("Study Name", "Study Id"))
-            print("-"*34)
+            print("-"*42)
             for row in rows:
                 print(layout.format(*(row[1], row[0])))
 
