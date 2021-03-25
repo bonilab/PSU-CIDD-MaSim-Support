@@ -103,7 +103,7 @@ if __name__ == "__main__":
         args = parser.parse_args()
 
     except:
-        parser.print_help()
+       # parser.print_help()
         sys.exit(1)
     # Defer to main for everything else
     main(args)
