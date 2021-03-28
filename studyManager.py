@@ -23,21 +23,21 @@ def get_studies(connectionString):
 
 # Add the indicated study to the database
 def add_study(connectionString, studyName):
-    sql = 'INSERT INTO study(Name) VALUES(%s) RETURNING id;'
-    return database.insert_returning(connectionString, sql, {'Name': studyName})
-
+    sql = [('INSERT INTO study(Name) VALUES(%s) RETURNING id;', (studyName,))]
+    #return database.insert_returning(connectionString, sql, {'Name': studyName})
+    return database.insert_returning(connectionString, sql)
 
 # Delete the indicated study from the database
 def remove_study(configuration, stdid):
-    sql = 'DELETE FROM study WHERE id = %s;'
-    return database.remove_record(configuration, sql, {'id': stdid})
-
+    sql = [('DELETE FROM study WHERE id = %s;', (stdid,))]
+    #return database.delete(configuration, sql, {'id': stdid})
+    return database.operationdb(configuration, sql)
 
 # Rename the study in the database
 def rename_studyname(configuration, stdid, newname):
-    sql = 'UPDATE study SET name = %s WHERE id = %s'
-    return database.rename_record(configuration, sql, {'id': stdid, 'name': newname})
-
+    sql = [('UPDATE study SET name = %s WHERE id = %s', (newname, stdid,))]
+    #return database.update(configuration, sql, {'id': stdid, 'name': newname})
+    return database.operationdb(configuration, sql)
 
 def main(args):
     try:
@@ -103,7 +103,7 @@ if __name__ == "__main__":
         args = parser.parse_args()
 
     except:
-       # parser.print_help()
+        parser.print_help()
         sys.exit(1)
     # Defer to main for everything else
     main(args)
