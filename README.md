@@ -4,14 +4,21 @@ This repository contains analysis files used for modeling the prevalence of mala
 
 The main repository for the simulation can be found at [maciekboni/PSU-CIDD-Malaria-Simulation](https://github.com/maciekboni/PSU-CIDD-Malaria-Simulation)
 
+## Included Tools
+
+
+
+`validateraster` - Verify that the ASC rasters on the given path have the same layout.
+
+
 ### Dependencies
 
-The following dependencies need to be installed for all of the scripts to operate and can be installed indivdiually via `pip install`: 
+The following dependencies need to be installed for all of the scripts to operate and can be installed individually via `pip install`: 
 
 - jenkspy: https://pypi.org/project/jenkspy/
 - numpy : https://pypi.org/project/numpy/
 
-Or, all the dependencies can be installed via `pip install`:
+Or, all the dependencies can be installed via `pip install` using the `Python/requirements.txt` file:
 
 ```bash
 pip install -r requirements.txt
