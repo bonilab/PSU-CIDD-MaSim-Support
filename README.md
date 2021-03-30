@@ -6,6 +6,12 @@ The main repository for the simulation can be found at [maciekboni/PSU-CIDD-Mala
 
 ---
 
+## Included Tools
+
+`validateraster` - Verify that the ASC rasters on the given path have the same layout.
+
+---
+
 ### Repository Organization
 
 / - The root directory contains scripts that may be run from the command line that of use with the simulation.
