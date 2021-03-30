@@ -94,18 +94,29 @@ def get_treatments_list(configurationYaml, gisPath):
         return results, False
 
     # Get the unique under five treatments
-    filename = str(configurationYaml['raster_db']['pr_treatment_under5'])
-    filename = os.path.join(gisPath, filename)
-    [acsHeader, ascData] = load_asc(filename)
-    underFive = list(set(i for j in ascData for i in j))
-    underFive.remove(acsHeader['nodata'])
+    try:
+        filename = str(configurationYaml['raster_db']['pr_treatment_under5'])
+        filename = os.path.join(gisPath, filename)
+        [acsHeader, ascData] = load_asc(filename)
+        underFive = list(set(i for j in ascData for i in j))
+        underFive.remove(acsHeader['nodata'])
+    except FileNotFoundError:
+        # Warn and return when the U5 treatment rate cannot be opened
+        sys.stderr.write("ERROR: Unable to open file associated with under five treatment rate: {}\n".format(filename))
+        return None
 
     # Get the unique over five treatments
-    filename = str(configurationYaml['raster_db']['pr_treatment_over5'])
-    filename = os.path.join(gisPath, filename)
-    [_, ascData] = load_asc(filename)
-    overFive = list(set(i for j in ascData for i in j)) 
-    overFive.remove(acsHeader['nodata'])
+    try:
+        filename = str(configurationYaml['raster_db']['pr_treatment_over5'])
+        filename = os.path.join(gisPath, filename)
+        [_, ascData] = load_asc(filename)
+        overFive = list(set(i for j in ascData for i in j)) 
+        overFive.remove(acsHeader['nodata'])
+    except FileNotFoundError:
+        # Warn and continue when the O5 rate cannot be opened
+        sys.stderr.write("WARNING: Unable to open file associated with over five treatment rate: {}\n".format(filename))
+        sys.stderr.write("WARNING: Continued without over five treatment rates.\n")
+        overFive = []
 
     # Get the unique district ids
     filename = str(configurationYaml['raster_db']['district_raster'])

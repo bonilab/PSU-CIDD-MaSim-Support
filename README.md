@@ -4,9 +4,9 @@ This repository contains analysis files used for modeling the prevalence of mala
 
 The main repository for the simulation can be found at [maciekboni/PSU-CIDD-Malaria-Simulation](https://github.com/maciekboni/PSU-CIDD-Malaria-Simulation)
 
----
-
 ## Included Tools
+
+`generatebins` - Used to generate the bins and scripts that are used to run the calibration simulations on the compute cluster.
 
 `validateraster` - Verify that the ASC rasters on the given path have the same layout.
 

@@ -119,7 +119,7 @@ def save(pfpr, treatments, populationBreaks, filename, username):
 
         # Print the zone matter
         for zone in pfpr.keys():
-            script.write("run {} \"\\\"{}\\\"\" \"\\\"{}\\\"\" {}".format(
+            script.write("run {} \"\\\"{}\\\"\" \"\\\"{}\\\"\" {}\n".format(
                 zone,
                 " ".join([str(x) for x in sorted(populationBreaks)]),
                 " ".join([str(x) for x in sorted(treatments[zone])]),
