@@ -189,10 +189,10 @@ def load_betas(filename):
                 lookup[zone][population][treatment] = []
 
             # Ignore the zeros unless the beta is also zero
-            if float(row['pfpr']) == 0 and float(row['beta']) != 0: continue
+            if float(row['pfpr2to10']) == 0 and float(row['beta']) != 0: continue
 
             # Append the beta and PfPR
-            lookup[zone][population][treatment].append([ float(row['pfpr']) / 100, float(row['beta']) ])
+            lookup[zone][population][treatment].append([ float(row['pfpr2to10']) / 100, float(row['beta']) ])
 
     return lookup
 
@@ -216,7 +216,7 @@ def load_configuration(configuration):
 #
 # filterZero is an optional argument (default True) that prevents beta values 
 #   associated with zero as a local minima from being returned.
-def query_betas(connection, studyId, filterZero=True, filename="data/calibration.csv"):
+def query_betas(connection, studyId, filename="data/calibration.csv"):
     
     # Permit beta = 0 when PfPR = 0, but filter the beta out otherwise since 
     # the PfPR should never quite reach zero during seasonal transmission, note the 
@@ -225,39 +225,27 @@ def query_betas(connection, studyId, filterZero=True, filename="data/calibration
     # TODO The WHERE clause of the query has been adjusted for Rwanda, we need a more
     #      general way of supplying the data OR knowledge that the frame is acceptable.
     SQL = r"""
-        SELECT replicateid, zone, population, access, beta, eir, 
-            CASE WHEN zone IN (0, 1) THEN max ELSE pfpr2to10 END AS pfpr,
-            min, pfpr2to10, max
-        FROM (
-            SELECT replicateid, filename,
-                cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[1] as integer) AS zone,
-                cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[2] as integer) AS population,
-                cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[3] as float) AS access,
-                cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[4] as float) AS beta,
-                avg(eir) AS eir, 
-                min(pfpr2to10) AS min, 
-                avg(pfpr2to10) AS pfpr2to10, 
-                max(pfpr2to10) AS max
-            FROM sim.configuration c
-                INNER JOIN sim.replicate r on r.configurationid = c.id
-                INNER JOIN sim.monthlydata md on md.replicateid = r.id
-                INNER JOIN sim.monthlysitedata msd on msd.monthlydataid = md.id
-            WHERE studyid = %(studyId)s AND md.dayselapsed between 5144 and 5538
-            GROUP BY replicateid, filename) iq           
-        ORDER BY zone, population, access, pfpr"""
-    header = "replicateid,zone,population,access,beta,eir,pfpr,min,pfpr2to10,max\n"
-
-    # Include the filter if need be
-    WHERE = "WHERE (beta = 0 and pfpr2to10 = 0) OR (beta != 0 and min != 0) "
-    if filterZero:
-        sql = SQL.format(WHERE)
-    else:
-        sql = SQL.format("")
+        SELECT replicateid,
+            cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[1] as integer) AS zone,
+            cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[2] as integer) AS population,
+            cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[3] as float) AS access,
+            cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[4] as float) AS beta,
+            avg(eir) AS eir, 
+            avg(pfpr2to10) AS pfpr2to10
+        FROM sim.configuration c
+            INNER JOIN sim.replicate r on r.configurationid = c.id
+            INNER JOIN sim.monthlydata md on md.replicateid = r.id
+            INNER JOIN sim.monthlysitedata msd on msd.monthlydataid = md.id
+        WHERE studyid = %(studyId)s
+            AND md.dayselapsed BETWEEN 4015 AND 4380
+        GROUP BY replicateid, filename
+        ORDER BY zone, population, access, pfpr2to10"""
+    header = "replicateid,zone,population,access,beta,eir,pfpr2to10\n"
 
     try:
         # Select for the beta values
         print("Loading beta values for study id: {}".format(studyId))
-        rows = select(connection, sql, {'studyId': studyId})
+        rows = select(connection, SQL, {'studyId': studyId})
     except DatabaseError:
         raise Exception("Error occurred while querying the database.")
 

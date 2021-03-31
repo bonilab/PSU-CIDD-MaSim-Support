@@ -4,6 +4,7 @@
 #
 # This module reads an ASC file that contains the PfPR for the two to ten age
 # bracket and generates three ASC files with beta values.
+import argparse
 import os
 import sys
 
@@ -165,13 +166,13 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
     
 
 # Main entry point for the script
-def main(configuration, gisPath, studyId, zeroFilter):
+def main(configuration, gisPath, studyId):
     # Load the configuration
     cfg = load_configuration(configuration)
 
     # Attempt to load the data from the database, if that fails, fall back to local file
     try:
-        query_betas(cfg["connection_string"], studyId, zeroFilter, filename = BETAVALUES)    
+        query_betas(cfg["connection_string"], studyId, filename = BETAVALUES)    
     except Exception as error:
         if not os.path.exists(BETAVALUES):
             sys.stderr.write("An unrecoverable error occurred: {}\nExiting\n".format(error))
@@ -184,34 +185,15 @@ def main(configuration, gisPath, studyId, zeroFilter):
 
 
 if __name__ == "__main__":
-    # Check the command line
-    # 0: Script
-    # 1: Configuration file
-    # 3: GIS path
-    # 4: Study identification number
-    # 5: Optional zero filter
-    if len(sys.argv) not in (4, 5):
-        print("Usage: ./createBetaMap.py [configuration] [gis] [studyid] [filter]")
-        print("configuration - the configuration file to be loaded")
-        print("gis - the path to the directory that the GIS files can be found in")
-        print("studyid  - the database id of the study to use for the reference beta values")
-        print("filter - optional default true (1), false (0) means zeroed minima should not be filtered")
-        print("\nExample ./createBetaMap.py ../country/config.yml 1")
-        exit(0)
-
     # Parse the parameters
-    configuration = sys.argv[1]
-    gisPath = str(sys.argv[2])
-    studyId = int(sys.argv[3])
-    
-    # Parse out the zero filter if one is provided, otherwise default True
-    zeroFilter = True
-    if len(sys.argv) == 5:
-        if sys.argv[4] == "0":
-            zeroFilter = False
-            print("Zero filter disabled")
-        if sys.argv[4] not in ["0", "1"]:
-            print("Flag for filter must be 0 (false) or 1 (true)")
-            exit(1)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', action='store', dest='configuration', required=True,
+        help='The configuration file to reference when creating the beta map')
+    parser.add_argument('-g', action='store', dest='gis', required=True,
+        help='The path to the directory that the GIS files can be found in')
+    parser.add_argument('-s', action='store', dest='studyid', required=True,
+        help='The id of the study to use for the reference beta values')
+    args = parser.parse_args()
 
-    main(configuration, gisPath, studyId, zeroFilter)
+    # Call the main function with the paramters    
+    main(args.configuration, args.gis, int(args.studyid))
