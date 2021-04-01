@@ -14,8 +14,9 @@ from database import select, DatabaseError
 
 YAML_SENTINEL = -1
 
-# Get the bin that the value belongs to
 def get_bin(value, bins):
+    '''Get the bin that the value belongs to'''
+
     # If the value is a bin, then return it
     if value in bins: return value
 
@@ -33,17 +34,18 @@ def get_bin(value, bins):
     raise Exception("Matching bin not found for value: " + str(value))
 
 
-# Get the three letter country code prefix from the filename 
 def get_prefix(filename):
-    # Check to see if it looks like there is a country prefix
+    '''Get the three letter country code prefix from the filename'''
+
     prefix = re.search(r"^([a-z]{3})-.*\.yml", filename)
     if prefix is None:
         return None
     return prefix.group(1)
 
 
-# Generate a reference raster using the data in the filename and the value provided
 def generate_raster(filename, value):
+    '''Generate a reference raster using the data in the filename and the value provided'''
+
     [ ascHeader, ascData ] = load_asc(filename)
     for row in range(0, ascHeader['nrows']):
         for col in range(0, ascHeader['ncols']):
@@ -53,14 +55,17 @@ def generate_raster(filename, value):
     return ascData
 
 
-# Get the climate zones that are defined in the configuration.
-#
-# configurationYaml - The loaded configuration to examine.
-# gisPath - The path to append to GIS files in the configuration.
-#
-# Returns a matrix contianing the climate zones, locations without
-#   a zone will use the common nodata value.
+
 def get_climate_zones(configurationYaml, gisPath):
+    '''
+    Get the climate zones that are defined in the configuration.
+    
+    configurationYaml - The loaded configuration to examine.
+    gisPath - The path to append to GIS files in the configuration.
+    
+    Returns a matrix contianing the climate zones, locations without a zone will use the common nodata value.
+    '''
+
     # Start by checking if there is a raster defined, if so just load and return that
     if 'ecoclimatic_raster' in configurationYaml['raster_db']:
         filename = str(configurationYaml['raster_db']['ecoclimatic_raster'])
@@ -82,14 +87,16 @@ def get_climate_zones(configurationYaml, gisPath):
     return generate_raster(filename, ecozone)
 
 
-# Extract the treatments from the configuration that is supplied.
-#
-# configurationYaml - The loaded configuration to examine.
-# gisPath - The path to append to GIS files in the configuration.
-#
-# Returns [results, needsBinning] where results are the parsed treatments
-#   and needsBinning indicates that the treatments need to be binned if True.
 def get_treatments_list(configurationYaml, gisPath):
+    '''
+    Extract the treatments from the configuration that is supplied.
+
+    configurationYaml - The loaded configuration to examine.
+    gisPath - The path to append to GIS files in the configuration.
+
+    Returns [results, needsBinning] where results are the parsed treatments and needsBinning indicates that the treatments need to be binned if True.
+    '''
+
     # Start by checking the district level treatment values, note the zero index
     underFive = float(configurationYaml['raster_db']['p_treatment_for_less_than_5_by_location'][0])
     overFive = float(configurationYaml['raster_db']['p_treatment_for_more_than_5_by_location'][0])
@@ -144,14 +151,16 @@ def get_treatments_list(configurationYaml, gisPath):
     return results, needsBinning
 
 
-# Get the treatment raster that is defined in the configuration
-#
-# configurationYaml - The loaded configuration to examine.
-# gisPath - The path to append to GIS files in the configuration.
-#
-# Returns a matrix contianing the climate zones, locations without
-#   a zone will use the common nodata value.
 def get_treatments_raster(configurationYaml, gisPath):
+    '''
+    Get the treatment raster that is defined in the configuration
+
+    configurationYaml - The loaded configuration to examine.
+    gisPath - The path to append to GIS files in the configuration.
+
+    Returns a matrix contianing the climate zones, locations without a zone will use the common nodata value.
+    '''
+
     # Start by checking if there is a raster defined, if so just load and return that
     if 'pr_treatment_under5' in configurationYaml['raster_db']:
         filename = str(configurationYaml['raster_db']['pr_treatment_under5'])
@@ -174,10 +183,13 @@ def get_treatments_raster(configurationYaml, gisPath):
     return generate_raster(filename, underFive)
 
 
-# Read the relevent data from the CSV file into a dictionary.
-#
-# filename - The file, with or without the path attached, to be loaded.
 def load_betas(filename):
+    '''
+    Read the relevent data from the CSV file into a dictionary
+
+    filename - The file, with or without the path attached, to be loaded
+    '''
+
     lookup = {}
     with open(filename) as csvfile:
         reader = csv.DictReader(csvfile)
@@ -207,10 +219,13 @@ def load_betas(filename):
     return lookup
 
 
-# Load the configuration file provided and return the parsed YAML
-#
-# configuration - The YAML file, with or without the path, to be parsed.
 def load_configuration(configuration):
+    '''
+    Load the configuration file provided and return the parsed YAML
+
+    configuration - The YAML file, with or without the path, to be parsed.
+    '''
+
     try:
         with open(configuration, "r") as yamlfile:
             cfg = yaml.load(yamlfile)
@@ -220,20 +235,13 @@ def load_configuration(configuration):
         exit(1)
 
 
-# Query the database at the given location for the beta values in the given 
-# study. Note that we are presuming that the filenames have been standardized 
-# to allow for scripting to take place.
-#
-# filterZero is an optional argument (default True) that prevents beta values 
-#   associated with zero as a local minima from being returned.
 def query_betas(connection, studyId, filename="data/calibration.csv"):
+    '''
+    Query the database at the given location for the beta values in the given study. 
+    Note that we are presuming that the filenames have been standardized to allow for scripting to take place.
+    '''
     
-    # Permit beta = 0 when PfPR = 0, but filter the beta out otherwise since 
-    # the PfPR should never quite reach zero during seasonal transmission, note the 
-    # regular expression flag for Python.
-    #
-    # TODO The WHERE clause of the query has been adjusted for Rwanda, we need a more
-    #      general way of supplying the data OR knowledge that the frame is acceptable.
+    # Query for the one year mean EIR and PfPR along with binning parameters from the filename.
     SQL = r"""
         SELECT replicateid,
             cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[1] as integer) AS zone,
