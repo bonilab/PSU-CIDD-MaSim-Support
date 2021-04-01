@@ -39,7 +39,7 @@ function run() {
   sed 's/#ZONE#/'"$zone"'/g' zone.asc > $zone.asc
   for population in $population_list; do
     for access in $treatment_list; do
-      for beta in `seq 0.00 0.05 1.5`; do
+      for beta in `seq 0.00 0.05 1.75`; do
         check_delay $user
 
         # Prepare the configuration file
