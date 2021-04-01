@@ -174,7 +174,7 @@ def main(configuration, gisPath, studyId, useCache):
     # Parse the country prefix
     prefix = cl.get_prefix(configuration)
     if prefix is None:
-        sys.stderr.write("Invalid country code associated with configuration file: {}\nExiting\n".format(configuration))
+        sys.stderr.write("Invalid country code associated with configuration file: {}\n".format(configuration))
         sys.exit(1)
 
     # Load the configuration
@@ -189,7 +189,7 @@ def main(configuration, gisPath, studyId, useCache):
 
     except Exception as error:
         if not os.path.exists(BETAVALUES):
-            sys.stderr.write("An unrecoverable error occurred: {}\nExiting\n".format(error))
+            sys.stderr.write("An unrecoverable error occurred: {}\n".format(error))
             sys.exit(1)
         else:
             print("Unable to refresh calibration data from database, using previous copy...")
