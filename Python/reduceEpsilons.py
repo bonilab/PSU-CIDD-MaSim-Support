@@ -79,7 +79,7 @@ def writeBetas(lookup, prefix, username):
                 betas = getLookupBetas(lookup, zone, population, treatment)
                 for beta in sorted(parameters[zone][population][treatment]):
                     if beta not in betas:
-                        reduced.append([zone, population, treatment, beta])
+                        reduced.append([int(zone), int(population), treatment, beta])
 
     # Double check to see if the list was cleared out
     if len(reduced) == 0:
