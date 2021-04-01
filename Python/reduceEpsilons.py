@@ -175,8 +175,8 @@ if __name__ == "__main__":
     if round(step, 5) != step:
         sys.stderr.write("{} exceeds maximum step of 0.00001\n".format(step))
         exit(1)
-    if step < tolerance:
-        sys.stderr.write("The step, {}, is less than the tolerance, {}\n".format(step, tolerance))
+    if tolerance < step:
+        sys.stderr.write("The tolerance, {}, is less than the step, {}\n".format(step, tolerance))
         exit(1)
 
     # Defer to main to do everything else
