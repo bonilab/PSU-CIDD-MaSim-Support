@@ -3,6 +3,7 @@
 # This module includes functions that are intended for use with calibration functions.
 import csv
 import os
+import re
 import sys
 import yaml
 
@@ -30,6 +31,15 @@ def get_bin(value, bins):
 
     # Throw an error if we couldn't find a match (shouldn't happen)
     raise Exception("Matching bin not found for value: " + str(value))
+
+
+# Get the three letter country code prefix from the filename 
+def get_prefix(filename):
+    # Check to see if it looks like there is a country prefix
+    prefix = re.search(r"^([a-z]{3})-.*\.yml", filename)
+    if prefix is None:
+        return None
+    return prefix.group(1)
 
 
 # Generate a reference raster using the data in the filename and the value provided
