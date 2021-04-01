@@ -211,7 +211,7 @@ if __name__ == "__main__":
 
     # Check that the study id is supplied if we are not using the cache
     if not args.useCache and args.studyid == -1:
-        sys.stderr.write("The study id must be supplied when not using a cached calibration")
+        sys.stderr.write("The study id must be supplied when not using a cached calibration\n")
         sys.exit(1)
     
     # Call the main function with the paramters    
