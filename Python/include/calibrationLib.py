@@ -244,19 +244,24 @@ def query_betas(connection, studyId, filename="data/calibration.csv"):
     # Query for the one year mean EIR and PfPR along with binning parameters from the filename.
     SQL = r"""
         SELECT replicateid,
-            cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[1] as integer) AS zone,
-            cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[2] as integer) AS population,
-            cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[3] as float) AS access,
-            cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[4] as float) AS beta,
-            avg(eir) AS eir, 
-            avg(pfpr2to10) AS pfpr2to10
-        FROM sim.configuration c
-            INNER JOIN sim.replicate r on r.configurationid = c.id
-            INNER JOIN sim.monthlydata md on md.replicateid = r.id
-            INNER JOIN sim.monthlysitedata msd on msd.monthlydataid = md.id
-        WHERE studyid = %(studyId)s
-            AND md.dayselapsed BETWEEN 4015 AND 4380
-        GROUP BY replicateid, filename
+            cast(fileparts[1] as integer) as zone,
+            cast(fileparts[2] as integer) as population,
+            cast(fileparts[3] as float) as access,
+            cast(fileparts[4] as float) as beta,
+            eir,
+            pfpr2to10
+        FROM (
+            SELECT replicateid,
+                regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)') as fileparts,
+                avg(eir) AS eir, 
+                avg(pfpr2to10) AS pfpr2to10
+            FROM sim.configuration c
+                INNER JOIN sim.replicate r on r.configurationid = c.id
+                INNER JOIN sim.monthlydata md on md.replicateid = r.id
+                INNER JOIN sim.monthlysitedata msd on msd.monthlydataid = md.id
+            WHERE c.studyid = %(studyId)s
+                AND md.dayselapsed BETWEEN 4015 AND 4380
+            GROUP BY replicateid, filename) iq
         ORDER BY zone, population, access, pfpr2to10"""
     header = "replicateid,zone,population,access,beta,eir,pfpr2to10\n"
 
