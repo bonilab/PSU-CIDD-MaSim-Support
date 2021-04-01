@@ -105,10 +105,12 @@ def create_beta_map(configuration, gisPath, prefix):
     if not os.path.isdir('out'): os.mkdir('out')
 
     # Save the maps        
-    print("\nSaving {}".format('out/epsilons_beta.asc'))
-    write_asc(ascHeader, epsilons, 'out/epsilons_beta.asc')
-    print("Saving {}".format('out/mean_beta.asc'))
-    write_asc(ascHeader, meanBeta, 'out/mean_beta.asc')
+    filename = "out/{}_epsilons.asc".format(prefix)
+    print("\nSaving {}".format(filename))
+    write_asc(ascHeader, epsilons, filename)
+    filename = "out/{}_beta.asc".format(prefix)
+    print("Saving {}".format(filename))
+    write_asc(ascHeader, meanBeta, filename)
 
 
 # Get the beta values that generate the PfPR for the given population and 
