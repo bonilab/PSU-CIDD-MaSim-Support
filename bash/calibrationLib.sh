@@ -63,7 +63,8 @@ function run() {
 
 function runCsv() {
   eval filename=$1
-  eval user=$2
+  eval country=$2
+  eval user=$3
 
   while IFS=, read -r zone population access beta
   do
