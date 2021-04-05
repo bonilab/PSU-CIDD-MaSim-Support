@@ -1,2 +1,2 @@
 #!/bin/bash
-python3 $(dirname -- "$0")/generateMetrics.py "$@"
+python3 $(dirname -- "$0")/Python/generateMetrics.py "$@"

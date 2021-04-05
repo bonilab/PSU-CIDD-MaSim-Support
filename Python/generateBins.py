@@ -105,7 +105,7 @@ def bin_data(data, minimumClasses=5, maximumClasses=30, delta=0.01):
         return breaks[1:]
 
 
-def save(pfpr, treatments, populationBreaks, filename, username):
+def save(pfpr, treatments, populationBreaks, filename, prefix, username):
     with open(filename, 'w') as script:
         # Print the front matter
         script.write("#!/bin/bash\n")
@@ -113,17 +113,17 @@ def save(pfpr, treatments, populationBreaks, filename, username):
 
         # Print the ASC file generation commands
         script.write("generateAsc \"\\\"{}\\\"\"\n".format(
-            " ".join([str(x) for x in sorted(populationBreaks)])))
+            " ".join([str(int(x)) for x in sorted(populationBreaks)])))
         script.write("generateZoneAsc \"\\\"{}\\\"\"\n\n".format(
-            " ".join([str(x) for x in sorted(pfpr.keys())])))
+            " ".join([str(int(x)) for x in sorted(pfpr.keys())])))
 
         # Print the zone matter
         for zone in pfpr.keys():
-            script.write("run {} \"\\\"{}\\\"\" \"\\\"{}\\\"\" {}".format(
+            script.write("run {} \"\\\"{}\\\"\" \"\\\"{}\\\"\" {} {}\n".format(
                 zone,
-                " ".join([str(x) for x in sorted(populationBreaks)]),
+                " ".join([str(int(x)) for x in sorted(populationBreaks)]),
                 " ".join([str(x) for x in sorted(treatments[zone])]),
-                username))
+                prefix, username))
 
 
 if __name__ == '__main__':
@@ -159,4 +159,4 @@ if __name__ == '__main__':
     # Save the basic script
     if not os.path.isdir('out'):
         os.mkdir('out')
-    save(pfpr, treatments, populationBreaks, 'out/calibration.sh', username)
+    save(pfpr, treatments, populationBreaks, 'out/calibration.sh', prefix, username)

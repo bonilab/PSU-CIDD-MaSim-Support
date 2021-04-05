@@ -3,6 +3,7 @@
 # This module includes functions that are intended for use with calibration functions.
 import csv
 import os
+import re
 import sys
 import yaml
 
@@ -13,8 +14,9 @@ from database import select, DatabaseError
 
 YAML_SENTINEL = -1
 
-# Get the bin that the value belongs to
 def get_bin(value, bins):
+    '''Get the bin that the value belongs to'''
+
     # If the value is a bin, then return it
     if value in bins: return value
 
@@ -32,8 +34,18 @@ def get_bin(value, bins):
     raise Exception("Matching bin not found for value: " + str(value))
 
 
-# Generate a reference raster using the data in the filename and the value provided
+def get_prefix(filename):
+    '''Get the three letter country code prefix from the filename'''
+
+    prefix = re.search(r"^([a-z]{3})-.*\.yml", filename)
+    if prefix is None:
+        return None
+    return prefix.group(1)
+
+
 def generate_raster(filename, value):
+    '''Generate a reference raster using the data in the filename and the value provided'''
+
     [ ascHeader, ascData ] = load_asc(filename)
     for row in range(0, ascHeader['nrows']):
         for col in range(0, ascHeader['ncols']):
@@ -43,14 +55,17 @@ def generate_raster(filename, value):
     return ascData
 
 
-# Get the climate zones that are defined in the configuration.
-#
-# configurationYaml - The loaded configuration to examine.
-# gisPath - The path to append to GIS files in the configuration.
-#
-# Returns a matrix contianing the climate zones, locations without
-#   a zone will use the common nodata value.
+
 def get_climate_zones(configurationYaml, gisPath):
+    '''
+    Get the climate zones that are defined in the configuration.
+    
+    configurationYaml - The loaded configuration to examine.
+    gisPath - The path to append to GIS files in the configuration.
+    
+    Returns a matrix contianing the climate zones, locations without a zone will use the common nodata value.
+    '''
+
     # Start by checking if there is a raster defined, if so just load and return that
     if 'ecoclimatic_raster' in configurationYaml['raster_db']:
         filename = str(configurationYaml['raster_db']['ecoclimatic_raster'])
@@ -72,14 +87,16 @@ def get_climate_zones(configurationYaml, gisPath):
     return generate_raster(filename, ecozone)
 
 
-# Extract the treatments from the configuration that is supplied.
-#
-# configurationYaml - The loaded configuration to examine.
-# gisPath - The path to append to GIS files in the configuration.
-#
-# Returns [results, needsBinning] where results are the parsed treatments
-#   and needsBinning indicates that the treatments need to be binned if True.
 def get_treatments_list(configurationYaml, gisPath):
+    '''
+    Extract the treatments from the configuration that is supplied.
+
+    configurationYaml - The loaded configuration to examine.
+    gisPath - The path to append to GIS files in the configuration.
+
+    Returns [results, needsBinning] where results are the parsed treatments and needsBinning indicates that the treatments need to be binned if True.
+    '''
+
     # Start by checking the district level treatment values, note the zero index
     underFive = float(configurationYaml['raster_db']['p_treatment_for_less_than_5_by_location'][0])
     overFive = float(configurationYaml['raster_db']['p_treatment_for_more_than_5_by_location'][0])
@@ -94,18 +111,29 @@ def get_treatments_list(configurationYaml, gisPath):
         return results, False
 
     # Get the unique under five treatments
-    filename = str(configurationYaml['raster_db']['pr_treatment_under5'])
-    filename = os.path.join(gisPath, filename)
-    [acsHeader, ascData] = load_asc(filename)
-    underFive = list(set(i for j in ascData for i in j))
-    underFive.remove(acsHeader['nodata'])
+    try:
+        filename = str(configurationYaml['raster_db']['pr_treatment_under5'])
+        filename = os.path.join(gisPath, filename)
+        [acsHeader, ascData] = load_asc(filename)
+        underFive = list(set(i for j in ascData for i in j))
+        underFive.remove(acsHeader['nodata'])
+    except FileNotFoundError:
+        # Warn and return when the U5 treatment rate cannot be opened
+        sys.stderr.write("ERROR: Unable to open file associated with under five treatment rate: {}\n".format(filename))
+        return None
 
     # Get the unique over five treatments
-    filename = str(configurationYaml['raster_db']['pr_treatment_over5'])
-    filename = os.path.join(gisPath, filename)
-    [_, ascData] = load_asc(filename)
-    overFive = list(set(i for j in ascData for i in j)) 
-    overFive.remove(acsHeader['nodata'])
+    try:
+        filename = str(configurationYaml['raster_db']['pr_treatment_over5'])
+        filename = os.path.join(gisPath, filename)
+        [_, ascData] = load_asc(filename)
+        overFive = list(set(i for j in ascData for i in j)) 
+        overFive.remove(acsHeader['nodata'])
+    except FileNotFoundError:
+        # Warn and continue when the O5 rate cannot be opened
+        sys.stderr.write("WARNING: Unable to open file associated with over five treatment rate: {}\n".format(filename))
+        sys.stderr.write("WARNING: Continued without over five treatment rates.\n")
+        overFive = []
 
     # Get the unique district ids
     filename = str(configurationYaml['raster_db']['district_raster'])
@@ -123,14 +151,16 @@ def get_treatments_list(configurationYaml, gisPath):
     return results, needsBinning
 
 
-# Get the treatment raster that is defined in the configuration
-#
-# configurationYaml - The loaded configuration to examine.
-# gisPath - The path to append to GIS files in the configuration.
-#
-# Returns a matrix contianing the climate zones, locations without
-#   a zone will use the common nodata value.
 def get_treatments_raster(configurationYaml, gisPath):
+    '''
+    Get the treatment raster that is defined in the configuration
+
+    configurationYaml - The loaded configuration to examine.
+    gisPath - The path to append to GIS files in the configuration.
+
+    Returns a matrix contianing the climate zones, locations without a zone will use the common nodata value.
+    '''
+
     # Start by checking if there is a raster defined, if so just load and return that
     if 'pr_treatment_under5' in configurationYaml['raster_db']:
         filename = str(configurationYaml['raster_db']['pr_treatment_under5'])
@@ -153,10 +183,13 @@ def get_treatments_raster(configurationYaml, gisPath):
     return generate_raster(filename, underFive)
 
 
-# Read the relevent data from the CSV file into a dictionary.
-#
-# filename - The file, with or without the path attached, to be loaded.
 def load_betas(filename):
+    '''
+    Read the relevent data from the CSV file into a dictionary
+
+    filename - The file, with or without the path attached, to be loaded
+    '''
+
     lookup = {}
     with open(filename) as csvfile:
         reader = csv.DictReader(csvfile)
@@ -178,18 +211,21 @@ def load_betas(filename):
                 lookup[zone][population][treatment] = []
 
             # Ignore the zeros unless the beta is also zero
-            if float(row['pfpr']) == 0 and float(row['beta']) != 0: continue
+            if float(row['pfpr2to10']) == 0 and float(row['beta']) != 0: continue
 
             # Append the beta and PfPR
-            lookup[zone][population][treatment].append([ float(row['pfpr']) / 100, float(row['beta']) ])
+            lookup[zone][population][treatment].append([ float(row['pfpr2to10']) / 100, float(row['beta']) ])
 
     return lookup
 
 
-# Load the configuration file provided and return the parsed YAML
-#
-# configuration - The YAML file, with or without the path, to be parsed.
 def load_configuration(configuration):
+    '''
+    Load the configuration file provided and return the parsed YAML
+
+    configuration - The YAML file, with or without the path, to be parsed.
+    '''
+
     try:
         with open(configuration, "r") as yamlfile:
             cfg = yaml.load(yamlfile)
@@ -199,54 +235,35 @@ def load_configuration(configuration):
         exit(1)
 
 
-# Query the database at the given location for the beta values in the given 
-# study. Note that we are presuming that the filenames have been standardized 
-# to allow for scripting to take place.
-#
-# filterZero is an optional argument (default True) that prevents beta values 
-#   associated with zero as a local minima from being returned.
-def query_betas(connection, studyId, filterZero=True, filename="data/calibration.csv"):
+def query_betas(connection, studyId, filename="data/calibration.csv"):
+    '''
+    Query the database at the given location for the beta values in the given study. 
+    Note that we are presuming that the filenames have been standardized to allow for scripting to take place.
+    '''
     
-    # Permit beta = 0 when PfPR = 0, but filter the beta out otherwise since 
-    # the PfPR should never quite reach zero during seasonal transmission, note the 
-    # regular expression flag for Python.
-    #
-    # TODO The WHERE clause of the query has been adjusted for Rwanda, we need a more
-    #      general way of supplying the data OR knowledge that the frame is acceptable.
+    # Query for the one year mean EIR and PfPR along with binning parameters from the filename.
     SQL = r"""
-        SELECT replicateid, zone, population, access, beta, eir, 
-            CASE WHEN zone IN (0, 1) THEN max ELSE pfpr2to10 END AS pfpr,
-            min, pfpr2to10, max
-        FROM (
-            SELECT replicateid, filename,
-                cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[1] as integer) AS zone,
-                cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[2] as integer) AS population,
-                cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[3] as float) AS access,
-                cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[4] as float) AS beta,
-                avg(eir) AS eir, 
-                min(pfpr2to10) AS min, 
-                avg(pfpr2to10) AS pfpr2to10, 
-                max(pfpr2to10) AS max
-            FROM sim.configuration c
-                INNER JOIN sim.replicate r on r.configurationid = c.id
-                INNER JOIN sim.monthlydata md on md.replicateid = r.id
-                INNER JOIN sim.monthlysitedata msd on msd.monthlydataid = md.id
-            WHERE studyid = %(studyId)s AND md.dayselapsed between 5144 and 5538
-            GROUP BY replicateid, filename) iq           
-        ORDER BY zone, population, access, pfpr"""
-    header = "replicateid,zone,population,access,beta,eir,pfpr,min,pfpr2to10,max\n"
-
-    # Include the filter if need be
-    WHERE = "WHERE (beta = 0 and pfpr2to10 = 0) OR (beta != 0 and min != 0) "
-    if filterZero:
-        sql = SQL.format(WHERE)
-    else:
-        sql = SQL.format("")
+        SELECT replicateid,
+            cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[1] as integer) AS zone,
+            cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[2] as integer) AS population,
+            cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[3] as float) AS access,
+            cast((regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)'))[4] as float) AS beta,
+            avg(eir) AS eir, 
+            avg(pfpr2to10) AS pfpr2to10
+        FROM sim.configuration c
+            INNER JOIN sim.replicate r on r.configurationid = c.id
+            INNER JOIN sim.monthlydata md on md.replicateid = r.id
+            INNER JOIN sim.monthlysitedata msd on msd.monthlydataid = md.id
+        WHERE studyid = %(studyId)s
+            AND md.dayselapsed BETWEEN 4015 AND 4380
+        GROUP BY replicateid, filename
+        ORDER BY zone, population, access, pfpr2to10"""
+    header = "replicateid,zone,population,access,beta,eir,pfpr2to10\n"
 
     try:
         # Select for the beta values
         print("Loading beta values for study id: {}".format(studyId))
-        rows = select(connection, sql, {'studyId': studyId})
+        rows = select(connection, SQL, {'studyId': studyId})
     except DatabaseError:
         raise Exception("Error occurred while querying the database.")
 

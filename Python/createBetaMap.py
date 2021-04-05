@@ -4,6 +4,7 @@
 #
 # This module reads an ASC file that contains the PfPR for the two to ten age
 # bracket and generates three ASC files with beta values.
+import argparse
 import os
 import sys
 
@@ -12,33 +13,34 @@ from pathlib import Path
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
+import include.calibrationLib as cl
 from include.ascFile import load_asc, write_asc
-from include.calibrationLib import get_bin, get_climate_zones, get_treatments_raster, load_betas, load_configuration, query_betas
 from include.utility import progressBar
 
 
 # Default path for beta values
 BETAVALUES = "data/calibration.csv"
 
-# TODO Still need a good way of supplying these
-PFPR_FILE       = "rwa_pfpr2to10.asc"
-POPULATION_FILE = "rwa_population.asc"
+# Templates for the expected reference files
+PFPR_FILE       = "{}_pfpr2to10.asc"
+POPULATION_FILE = "{}_population.asc"
 
 # Starting epsilon and delta to be used
 EPSILON = 0.00001
 MAX_EPSILON = 0.1
 
-def create_beta_map(configuration, gisPath):
+def create_beta_map(configuration, gisPath, prefix):
+   
     # Load the relevent raster files
-    filename = os.path.join(gisPath, PFPR_FILE)
+    filename = os.path.join(gisPath, PFPR_FILE.format(prefix))
     [ascHeader, pfpr] = load_asc(filename)
-    filename = os.path.join(gisPath, POPULATION_FILE)    
+    filename = os.path.join(gisPath, POPULATION_FILE.format(prefix))    
     [_, population] = load_asc(filename)
 
     # Defer to the library to load the rest
-    climate = get_climate_zones(configuration, gisPath)
-    treatments = get_treatments_raster(configuration, gisPath)
-    lookup = load_betas(BETAVALUES)
+    climate = cl.get_climate_zones(configuration, gisPath)
+    treatments = cl.get_treatments_raster(configuration, gisPath)
+    lookup = cl.load_betas(BETAVALUES)
 
     # Prepare for the ASC data
     epsilons = []
@@ -103,10 +105,12 @@ def create_beta_map(configuration, gisPath):
     if not os.path.isdir('out'): os.mkdir('out')
 
     # Save the maps        
-    print("\nSaving {}".format('out/epsilons_beta.asc'))
-    write_asc(ascHeader, epsilons, 'out/epsilons_beta.asc')
-    print("Saving {}".format('out/mean_beta.asc'))
-    write_asc(ascHeader, meanBeta, 'out/mean_beta.asc')
+    filename = "out/{}_epsilons.asc".format(prefix)
+    print("\nSaving {}".format(filename))
+    write_asc(ascHeader, epsilons, filename)
+    filename = "out/{}_beta.asc".format(prefix)
+    print("Saving {}".format(filename))
+    write_asc(ascHeader, meanBeta, filename)
 
 
 # Get the beta values that generate the PfPR for the given population and 
@@ -140,8 +144,8 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
         raise ValueError("Zone {} was not found in lookup".format(zone))
 
     # Determine the population and treatment bin we are working with
-    populationBin = get_bin(population, lookup[zone].keys())
-    treatmentBin = get_bin(treatment, lookup[zone][populationBin].keys())
+    populationBin = cl.get_bin(population, lookup[zone].keys())
+    treatmentBin = cl.get_bin(treatment, lookup[zone][populationBin].keys())
     
     # Note the bounds
     low = pfpr - epsilon
@@ -165,53 +169,52 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
     
 
 # Main entry point for the script
-def main(configuration, gisPath, studyId, zeroFilter):
+def main(configuration, gisPath, studyId, useCache):
+
+    # Parse the country prefix
+    prefix = cl.get_prefix(configuration)
+    if prefix is None:
+        sys.stderr.write("Invalid country code associated with configuration file: {}\n".format(configuration))
+        sys.exit(1)
+
     # Load the configuration
-    cfg = load_configuration(configuration)
+    cfg = cl.load_configuration(configuration)
 
     # Attempt to load the data from the database, if that fails, fall back to local file
     try:
-        query_betas(cfg["connection_string"], studyId, zeroFilter, filename = BETAVALUES)    
+        if not useCache:
+            cl.query_betas(cfg["connection_string"], studyId, filename = BETAVALUES)    
+        else:
+            print("Using cached calibration values for map...")
+
     except Exception as error:
         if not os.path.exists(BETAVALUES):
-            sys.stderr.write("An unrecoverable error occurred: {}\nExiting\n".format(error))
+            sys.stderr.write("An unrecoverable error occurred: {}\n".format(error))
             sys.exit(1)
         else:
             print("Unable to refresh calibration data from database, using previous copy...")
 
     # Proceed with creating beta map
-    create_beta_map(cfg, gisPath)
+    create_beta_map(cfg, gisPath, prefix)
 
 
 if __name__ == "__main__":
-    # Check the command line
-    # 0: Script
-    # 1: Configuration file
-    # 3: GIS path
-    # 4: Study identification number
-    # 5: Optional zero filter
-    if len(sys.argv) not in (4, 5):
-        print("Usage: ./createBetaMap.py [configuration] [gis] [studyid] [filter]")
-        print("configuration - the configuration file to be loaded")
-        print("gis - the path to the directory that the GIS files can be found in")
-        print("studyid  - the database id of the study to use for the reference beta values")
-        print("filter - optional default true (1), false (0) means zeroed minima should not be filtered")
-        print("\nExample ./createBetaMap.py ../country/config.yml 1")
-        exit(0)
-
     # Parse the parameters
-    configuration = sys.argv[1]
-    gisPath = str(sys.argv[2])
-    studyId = int(sys.argv[3])
-    
-    # Parse out the zero filter if one is provided, otherwise default True
-    zeroFilter = True
-    if len(sys.argv) == 5:
-        if sys.argv[4] == "0":
-            zeroFilter = False
-            print("Zero filter disabled")
-        if sys.argv[4] not in ["0", "1"]:
-            print("Flag for filter must be 0 (false) or 1 (true)")
-            exit(1)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', action='store', dest='configuration', required=True,
+        help='The configuration file to reference when creating the beta map')
+    parser.add_argument('-g', action='store', dest='gis', required=True,
+        help='The path to the directory that the GIS files can be found in')
+    parser.add_argument('-s', action='store', dest='studyid', default=-1,
+        help='The id of the study to use for the reference beta values')
+    parser.add_argument('--cache', action='store_true', dest='useCache',
+        help='Use cached values for the calibration')
+    args = parser.parse_args()
 
-    main(configuration, gisPath, studyId, zeroFilter)
+    # Check that the study id is supplied if we are not using the cache
+    if not args.useCache and args.studyid == -1:
+        sys.stderr.write("The study id must be supplied when not using a cached calibration\n")
+        sys.exit(1)
+    
+    # Call the main function with the paramters    
+    main(args.configuration, args.gis, int(args.studyid), args.useCache)

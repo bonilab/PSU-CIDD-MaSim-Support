@@ -1,2 +1,2 @@
 #!/bin/bash
-python3 $(dirname -- "$0")/getVerificationStudy.py "$@"
+python3 $(dirname -- "$0")/Python/getVerificationStudy.py "$@"
