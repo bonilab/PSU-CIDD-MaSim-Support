@@ -44,9 +44,8 @@ def insert_returning(connectionString, sql, parameters):
         cursor = connection.cursor()
 
         # Execute the query, note the rows
-        #cursor.execute(sql, (parameters['Name'],))
-        for s_v in sql:
-            cursor.execute(s_v[0], s_v[1])
+        cursor.execute(sql, parameters)
+
         returnValue = cursor.fetchone()[0]
 
         # Clean-up and return
@@ -63,75 +62,7 @@ def insert_returning(connectionString, sql, parameters):
         raise DatabaseError
 
 
-#def delete(connectionString, sql, parameters):
-#    try:
-        # Open the connection, override any timeout provided with something shorter
-        # since we expect to be running interactively
-#        connection = psycopg2.connect(connectionString, connect_timeout=1)
-#        cursor = connection.cursor()
-
-        # Execute the query, note the rows
-#        cursor.execute(sql, (parameters['id'],))
-
-#        connection.commit()
-        # check if the study exists
-#        if cursor.rowcount:
-#            print("Study deleted successfully")
-#        else:
-#            print("Study does not exist")
-
-        # Clean-up and return
-#        cursor.close()
-#        return cursor.rowcount
-
-
-#    except psycopg2.OperationalError as err:
-#        sys.stderr.write(f'An error occurred connecting to the database: {err}')
-#        raise DatabaseError
-
-#    except psycopg2.DatabaseError as err:
-#        sys.stderr.write(f'A general database error occurred: {err}')
-#        raise DatabaseError
-
-#    except psycopg2.Error as err:
-#        sys.stderr.write(f'An error occurred: {type(err)} {err}')
-#        raise DatabaseError
-
-
-#def update(connectionString, sql, parameters):
-#    try:
-        # Open the connection, override any timeout provided with something shorter
-        # since we expect to be running interactively
-#        connection = psycopg2.connect(connectionString, connect_timeout=1)
-#        cursor = connection.cursor()
-
-        # Execute the query, note the rows
-#        cursor.execute(sql, (parameters['name'], parameters['id'],))
-
-#        connection.commit()
-        # check if the study exists
-#        if cursor.rowcount:
-#            print("Study renamed successfully")
-#        else:
-#            print("Study does not exist")
-
-        # Clean-up and return
-#        cursor.close()
-
-#    except psycopg2.OperationalError as err:
-#        sys.stderr.write(f'An error occurred connecting to the database: {err}')
-#        raise DatabaseError
-
-#    except psycopg2.DatabaseError as err:
-#        sys.stderr.write(f'A general database error occurred: {err}')
- #       raise DatabaseError
-
-#    except psycopg2.Error as err:
-#        sys.stderr.write(f'An error occurred: {type(err)} {err}')
-#        raise DatabaseError
-
-
-def operationdb(connectionString, sql):
+def operationdb(connectionString, sql, parameters):
     try:
         # Open the connection, override any timeout provided with something shorter
         # since we expect to be running interactively
@@ -140,9 +71,7 @@ def operationdb(connectionString, sql):
         cursor = connection.cursor()
 
         # Execute the query, note the rows
-        # cursor.execute(sql, (parameters['id'],))
-        for s_v in sql:
-            cursor.execute(s_v[0], s_v[1])
+        cursor.execute(sql, parameters)
 
         connection.commit()
 

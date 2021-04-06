@@ -23,21 +23,24 @@ def get_studies(connectionString):
 
 # Add the indicated study to the database
 def add_study(connectionString, studyName):
-    sql = [('INSERT INTO study(Name) VALUES(%s) RETURNING id;', (studyName,))]
-    #return database.insert_returning(connectionString, sql, {'Name': studyName})
-    return database.insert_returning(connectionString, sql)
+    sql = 'INSERT INTO study(Name) VALUES(%s) RETURNING id;'
+    param = (studyName,)
+    return database.insert_returning(connectionString, sql, param)
+
 
 # Delete the indicated study from the database
 def remove_study(configuration, stdid):
-    sql = [('DELETE FROM study WHERE id = %s;', (stdid,))]
-    #return database.delete(configuration, sql, {'id': stdid})
-    return database.operationdb(configuration, sql)
+    sql = 'DELETE FROM study WHERE id = %s'
+    param = (stdid,)
+    return database.operationdb(configuration, sql, param)
+
 
 # Rename the study in the database
 def rename_studyname(configuration, stdid, newname):
-    sql = [('UPDATE study SET name = %s WHERE id = %s', (newname, stdid,))]
-    #return database.update(configuration, sql, {'id': stdid, 'name': newname})
-    return database.operationdb(configuration, sql)
+    sql = 'UPDATE study SET name = %s WHERE id = %s'
+    param = (newname, stdid,)
+    return database.operationdb(configuration, sql, param)
+
 
 def main(args):
     try:
@@ -55,18 +58,8 @@ def main(args):
 
         # Rename study
         if args.update:
-            rows = get_studies(cfg["connection_string"])
-            if (len(rows) >= 1):
-                # display the list of studies to the user
-                layout = "{!s:20} {!s:14}"
-                print(layout.format("Study Name", "Study Id"))
-                print("-" * 34)
-                for row in rows:
-                    print(layout.format(*(row[1], row[0])))
-            else:
-                print("Table is empty")
-            id = input("Enter study id:")
-            sname = input("Enter new study name:")
+            id = args.update[0]
+            sname = str(args.update[1])
             rename_studyname(cfg["connection_string"], id, sname)
 
         # Display the formated list of studies in the database
@@ -99,7 +92,8 @@ if __name__ == "__main__":
         parser.add_argument('-a', '--add', action='store', default=None)
         parser.add_argument('-l', '--list', action='store_true', default=False)
         parser.add_argument('-d', '--delete', action='store', dest='remove', default=None)
-        parser.add_argument('-u', '--update', action='store_true', default=False)
+        parser.add_argument('-u', '--update', default=[], nargs=2, dest='update')
+        #parser.add_argument('-u', '--update', action='store_true', default=False)
         args = parser.parse_args()
 
     except:
