@@ -196,12 +196,12 @@ def load_betas(filename):
         for row in reader:
 
             # Add a new entry for the zone
-            zone = int(row['zone'])
+            zone = int(float(row['zone']))
             if zone not in lookup:
                 lookup[zone] = {}
 
             # Add a new entry for the population
-            population = float(row['population'])
+            population = int(float(row['population']))
             if population not in lookup[zone]:
                 lookup[zone][population] = {}
             
@@ -244,15 +244,15 @@ def query_betas(connection, studyId, filename="data/calibration.csv"):
     # Query for the one year mean EIR and PfPR along with binning parameters from the filename.
     SQL = r"""
         SELECT replicateid,
-            cast(fileparts[1] as integer) as zone,
-            cast(fileparts[2] as integer) as population,
-            cast(fileparts[3] as float) as access,
-            cast(fileparts[4] as float) as beta,
+            cast(fileparts[1] as numeric) as zone,
+            cast(fileparts[2] as numeric) as population,
+            cast(fileparts[3] as numeric) as access,
+            cast(fileparts[4] as numeric) as beta,
             eir,
             pfpr2to10
         FROM (
             SELECT replicateid,
-                regexp_matches(filename, '^(\d*)-(\d*)-([\.\d]*)-([\.\d]*)') as fileparts,
+                regexp_matches(filename, '^([\d\.]*)-(\d*)-([\.\d]*)-([\.\d]*)') as fileparts,
                 avg(eir) AS eir, 
                 avg(pfpr2to10) AS pfpr2to10
             FROM sim.configuration c
@@ -271,6 +271,10 @@ def query_betas(connection, studyId, filename="data/calibration.csv"):
         rows = select(connection, SQL, {'studyId': studyId})
     except DatabaseError:
         raise Exception("Error occurred while querying the database.")
+
+    # Make sure results were returned
+    if len(rows) == 0:
+        raise ValueError("No data returned for study id: {}".format(studyId))
 
     # Create the directory if need be
     directory = os.path.dirname(os.path.abspath(filename))

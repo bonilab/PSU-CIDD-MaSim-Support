@@ -42,6 +42,10 @@ def create_beta_map(configuration, gisPath, prefix):
     treatments = cl.get_treatments_raster(configuration, gisPath)
     lookup = cl.load_betas(BETAVALUES)
 
+    # Make sure the data loaded correct, or that there is data
+    if len(lookup) == 0:
+        raise ValueError("No calibration data is present in the file: {}".format(BETAVALUES))
+
     # Prepare for the ASC data
     epsilons = []
     maxEpsilon = 0
@@ -93,7 +97,7 @@ def create_beta_map(configuration, gisPath, prefix):
         progressBar(row + 1, ascHeader['nrows'])
                 
     # Write the results
-    print("\n Max epsilon: {} / {}".format(maxEpsilon, maxValues))
+    print("\n Max epsilon: {:.6f} / {}".format(maxEpsilon, maxValues))
     print("Epsilon Distribution")
     total = 0
     for ndx in range(0, len(distribution)):
@@ -186,13 +190,12 @@ def main(configuration, gisPath, studyId, useCache):
             cl.query_betas(cfg["connection_string"], studyId, filename = BETAVALUES)    
         else:
             print("Using cached calibration values for map...")
-
-    except Exception as error:
+    except Exception as err:
+        sys.stderr.write("Error: {}\n".format(str(err)))
         if not os.path.exists(BETAVALUES):
-            sys.stderr.write("An unrecoverable error occurred: {}\n".format(error))
             sys.exit(1)
         else:
-            print("Unable to refresh calibration data from database, using previous copy...")
+            print("Attempting to use previous calibration file...")
 
     # Proceed with creating beta map
     create_beta_map(cfg, gisPath, prefix)
@@ -216,5 +219,9 @@ if __name__ == "__main__":
         sys.stderr.write("The study id must be supplied when not using a cached calibration\n")
         sys.exit(1)
     
-    # Call the main function with the paramters    
-    main(args.configuration, args.gis, int(args.studyid), args.useCache)
+    # Call the main function with the paramters
+    try:
+        main(args.configuration, args.gis, int(args.studyid), args.useCache)
+    except Exception as err:
+        sys.stderr.write("Error: {}\n".format(str(err)))
+        sys.exit(1)

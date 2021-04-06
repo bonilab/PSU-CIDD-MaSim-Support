@@ -4,9 +4,12 @@
 # will encode the values based using the name ZONE-POPUATION-ACCESS-BETA-COUNTRY.yml although a fixed
 # study id is in place as well.
 
-# Get the current job count, note the overcount due to the delay.
-# Wait if there are currently too many jobs
+# The maximum number of jobs that can run
 LIMIT=50
+
+# Step size used when iterating over the files 
+STEP=0.05
+
 function check_delay {
   eval user=$1
   while [ `qstat -u $user | grep $user | wc -l` -gt $LIMIT ]; do
@@ -39,7 +42,7 @@ function run() {
   sed 's/#ZONE#/'"$zone"'/g' zone.asc > $zone.asc
   for population in $population_list; do
     for access in $treatment_list; do
-      for beta in `seq 0.00 0.05 1.75`; do
+      for beta in `seq 0.00 $STEP 1.75`; do
         check_delay $user
 
         # Prepare the configuration file
