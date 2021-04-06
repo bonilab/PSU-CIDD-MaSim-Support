@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # studyManager.py
-# 
+#
 # Allows users to preform basic study management for the indicated configuration
 # (i.e., project database)
 import os
@@ -15,7 +15,7 @@ import include.database as database
 from include.calibrationLib import load_configuration
 
 
-# Get a list of all the studies from the database
+# Get list of all the studies from the database
 def get_studies(connectionString):
     sql = 'SELECT id, name FROM STUDY ORDER BY id ASC'
     return database.select(connectionString, sql, '')
@@ -24,7 +24,22 @@ def get_studies(connectionString):
 # Add the indicated study to the database
 def add_study(connectionString, studyName):
     sql = 'INSERT INTO study(Name) VALUES(%s) RETURNING id;'
-    return database.insert_returning(connectionString, sql, {'Name': studyName})
+    param = (studyName,)
+    return database.insert_returning(connectionString, sql, param)
+
+
+# Delete the indicated study from the database
+def remove_study(configuration, stdid):
+    sql = 'DELETE FROM study WHERE id = %s'
+    param = (stdid,)
+    return database.operationdb(configuration, sql, param)
+
+
+# Rename the study in the database
+def rename_studyname(configuration, stdid, newname):
+    sql = 'UPDATE study SET name = %s WHERE id = %s'
+    param = (newname, stdid,)
+    return database.operationdb(configuration, sql, param)
 
 
 def main(args):
@@ -35,6 +50,17 @@ def main(args):
         if args.add is not None:
             studies = add_study(cfg["connection_string"], args.add)
             print(f"Study Id: {studies}")
+
+        # Delete study
+        if args.remove is not None:
+            # delete
+            remove_study(cfg["connection_string"], args.remove)
+
+        # Rename study
+        if args.update:
+            id = args.update[0]
+            sname = str(args.update[1])
+            rename_studyname(cfg["connection_string"], id, sname)
 
         # Display the formated list of studies in the database
         if args.list:
@@ -58,12 +84,20 @@ def main(args):
 
 
 if __name__ == "__main__":
-    # Parse the parameters
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-a', '--add', action='store', default=None)
-    parser.add_argument('-c', action='store', dest='configuration')
-    parser.add_argument('-l', '--list', action='store_true')    
-    args = parser.parse_args()
 
+    try:
+        # Parse the parameters
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-c', action='store', dest='configuration', required=True)
+        parser.add_argument('-a', '--add', action='store', default=None)
+        parser.add_argument('-l', '--list', action='store_true', default=False)
+        parser.add_argument('-d', '--delete', action='store', dest='remove', default=None)
+        parser.add_argument('-u', '--update', default=[], nargs=2, dest='update')
+        #parser.add_argument('-u', '--update', action='store_true', default=False)
+        args = parser.parse_args()
+
+    except:
+        parser.print_help()
+        sys.exit(1)
     # Defer to main for everything else
     main(args)

@@ -44,7 +44,8 @@ def insert_returning(connectionString, sql, parameters):
         cursor = connection.cursor()
 
         # Execute the query, note the rows
-        cursor.execute(sql, (parameters['Name'],))
+        cursor.execute(sql, parameters)
+
         returnValue = cursor.fetchone()[0]
 
         # Clean-up and return
@@ -58,4 +59,36 @@ def insert_returning(connectionString, sql, parameters):
 
     except psycopg2.DatabaseError as err:
         sys.stderr.write(f'A general database error occurred: {err}')
+        raise DatabaseError
+
+
+def operationdb(connectionString, sql, parameters):
+    try:
+        # Open the connection, override any timeout provided with something shorter
+        # since we expect to be running interactively
+        connection = psycopg2.connect(connectionString, connect_timeout=1)
+
+        cursor = connection.cursor()
+
+        # Execute the query, note the rows
+        cursor.execute(sql, parameters)
+
+        connection.commit()
+
+        result = cursor.rowcount
+
+        # Clean-up and return
+        cursor.close()
+        return result
+
+    except psycopg2.OperationalError as err:
+        sys.stderr.write(f'An error occurred connecting to the database: {err}')
+        raise DatabaseError
+
+    except psycopg2.DatabaseError as err:
+        sys.stderr.write(f'A general database error occurred: {err}')
+        raise DatabaseError
+
+    except psycopg2.Error as err:
+        sys.stderr.write(f'An error occurred: {type(err)} {err}')
         raise DatabaseError
