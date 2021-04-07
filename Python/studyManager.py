@@ -89,13 +89,13 @@ if __name__ == "__main__":
         parser.add_argument('-c', action='store', dest='configuration', required=True,
             help='The configuration file to read the connection string from.')
         parser.add_argument('-a', '--add', action='store', default=None,
-            help='The name of the study to be added to the database')
+            help='The name of the study to be added to the database, use double quotes around the name to include spaces')
         parser.add_argument('-l', '--list', action='store_true',
             help='List all of the studies in the database')
         parser.add_argument('-d', '--delete', action='store', dest='remove', default=None,
             help='Delete the study indicated by the given id from the database')
         parser.add_argument('-u', '--update', action='store', dest='update', default=[], nargs=2, 
-            help='Update the study indicated by the id with a new name')
+            help='Update the study indicated by the id with a new name, use double quotes around the name to include spaces')
         args = parser.parse_args()
     except Exception as err:
         sys.stderr.write("Error: {}\n".format(err))
