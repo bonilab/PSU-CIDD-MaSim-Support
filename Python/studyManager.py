@@ -86,7 +86,7 @@ if __name__ == "__main__":
     try:
         # Parse the parameters
         parser = argparse.ArgumentParser()
-        parser.add_argument('-c', action='store', dest='configuration',
+        parser.add_argument('-c', action='store', dest='configuration', required=True,
             help='The configuration file to read the connection string from.')
         parser.add_argument('-a', '--add', action='store', default=None,
             help='The name of the study to be added to the database')
