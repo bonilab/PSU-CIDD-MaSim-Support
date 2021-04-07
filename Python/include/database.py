@@ -11,6 +11,8 @@ class DatabaseError(BaseException):
 
 
 def select(connectionString, sql, parameters):
+    '''Run a select operation on the database indicated by the connection string, with the given parameters.'''
+
     try:
         # Open the connection, override any timeout provided with something shorter
         # since we expect to be running interactively
@@ -35,8 +37,9 @@ def select(connectionString, sql, parameters):
         raise DatabaseError
 
 
-# Executes provided INSERT statement, and returns result of the operation
 def insert_returning(connectionString, sql, parameters):
+    '''Run an insert operation on the database that returns a value.'''
+
     try:
         # Open the connection, override any timeout provided with something shorter
         # since we expect to be running interactively
@@ -45,7 +48,6 @@ def insert_returning(connectionString, sql, parameters):
 
         # Execute the query, note the rows
         cursor.execute(sql, parameters)
-
         returnValue = cursor.fetchone()[0]
 
         # Clean-up and return
@@ -62,19 +64,18 @@ def insert_returning(connectionString, sql, parameters):
         raise DatabaseError
 
 
-def operationdb(connectionString, sql, parameters):
+def update(connectionString, sql, parameters):
+    '''Run an update, insert, or delete operation on the database, return the number of rows effected.'''
+
     try:
         # Open the connection, override any timeout provided with something shorter
         # since we expect to be running interactively
         connection = psycopg2.connect(connectionString, connect_timeout=1)
-
         cursor = connection.cursor()
 
-        # Execute the query, note the rows
+        # Execute the query, note the rows affected
         cursor.execute(sql, parameters)
-
         connection.commit()
-
         result = cursor.rowcount
 
         # Clean-up and return
@@ -87,8 +88,4 @@ def operationdb(connectionString, sql, parameters):
 
     except psycopg2.DatabaseError as err:
         sys.stderr.write(f'A general database error occurred: {err}')
-        raise DatabaseError
-
-    except psycopg2.Error as err:
-        sys.stderr.write(f'An error occurred: {type(err)} {err}')
         raise DatabaseError

@@ -29,17 +29,17 @@ def add_study(connectionString, studyName):
 
 
 # Delete the indicated study from the database
-def remove_study(configuration, stdid):
+def remove_study(configuration, studyId):
     sql = 'DELETE FROM study WHERE id = %s'
-    param = (stdid,)
-    return database.operationdb(configuration, sql, param)
+    param = (studyId,)
+    return database.update(configuration, sql, param)
 
 
 # Rename the study in the database
-def rename_studyname(configuration, stdid, newname):
+def rename_studyname(configuration, studyId, studyName):
     sql = 'UPDATE study SET name = %s WHERE id = %s'
-    param = (newname, stdid,)
-    return database.operationdb(configuration, sql, param)
+    param = (studyName, studyId,)
+    return database.update(configuration, sql, param)
 
 
 def main(args):
@@ -53,14 +53,13 @@ def main(args):
 
         # Delete study
         if args.remove is not None:
-            # delete
             remove_study(cfg["connection_string"], args.remove)
 
         # Rename study
         if args.update:
-            id = args.update[0]
-            sname = str(args.update[1])
-            rename_studyname(cfg["connection_string"], id, sname)
+            id = int(args.update[0])
+            name = str(args.update[1])
+            rename_studyname(cfg["connection_string"], id, name)
 
         # Display the formated list of studies in the database
         if args.list:
@@ -84,20 +83,24 @@ def main(args):
 
 
 if __name__ == "__main__":
-
     try:
         # Parse the parameters
         parser = argparse.ArgumentParser()
-        parser.add_argument('-c', action='store', dest='configuration', required=True)
-        parser.add_argument('-a', '--add', action='store', default=None)
-        parser.add_argument('-l', '--list', action='store_true', default=False)
-        parser.add_argument('-d', '--delete', action='store', dest='remove', default=None)
-        parser.add_argument('-u', '--update', default=[], nargs=2, dest='update')
-        #parser.add_argument('-u', '--update', action='store_true', default=False)
+        parser.add_argument('-c', action='store', dest='configuration',
+            help='The configuration file to read the connection string from.')
+        parser.add_argument('-a', '--add', action='store', default=None,
+            help='The name of the study to be added to the database')
+        parser.add_argument('-l', '--list', action='store_true',
+            help='List all of the studies in the database')
+        parser.add_argument('-d', '--delete', action='store', dest='remove', default=None,
+            help='Delete the study indicated by the given id from the database')
+        parser.add_argument('-u', '--update', action='store', dest='update', default=[], nargs=2, 
+            help='Update the study indicated by the id with a new name')
         args = parser.parse_args()
-
-    except:
+    except Exception as err:
+        sys.stderr.write("Error: {}\n".format(err))
         parser.print_help()
         sys.exit(1)
+
     # Defer to main for everything else
     main(args)
