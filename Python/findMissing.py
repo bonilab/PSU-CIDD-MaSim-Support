@@ -3,6 +3,7 @@
 # findMissing.py
 #
 # This script finds the combination that are missing from a calibration.
+import argparse
 import csv
 import os
 import sys
@@ -48,14 +49,13 @@ def check(zone):
                     missing.append([zone, ndx, ndy, ndz])
 
 
-def main(filename, username):
+def main(filename, country, username):
     global missing, raw, population, treatment, beta
 
     # We aren't in a zone yet
     zone = None
 
     # Start by reading the raw population, treatment rate, and beta
-
     with open(filename) as csvfile:
 
         reader = csv.DictReader(csvfile)
@@ -108,16 +108,18 @@ def main(filename, username):
         script.write("generateAsc \"\\\"{}\\\"\"\n".format(value.strip()))
         value = " ".join([str(x) for x in sorted(zones)])
         script.write("generateZoneAsc \"\\\"{}\\\"\"\n".format(value.strip()))
-        script.write("runCsv '{}' {}\n".format(RESULTS, username))    
+        script.write("runCsv '{}' {} {}\n".format(RESULTS, country, username))    
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: findMissing [calibration] [username]")
-        print("calibration - the calibration file to be examined")
-        print("username - the user who will be running the calibration on the cluster")
-        exit(0)
+    # Parse the paramters
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', action='store', dest='configuration', required=True,
+        help='The cached calibration values file (*.csv) to scan for missing values')
+    parser.add_argument('-i', action='store', dest='country', required=True,
+        help='The three letter country code for the study')
+    parser.add_argument('-u', action='store', dest='user', required=True,
+        help='The username for the user that is running the calibration')
+    args = parser.parse_args()
 
-    filename = str(sys.argv[1])
-    username = str(sys.argv[2])
-    main(filename, username)
+    main(args.configuration, args.country, args.username)
