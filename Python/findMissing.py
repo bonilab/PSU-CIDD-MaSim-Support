@@ -52,6 +52,11 @@ def check(zone):
 def main(filename, country, username):
     global missing, raw, population, treatment, beta
 
+    # Check to make sure the file seems correct
+    if not filename.endswith('.csv'):
+        sys.stderr.write("File, {}, does not appear to be a CSV file, exiting\n".format(filename))
+        sys.exit(1)
+
     # We aren't in a zone yet
     zone = None
 
@@ -87,7 +92,8 @@ def main(filename, country, username):
     if len(missing) == 0: return
 
     # Save the missing values as a CSV file
-    print ("Saving {}".format(RESULTS))
+    print("Generating files...")
+    print("Saving: {}".format(RESULTS))
     with open(RESULTS, "w") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(missing)
@@ -100,7 +106,7 @@ def main(filename, country, username):
         populations.add(missing[row][1])
 
     # Save the script to disk
-    print("Preparing script, {}".format(SCRIPT))
+    print("Saving: {}".format(SCRIPT))
     with open(SCRIPT, "w") as script:
         script.write("#!/bin/bash\n")
         script.write("source ./calibrationLib.sh\n")
@@ -114,12 +120,12 @@ def main(filename, country, username):
 if __name__ == "__main__":
     # Parse the paramters
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', action='store', dest='configuration', required=True,
+    parser.add_argument('-c', action='store', dest='calibration', required=True,
         help='The cached calibration values file (*.csv) to scan for missing values')
     parser.add_argument('-i', action='store', dest='country', required=True,
         help='The three letter country code for the study')
-    parser.add_argument('-u', action='store', dest='user', required=True,
+    parser.add_argument('-u', action='store', dest='username', required=True,
         help='The username for the user that is running the calibration')
     args = parser.parse_args()
 
-    main(args.configuration, args.country, args.username)
+    main(args.calibration, args.country, args.username)
