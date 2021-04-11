@@ -86,6 +86,7 @@ function runCsv() {
     sed -i 's/#POPULATION#/'"$population"'/g' $zone-$population-$access-$beta-$country.pbs
     sed -i 's/#ACCESS#/'"$access"'/g' $zone-$population-$access-$beta-$country.pbs
     sed -i 's/#ZONE#/'"$zone"'/g' $zone-$population-$access-$beta-$country.pbs
+    sed -i 's/#COUNTRY#/'"$country"'/g' $zone-$population-$access-$beta-$country.pbs    
 
     # Queue the next item
     qsub $zone-$population-$access-$beta-$country.pbs
