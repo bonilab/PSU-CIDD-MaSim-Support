@@ -10,7 +10,7 @@ class DatabaseError(BaseException):
     pass
 
 
-def select(connectionString, sql, parameters):
+def select(connectionString, sql, parameters, columnNames=False):
     '''Run a select operation on the database indicated by the connection string, with the given parameters.'''
 
     try:
@@ -19,13 +19,16 @@ def select(connectionString, sql, parameters):
         connection = psycopg2.connect(connectionString, connect_timeout=1)
         cursor = connection.cursor()
 
-        # Execute the query, note the rows
+        # Execute the query, note the rows and column names
         cursor.execute(sql, parameters)
         rows = cursor.fetchall()
+        columns = [col[0] for col in cursor.description]
 
         # Clean-up and return
         cursor.close()
         connection.close()
+        if columnNames:
+            return rows, columns
         return rows
 
     except psycopg2.OperationalError as err:

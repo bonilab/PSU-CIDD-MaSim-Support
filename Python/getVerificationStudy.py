@@ -36,6 +36,7 @@ ORDER BY r.id ASC"""
 SELECT_DATASET = """
 SELECT dayselapsed, district, 
  	sum(population) AS population,
+    sum(clinicalepisodes) as clinicalepisodes,
  	avg(msd.eir) AS eir,
  	sum(population * pfprunder5) / sum(population) AS pfprunder5,
  	sum(population * pfpr2to10) / sum(population) AS pfpr2to10,
@@ -67,7 +68,7 @@ def main(configuration, studyId):
         replicateId = int(input("Replicate to retrive: "))
 
         # Load the data set, exit if nothing is returned
-        rows = select(cfg["connection_string"], SELECT_DATASET, {'replicateId':replicateId})
+        rows, columns = select(cfg["connection_string"], SELECT_DATASET, {'replicateId':replicateId}, True)
         if len(rows) == 0:
             print("No data returned!")
             exit(0)
@@ -76,6 +77,9 @@ def main(configuration, studyId):
         filename = "{}-verification-data.csv".format(replicateId)
         print("Saving data set to: {}".format(filename))
         with open(filename, "w") as csvfile:
+            csvfile.write("")
+            line = ','.join(str(columns[ndx]) for ndx in range(0, len(columns)))
+            csvfile.write("{}\n".format(line))
             for row in rows:
                 line = ','.join(str(row[ndx]) for ndx in range(0, len(row)))
                 csvfile.write("{}\n".format(line))
