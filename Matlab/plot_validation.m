@@ -91,6 +91,7 @@ function [] = plot_cases_pfpr(modelData)
     hold off;
 
     % Format the log10 axis
+    ylim([0 60]);
     xlim(log10([400 1000]));
     xticks(log10(400:100:1000));
     xticklabels(split(num2str(400:100:1000)));
