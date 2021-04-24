@@ -8,15 +8,16 @@ The main repository for the simulation can be found at [maciekboni/PSU-CIDD-Mala
 
 ### Repository Organization
 
-/ - The root directory contains scripts that may be run from the command line that of use with the simulation.
+`/` - The root directory contains scripts that may be run from the command line that of use with the simulation.
 
-bash/ - The `bash` directory contains Bash scripts as well as job files that may be manipulated by the Bash scripts to run replicates on the [Roar Supercomputer](https://www.icds.psu.edu/computing-services/roar-user-guide/).
+`bash/` - This directory contains Bash scripts as well as job files that may be manipulated by the Bash scripts to run replicates on the [Roar Supercomputer](https://www.icds.psu.edu/computing-services/roar-user-guide/).
 
-include/ - The `include` directory contains Python scripts that contain shared code and cannot be run on their own.
+`matlab/` - This directory contains Matlab functions that can be used to generate plots for various comparison points used for model calibration and validation.
 
-matlab/ - The `matlab` directory contains Matlab functions that can be used to generate plots for various comparison points used for model calibration and validation.
+`python/` - This directory contains the Python scripts that invoked by the `bash` scripts in the root directory of this repository. \
+`python/include/` - This directory contains Python scripts that contain shared code and cannot be run on their own.
 
-.pep8speaks.yml - Configuration file for [pep8speaks](https://github.com/OrkoHunter/pep8speaks) which uses codes from [pycodestyle](https://github.com/PyCQA/pycodestyle/blob/master/docs/intro.rst).
+`.pep8speaks.yml` - Configuration file for [pep8speaks](https://github.com/OrkoHunter/pep8speaks) which uses codes from [pycodestyle](https://github.com/PyCQA/pycodestyle/blob/master/docs/intro.rst).
 
 ### Dependencies
 
