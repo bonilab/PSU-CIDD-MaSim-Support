@@ -68,7 +68,7 @@ def insert_returning(connectionString, sql, parameters):
 
 
 def update(connectionString, sql, parameters):
-    '''Run an update, insert, or delete operation on the database, return the number of rows effected.'''
+    '''Perform an update operation on the database, return the number of rows effected.'''
 
     try:
         # Open the connection, override any timeout provided with something shorter
@@ -92,3 +92,15 @@ def update(connectionString, sql, parameters):
     except psycopg2.DatabaseError as err:
         sys.stderr.write(f'A general database error occurred: {err}')
         raise DatabaseError
+
+
+def insert(connectionString, sql, parameters):
+    '''Perform an insert operation using the query provided, return the number of rows affected.'''
+
+    return update(connectionString, sql, parameters)
+
+
+def delete(connectionString, sql, parameters):
+    '''Perform a delete operation using the query provided, return the number of rows affected.'''
+
+    return update(connectionString, sql, parameters)
