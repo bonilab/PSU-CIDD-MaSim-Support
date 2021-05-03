@@ -46,7 +46,8 @@ FROM sim.replicate r
   INNER JOIN sim.monthlysitedata msd ON msd.monthlydataid = md.id
   INNER JOIN sim.location l ON l.id = msd.locationid
 WHERE r.id = %(replicateId)s
-GROUP BY dayselapsed, district"""
+GROUP BY dayselapsed, district
+ORDER BY dayselapsed, district"""
 
 
 def main(configuration, studyId):
