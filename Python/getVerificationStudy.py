@@ -37,6 +37,7 @@ SELECT_DATASET = """
 SELECT dayselapsed, district, 
  	sum(population) AS population,
     sum(clinicalepisodes) as clinicalepisodes,
+	sum(treatments) as treatments,    
  	avg(msd.eir) AS eir,
  	sum(population * pfprunder5) / sum(population) AS pfprunder5,
  	sum(population * pfpr2to10) / sum(population) AS pfpr2to10,

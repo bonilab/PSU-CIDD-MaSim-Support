@@ -24,7 +24,8 @@ function [] = plot_validation(modelData, referenceData, country, type)
 end
 
 function [] = plot_comparison(modelData, referenceData)
-    CENTER_MIN = 0; CENTER_MAX = 80;
+    CSV_PFPR2TO10 = 8; CENTER_MIN = 0; CENTER_MAX = 80;
+       
 
     % Load the data
     reference = csvread(referenceData);
@@ -35,7 +36,7 @@ function [] = plot_comparison(modelData, referenceData)
     hold on;
     for district = transpose(districts)
         expected = reference(reference(:, 1) == district, 2);
-        pfpr = data(data(:, 2) == district, 7); 
+        pfpr = data(data(:, 2) == district, CSV_PFPR2TO10); 
         
         % We want the seasonal maxima, filter out the local maxima, once
         % this is done we should only have six points left
@@ -65,7 +66,7 @@ function [] = plot_comparison(modelData, referenceData)
     for value = [0.9 0.95 1.05 1.1]
         line([data(1) data(2)], [data(1)*value data(2)*value], 'Color', [0.5 0.5 0.5], 'LineStyle', '-.');
     end
-    line([data(1) data(2)], [data(1) data(2)], 'Color', 'black', 'LineStyle', '-.');
+    line([data(1) data(2)], [data(1) data(2)], 'Color', 'black');
     text(data(2), data(2) + 0.5, '\pm0%', 'FontSize', 16);
     text(data(2), data(2) * 0.95, '-5%', 'FontSize', 16);
 	text(data(2), data(2) * 0.9, '-10%', 'FontSize', 16);
@@ -77,6 +78,8 @@ function [] = plot_comparison(modelData, referenceData)
 end
 
 function [] = plot_cases_pfpr(modelData)
+    CSV_POPULATION = 3; CSV_CASES = 4; CSV_REPORTED = 5; TREATED = 0.832;
+
     % Load the data
     [data, districts] = load(modelData, 14 * 365, 15 * 365);
     
@@ -84,21 +87,25 @@ function [] = plot_cases_pfpr(modelData)
     hold on;
     for district = transpose(districts)
         filtered = data(data(:, 2) == district, :);
-        cases = log10(sum(filtered(:, 4)) / (max(filtered(:, 3)) / 1000));
+        cases = log10(sum(filtered(:, CSV_CASES)) / (max(filtered(:, CSV_POPULATION)) / 1000));
+        reported = log10((sum(filtered(:, CSV_REPORTED)) * TREATED) / (max(filtered(:, CSV_POPULATION)) / 1000));
         pfpr = mean(filtered(:, 7));
-        scatter(cases, pfpr, 'black', 'filled')
+        scatter(cases, pfpr, 'black', 'filled');
+        scatter(reported, pfpr, 36, [99 99 99] / 127.5, 'filled', 'MarkerEdgeColor', 'black');
     end
     hold off;
 
     % Format the log10 axis
-    ylim([0 60]);
-    xlim(log10([400 1000]));
-    xticks(log10(400:100:1000));
-    xticklabels(split(num2str(400:100:1000)));
+    ylim([10 60]);
+    xlim(log10([250 1000]));
+    xticks(log10(250:100:1000));
+    xticklabels(split(num2str(250:100:1000)));
     
     % Label and format the plot
     xlabel('Clinical Cases per 1000');
     ylabel('Simulated {\itPf}PR_{2 to 10}');
+    legend({'Clinical Cases', 'Reported Cases'}, 'Location', 'SouthEast');
+    legend boxoff;
     format();
 end
 
