@@ -51,7 +51,7 @@ function [] = plot_comparison(modelData, referenceData)
         % Plot from the maxima to the minima, connected by a line
         line([expected expected], [mean(maxima) abs(mean(minima))], 'LineStyle', '--', 'LineWidth', 1.5, 'Color', 'black');
         scatter(expected, mean(maxima), 75, [99 99 99] / 255, 'filled', 'MarkerEdgeColor', 'black');
-        scatter(expected, mean(pfpr), 150, 'black', 'filled', 'MarkerEdgeColor', 'black');
+        scatter(expected, mean(pfpr), 150, [99 99 99] / 127.5, 'filled', 'MarkerEdgeColor', 'black');
         scatter(expected, abs(mean(minima)), 75, [99 99 99] / 255, 'filled', 'MarkerEdgeColor', 'black');
     end
     hold off;
