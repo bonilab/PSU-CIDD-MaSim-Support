@@ -5,7 +5,7 @@
 # study id is in place as well.
 
 # The maximum number of jobs that can run
-LIMIT=50
+LIMIT=99
 
 # Step size used when iterating over the files 
 STEP=0.05
@@ -91,5 +91,22 @@ function runCsv() {
     # Queue the next item
     qsub $zone-$population-$access-$beta-$country.pbs
 
+  done < $filename
+}
+
+function runReplicates() {
+  eval filename=$1
+  eval user=$2
+
+  while IFS=, read -r replicate count; do
+    # Trim the return from the count
+    count="$(echo "$count"|tr -d '\r')"
+
+    # Loop for the count, note that we are assuming that the configuration 
+    # already exists in the database so collisions will not be a concern
+    for ndx in `seq 1 1 $count`; do
+      check_delay $user
+      qsub $replicate
+    done
   done < $filename
 }
