@@ -34,8 +34,6 @@ if [ $1 = 'rerun' ]; then
     rm -- $item.pbs.*
     qsub $item.pbs
   done
-
-
   exit
 fi 
 
