@@ -3,10 +3,10 @@
 # generateMetrics.py
 #
 # This module contains functions relevent to getting metrics from ASC files.
+import os
 import sys
 
-from os import path
-
+sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 from include.ascFile import load_asc
 
 # Note some constants
@@ -25,6 +25,7 @@ def calculate(gisPath, prefix, division):
 
     # Loop over the data that's been loaded
     data = {}
+    cells = 0
     totalPopulation = 0
     for row in range(ascheader['nrows']):
         for col in range(ascheader['ncols']):
@@ -41,6 +42,7 @@ def calculate(gisPath, prefix, division):
             data[key][NUMERATOR] += pfpr[row][col] * population[row][col]
             data[key][DENOMINATOR] += population[row][col]
             totalPopulation += population[row][col]
+            cells += 1
 
     # Write the weighted values to disk
     numerator = 0
@@ -59,11 +61,12 @@ def calculate(gisPath, prefix, division):
 
     result = round(numerator * 100 / denominator, 2)
     print("\nFull Map, PfPR: {0}%".format(result))
-    print("Population: {:,}\n".format(totalPopulation))
+    print("Population: {:,}".format(totalPopulation))
+    print("Cells: {}\n".format(cells))
 
 
 def load(filename, fileType):
-    if not path.exists(filename):
+    if not os.path.exists(filename):
         print("Could not find {} file, tried: {}".format(fileType, filename))
         exit(1)
     return load_asc(filename)    
