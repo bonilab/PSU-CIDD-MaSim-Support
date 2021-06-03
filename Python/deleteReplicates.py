@@ -20,13 +20,20 @@ from include.calibrationLib import load_configuration
 from include.database import select, delete, DatabaseError
 
 
+# Select the stalled (i.e., not running) replicates to be deleted
+# NOTE Since this script cannot determine if they are still running on the ACI 
+# or not, the assumption is that this will only be run when safe to do so.
+SELECT_FAILED = """
+SELECT r.id
+FROM sim.replicate r
+WHERE r.endtime is null"""
+
 # Select the replicates to be deleted
 SELECT_REPLICATES = """
 select r.id
 from sim.configuration c
   inner join sim.replicate r on r.configurationid = c.id
-where c.studyid in (%(studyid)s)
-"""
+where c.studyid in (%(studyid)s)"""
 
 # Select empty configurations, those that have no replicates associated with 
 # them, so they may be deleted
@@ -44,6 +51,13 @@ def deleteConfigurations(connectionString):
     delete(connectionString, "CALL delete_configuration(%(configurationId)s)", {'configurationId': row[0]})
 
 
+def deleteFailed(connectionString):
+  replicates = select(connectionString, SELECT_FAILED, None)
+  for row in replicates:
+    print("{} - Deleting replicate {}".format(datetime.datetime.now(), row[0]))
+    delete(connectionString, "CALL delete_replicate(%(replicateId)s)", {'replicateId': row[0]})  
+
+
 def deleteReplicates(connectionString, studyId):
   replicates = select(connectionString, SELECT_REPLICATES, {'studyId':studyId})
   for row in replicates:
@@ -51,11 +65,14 @@ def deleteReplicates(connectionString, studyId):
     delete(connectionString, "CALL delete_replicate(%(replicateId)s)", {'replicateId': row[0]})
 
 
-def main(configuration, studyId):
+def main(configuration, studyId, failed):
   try:
-    cfg = load_configuration(args)
-    deleteReplicates(cfg['connection_string'], studyId)
-    deleteConfigurations(cfg['connection_string'])
+    cfg = load_configuration(configuration)
+    if failed:
+      deleteFailed(cfg['connection_string'])    
+    if studyId is not None:
+      deleteReplicates(cfg['connection_string'], studyId)
+      deleteConfigurations(cfg['connection_string'])
   except DatabaseError:
     sys.stderr.write("An unrecoverable database error occurred, exiting\n")
     sys.exit(1)
@@ -66,9 +83,11 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument('-c', action='store', dest='configuration', required=True,
     help='The configuration file for the study to delete from')
-  parser.add_argument('-s', action='store', dest='studyid', required=True,
+  parser.add_argument('-f', action='store_true', dest='failed',
+    help='Delete the failed or stalled replicates')    
+  parser.add_argument('-s', action='store', dest='studyid', required=False,
     help='The id of the study to delete the replicates from')  
   args = parser.parse_args()
   
   # Defer to main
-  main(args.configuration, args.studyid)
+  main(args.configuration, args.studyid, args.failed)
