@@ -46,4 +46,6 @@ PATH=$PATH:`pwd`
 3. Save and close
 4. Reload `.bashrc` (`source ~/.bashrc`)
 
+# Sources
 
+Adam Auton (2021). Red Blue Colormap (https://www.mathworks.com/matlabcentral/fileexchange/25536-red-blue-colormap), MATLAB Central File Exchange. Retrieved August 9, 2021.
