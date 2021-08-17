@@ -68,9 +68,12 @@ def deleteReplicates(connectionString, studyId):
 def main(configuration, studyId, failed):
   try:
     cfg = load_configuration(configuration)
+    print("Connection: {}".format(cfg['connection_string']))
     if failed:
+      print("Deleting failed studies...")
       deleteFailed(cfg['connection_string'])    
     if studyId is not None:
+      print("Deleteing from {}...".format(studyId))
       deleteReplicates(cfg['connection_string'], studyId)
       deleteConfigurations(cfg['connection_string'])
   except DatabaseError:
