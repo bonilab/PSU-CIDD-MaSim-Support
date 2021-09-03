@@ -21,7 +21,8 @@ from include.database import select, DatabaseError
 SELECT_REPLICATES = """
 SELECT r.id, c.filename, 
     to_char(r.starttime, 'YYYY-MON-DD HH24:MI:SS'), 
-    to_char(r.endtime, 'YYYY-MON-DD HH24:MI:SS')
+    to_char(r.endtime, 'YYYY-MON-DD HH24:MI:SS'),
+    aggregationlevel
 FROM sim.study s 
     INNER JOIN sim.configuration c ON c.studyid = s.id
     INNER JOIN sim.replicate r ON r.configurationid = c.id
@@ -33,7 +34,7 @@ ORDER BY r.id ASC"""
 # This also means that the EIR may be set to the sentinel -9999 during the 
 # model burn-in period so plotting scripts will need to ensure that the 
 # rendering period is valid.
-SELECT_DATASET = """
+SELECT_DATASET_CELLULAR = """
 SELECT dayselapsed, district, 
  	sum(population) AS population,
     sum(clinicalepisodes) as clinicalepisodes,
@@ -46,6 +47,22 @@ FROM sim.replicate r
   INNER JOIN sim.monthlydata md ON md.replicateid = r.id
   INNER JOIN sim.monthlysitedata msd ON msd.monthlydataid = md.id
   INNER JOIN sim.location l ON l.id = msd.locationid
+WHERE r.id = %(replicateId)s
+GROUP BY dayselapsed, district
+ORDER BY dayselapsed, district"""
+
+SELECT_DATASET_DISTRICT = """
+SELECT dayselapsed, msd.location as district, 
+ 	sum(population) AS population,
+    sum(clinicalepisodes) as clinicalepisodes,
+	sum(treatments) as treatments,    
+ 	avg(msd.eir) AS eir,
+ 	sum(population * pfprunder5) / sum(population) AS pfprunder5,
+ 	sum(population * pfpr2to10) / sum(population) AS pfpr2to10,
+ 	sum(population * pfprall) / sum(population) AS pfprall  
+FROM sim.replicate r
+  INNER JOIN sim.monthlydata md ON md.replicateid = r.id
+  INNER JOIN sim.monthlysitedata msd ON msd.monthlydataid = md.id
 WHERE r.id = %(replicateId)s
 GROUP BY dayselapsed, district
 ORDER BY dayselapsed, district"""
@@ -67,10 +84,20 @@ def main(configuration, studyId):
             print("{}\t{}\t{}\t{}".format(replicate[0], replicate[1], replicate[2], replicate[3]))
 
         # Prompt for replicate id
-        replicateId = int(input("Replicate to retrive: "))
+        replicateId = int(input("Replicate to retrive or zero (0) to exit: "))
+        if replicateId == 0: exit(0)
+
+        # Check to make sure the entry is valid
+        ids = [row[0] for row in replicates]
+        if replicateId not in ids:
+            print("{} is not in the list of replicates".format(replicateId))
+            exit(0)
 
         # Load the data set, exit if nothing is returned
-        rows, columns = select(cfg["connection_string"], SELECT_DATASET, {'replicateId':replicateId}, True)
+        query = SELECT_DATASET_DISTRICT
+        if replicates[ids.index(replicateId)][4] == 'C':
+            query = SELECT_DATASET_CELLULAR
+        rows, columns = select(cfg["connection_string"], query, {'replicateId':replicateId}, True)
         if len(rows) == 0:
             print("No data returned!")
             exit(0)
