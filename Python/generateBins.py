@@ -142,14 +142,14 @@ if __name__ == '__main__':
     # Check to see if it looks like there is a country prefix
     prefix = re.search(r"^([a-z]{3})-.*\.yml", configuration)
     if prefix is None:
-        print("Unknown or malformed country code prefix for configuration")
+        print("Unknown or malformed country code prefix for configuration while parsing configuration name, {}".format(configuration))
         exit(0)
     prefix = prefix.group(1)
 
     # Process and print the relevent ranges for the user
     [pfpr, treatments, populationBreaks] = process(configuration, gisPath, prefix)
     for zone in pfpr.keys():
-        print("Climate Zone {}".format(zone))
+        print("Climate Zone {}".format(int(zone)))
         print("Treatments: {}".format(sorted(treatments[zone])))
         print("Populations: {}".format(sorted(pfpr[zone].keys())))
         for popBin in sorted(pfpr[zone].keys()):

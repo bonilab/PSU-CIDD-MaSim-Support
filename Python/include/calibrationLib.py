@@ -230,8 +230,17 @@ def load_configuration(configuration):
         with open(configuration, "r") as yamlfile:
             cfg = yaml.load(yamlfile)
             return cfg
-    except Exception:
-        print("Configuration file not found")
+
+    except yaml.parser.ParserError as ex:
+        print("An error occurred parsing the input file:\n{}".format(ex))
+        exit(1)
+
+    except FileNotFoundError:
+        print("Configuration file not found: {}".format(configuration))
+        exit(1)
+
+    except Exception as ex:
+        print("An unknown error occurred while loading the configuration:\n{}".format(ex))
         exit(1)
 
 
