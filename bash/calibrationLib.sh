@@ -5,7 +5,7 @@
 # study id is in place as well.
 
 # The maximum number of jobs that can run
-LIMIT=99
+LIMIT=150
 
 # Step size used when iterating over the files 
 STEP=0.05
@@ -46,19 +46,16 @@ function run() {
         check_delay $user
 
         # Prepare the configuration file
-        sed 's/#BETA#/'"$beta"'/g' $country-calibration.yml > $zone-$population-$access-$beta-$country.yml
-        sed -i 's/#POPULATION#/'"$population"'/g' $zone-$population-$access-$beta-$country.yml  
-        sed -i 's/#ACCESS#/'"$access"'/g' $zone-$population-$access-$beta-$country.yml
-        sed -i 's/#ZONE#/'"$zone"'/g' $zone-$population-$access-$beta-$country.yml
+        filename=$zone-$population-$access-$beta-$country
+        sed 's/#BETA#/'"$beta"'/g' $country-calibration.yml > $filename.yml
+        sed -i 's/#POPULATION#/'"$population"'/g' $filename.yml
+        sed -i 's/#ACCESSU5#/'"$access"'/g' $filename.yml
+        sed -i 's/#ACCESSO5#/'"$(bc -l <<< $access*0.45)"'/g' $filename.yml
+        sed -i 's/#ZONE#/'"$zone"'/g' $filename.yml
     
-        sed 's/#BETA#/'"$beta"'/g' template.job > $zone-$population-$access-$beta-$country.pbs
-        sed -i 's/#POPULATION#/'"$population"'/g' $zone-$population-$access-$beta-$country.pbs
-        sed -i 's/#ACCESS#/'"$access"'/g' $zone-$population-$access-$beta-$country.pbs
-        sed -i 's/#ZONE#/'"$zone"'/g' $zone-$population-$access-$beta-$country.pbs
-        sed -i 's/#COUNTRY#/'"$country"'/g' $zone-$population-$access-$beta-$country.pbs
-    
-        # Queue the next item
-        qsub $zone-$population-$access-$beta-$country.pbs
+        # Prepare and queue the job file
+        sed 's/#FILENAME#/'"$filename"'/g' template.job > $filename.pbs    
+        qsub $filename.pbs
       done
     done
   done
@@ -77,19 +74,16 @@ function runCsv() {
     beta="$(echo "$beta"|tr -d '\r')"
 
     # Prepare the configuration file
-    sed 's/#BETA#/'"$beta"'/g' $country-calibration.yml > $zone-$population-$access-$beta-$country.yml
-    sed -i 's/#POPULATION#/'"$population"'/g' $zone-$population-$access-$beta-$country.yml  
-    sed -i 's/#ACCESS#/'"$access"'/g' $zone-$population-$access-$beta-$country.yml
-    sed -i 's/#ZONE#/'"$zone"'/g' $zone-$population-$access-$beta-$country.yml
+    filename=$zone-$population-$access-$beta-$country
+    sed 's/#BETA#/'"$beta"'/g' $country-calibration.yml > $filename.yml
+    sed -i 's/#POPULATION#/'"$population"'/g' $filename.yml
+    sed -i 's/#ACCESSU5#/'"$access"'/g' $filename.yml
+    sed -i 's/#ACCESSO5#/'"$(bc -l <<< $access*0.45)"'/g' $filename.yml
+    sed -i 's/#ZONE#/'"$zone"'/g' $filename.yml
 
-    sed 's/#BETA#/'"$beta"'/g' template.job > $zone-$population-$access-$beta-$country.pbs
-    sed -i 's/#POPULATION#/'"$population"'/g' $zone-$population-$access-$beta-$country.pbs
-    sed -i 's/#ACCESS#/'"$access"'/g' $zone-$population-$access-$beta-$country.pbs
-    sed -i 's/#ZONE#/'"$zone"'/g' $zone-$population-$access-$beta-$country.pbs
-    sed -i 's/#COUNTRY#/'"$country"'/g' $zone-$population-$access-$beta-$country.pbs    
-
-    # Queue the next item
-    qsub $zone-$population-$access-$beta-$country.pbs
+    # Prepare and queue the job file
+    sed 's/#FILENAME#/'"$filename"'/g' template.job > $filename.pbs    
+    qsub $filename.pbs
 
   done < $filename
 }
