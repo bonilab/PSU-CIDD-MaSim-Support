@@ -71,11 +71,18 @@ def main(configuration, studyId, failed):
     print("Connection: {}".format(cfg['connection_string']))
     if failed:
       print("Deleting failed studies...")
-      deleteFailed(cfg['connection_string'])    
+      deleteFailed(cfg['connection_string'])
+      
     if studyId is not None:
+
+      # Delete the studies
       print("Deleteing from study id {}...".format(studyId))
       deleteReplicates(cfg['connection_string'], studyId)
-      deleteConfigurations(cfg['connection_string'])
+
+      # Don't delete the default study numbers
+      if int(studyId) not in (1, 2): 
+        print("Deleting configuration for study id {}...".format(studyId))
+        deleteConfigurations(cfg['connection_string'])
   except DatabaseError:
     sys.stderr.write("An unrecoverable database error occurred, exiting\n")
     sys.exit(1)
