@@ -33,7 +33,7 @@ SELECT_REPLICATES = """
 select r.id
 from sim.configuration c
   inner join sim.replicate r on r.configurationid = c.id
-where c.studyid in (%(studyid)s)"""
+where c.studyid in (%(studyId)s)"""
 
 # Select empty configurations, those that have no replicates associated with 
 # them, so they may be deleted
@@ -73,7 +73,7 @@ def main(configuration, studyId, failed):
       print("Deleting failed studies...")
       deleteFailed(cfg['connection_string'])    
     if studyId is not None:
-      print("Deleteing from {}...".format(studyId))
+      print("Deleteing from study id {}...".format(studyId))
       deleteReplicates(cfg['connection_string'], studyId)
       deleteConfigurations(cfg['connection_string'])
   except DatabaseError:
