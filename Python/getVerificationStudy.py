@@ -8,6 +8,7 @@
 #
 # Note that results for the model burn-in period are include and may contain
 # invalid data.
+import argparse
 import os
 import sys
 
@@ -119,16 +120,13 @@ def main(configuration, studyId):
 
 
 if __name__ == "__main__":
-    # Check the command line
-    if len(sys.argv) != 3:
-        print("Usage: ./getVerificationStudy [configuration] [studyid]")
-        print("configuration - the configuration file to be loaded")
-        print("studyid - the database id of the verification studies")
-        exit(0)
-
     # Parse the parameters
-    configuration = str(sys.argv[1])
-    studyId = int(sys.argv[2])
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', action='store', dest='configuration', required=True,
+        help='The configuration file to reference when creating the beta map')
+    parser.add_argument('-s', action='store', dest='studyid', default=2,
+        help='The id of the study to use for the reference beta values, default 2')        
+    args = parser.parse_args()
 
     # Run the main function
-    main(configuration, studyId)
+    main(args.configuration, args.studyid)

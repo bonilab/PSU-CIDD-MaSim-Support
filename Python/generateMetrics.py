@@ -3,6 +3,7 @@
 # generateMetrics.py
 #
 # This module contains functions relevent to getting metrics from ASC files.
+import argparse
 import os
 import sys
 
@@ -73,23 +74,19 @@ def load(filename, fileType):
 
 
 if __name__ == '__main__':
-    # Check the command line
-    if len(sys.argv) not in (3, 4):
-        print("Usage: ./generateMetrics [gis] [prefix] [division]")
-        print("gis - the path to the directory that the GIS files can be found in")
-        print("prefix - the country code prefix used")
-        print("division (optional) - district or providence, default district")
-        print("\nExample ./generateMetrics.py ../GIS bfa")
-        exit(0)
+    # Parse the arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-g', action='store', dest='gis', required=True,
+        help='The path to the directory that the GIS files can be found in')
+    parser.add_argument('-p', action='store', dest='prefix', required=True,
+        help='The country code prefix used')        
+    parser.add_argument('-d', action='store', dest='division', default='district',
+        help='(optional) District or province level metrics, default district')
+    args = parser.parse_args()
 
-    # Parse the parameters
-    gisPath = str(sys.argv[1])
-    prefix = str(sys.argv[2])
-    division = "district"
-    if len(sys.argv) == 4:
-        if str(sys.argv[3]) not in ("district", "province"):
-            print("Unknown division: {}".format(str(sys.argv[3])))
-            exit(0)
-        division = str(sys.argv[3])
+    # Check the parameters
+    if args.division not in ("district", "province"):
+        print("Unknown division: {}, expected 'district' or 'province'".format(args.division))
+        sys.exit(1)
 
-    calculate(gisPath, prefix, division)
+    calculate(args.gis, args.prefix, args.division)

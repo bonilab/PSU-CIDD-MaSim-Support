@@ -3,6 +3,7 @@
 # generateBins.py
 #
 # This script generates the bins that need to be run to determine the beta values
+import argparse
 import os
 import re
 import sys
@@ -127,27 +128,25 @@ def save(pfpr, treatments, populationBreaks, filename, prefix, username):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
-        print("Usage: ./generateBins.py [configuration] [gis] [username]")
-        print("configuration - the configuration file to be loaded")
-        print("gis - the directory that GIS file can be found in")
-        print("username - the user who will be running the calibration on the cluster")
-        exit(0)
-
     # Parse the parameters
-    configuration = str(sys.argv[1])
-    gisPath = str(sys.argv[2])
-    username = str(sys.argv[3])
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', action='store', dest='configuration', required=True,
+        help='The configuration file to reference when creating the bins')
+    parser.add_argument('-g', action='store', dest='gis', required=True,
+        help='The path to the directory that the GIS files can be found in')
+    parser.add_argument('-u', action='store', dest='username', required=True,
+        help='The user who will be running the calibration on the cluster')  
+    args = parser.parse_args()
 
     # Check to see if it looks like there is a country prefix
-    prefix = re.search(r"^([a-z]{3})-.*\.yml", configuration)
+    prefix = re.search(r"^([a-z]{3})-.*\.yml", args.configuration)
     if prefix is None:
-        print("Unknown or malformed country code prefix for configuration while parsing configuration name, {}".format(configuration))
+        print("Unknown or malformed country code prefix for configuration while parsing configuration name, {}".format(args.configuration))
         exit(0)
     prefix = prefix.group(1)
 
     # Process and print the relevent ranges for the user
-    [pfpr, treatments, populationBreaks] = process(configuration, gisPath, prefix)
+    [pfpr, treatments, populationBreaks] = process(args.configuration, args.gis, prefix)
     for zone in pfpr.keys():
         print("Climate Zone {}".format(int(zone)))
         print("Treatments: {}".format(sorted(treatments[zone])))
@@ -159,4 +158,4 @@ if __name__ == '__main__':
     # Save the basic script
     if not os.path.isdir('out'):
         os.mkdir('out')
-    save(pfpr, treatments, populationBreaks, 'out/calibration.sh', prefix, username)
+    save(pfpr, treatments, populationBreaks, 'out/calibration.sh', prefix, args.username)
