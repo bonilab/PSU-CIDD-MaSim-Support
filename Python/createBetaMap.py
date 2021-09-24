@@ -8,8 +8,6 @@ import argparse
 import os
 import sys
 
-from pathlib import Path
-
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
