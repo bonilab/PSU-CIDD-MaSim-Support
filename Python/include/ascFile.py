@@ -55,6 +55,18 @@ def compare_data(one, two, nodata, printError=True):
     return result
 
 
+# Generate an ASC header with values zeroed
+def get_header():
+    ascheader = {}
+    ascheader['ncols'] = 0
+    ascheader['nrows'] = 0
+    ascheader['xllcorner'] = 0
+    ascheader['yllcorner'] = 0
+    ascheader['cellsize'] = 0
+    ascheader['nodata'] = 0
+    return ascheader
+
+
 # Read the ASC file and return the header / data
 def load_asc(filename):
     with open(filename) as ascfile:
