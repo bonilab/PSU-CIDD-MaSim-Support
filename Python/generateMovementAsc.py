@@ -66,6 +66,9 @@ def generate_asc(connectionString, replicateId):
     for record in data:
         ascdata[record[2]][record[3]] = record[1]
 
+    # Create the directory if need be
+    if not os.path.isdir('out'): os.mkdir('out')
+
     # Write to disk and return the filename
     filename = "out/{}_movements.asc".format(replicateId)
     asc.write_asc(ascheader, ascdata, filename)
