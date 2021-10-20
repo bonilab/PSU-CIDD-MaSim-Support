@@ -73,33 +73,25 @@ def get_climate_zones(configurationYaml, gisPath):
         [_, ascData] = load_asc(filename)
         return ascData
 
+    # Get the filename of the district raster in case we need it
+    filename = str(configurationYaml['raster_db']['district_raster'])
+    filename = os.path.join(gisPath, filename)
+
     # Are we looking at a version 4.1 configuration?
     yaml = configurationYaml['seasonal_info']
     if 'mode' in yaml.keys():
         # Is this a rainfall based configuration?
         if yaml['mode'] == 'rainfall':
-            filename = __spoof_raster_filename(gisPath, configurationYaml)
             return generate_raster(filename, 1)
 
-    # There is not, make sure there is a single zone defined before continuing
+    # We are looking at an order configuration, if there is no raster then 
+    # there should only be one climate zone
     if len(yaml["base"]) != 1:
         print("Multiple climate zones, but no raster defined.")
         exit(1)
 
-    # Get the zone value
-    ecozone = len(yaml["base"]) - 1   # Zero indexed
-
     # Districts need to be defined, so use that as our template raster
-    filename = __spoof_raster_filename(gisPath, configurationYaml)
-    return generate_raster(filename, ecozone)
-
-
-def __spoof_raster_filename(path, yaml):
-    ''' 
-    Spoof the raster filename, for use with get_climate_zones
-    '''
-    filename = str(yaml['raster_db']['district_raster'])
-    return os.path.join(path, filename)
+    return generate_raster(filename, 1)
 
 
 def get_treatments_list(configurationYaml, gisPath):
