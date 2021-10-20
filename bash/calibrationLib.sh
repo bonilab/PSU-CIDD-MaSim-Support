@@ -10,6 +10,9 @@ LIMIT=150
 # Step size used when iterating over the files 
 STEP=0.05
 
+# Adjustment for over-5 access to treatment
+O5ADJUST=1.0
+
 function check_delay {
   eval user=$1
   while [ `qstat -u $user | grep $user | wc -l` -gt $LIMIT ]; do
@@ -50,7 +53,7 @@ function run() {
         sed 's/#BETA#/'"$beta"'/g' $country-calibration.yml > $filename.yml
         sed -i 's/#POPULATION#/'"$population"'/g' $filename.yml
         sed -i 's/#ACCESSU5#/'"$access"'/g' $filename.yml
-        sed -i 's/#ACCESSO5#/'"$(bc -l <<< $access*0.45)"'/g' $filename.yml
+        sed -i 's/#ACCESSO5#/'"$(bc -l <<< $access*$O5ADJUST)"'/g' $filename.yml
         sed -i 's/#ZONE#/'"$zone"'/g' $filename.yml
     
         # Prepare and queue the job file
@@ -78,7 +81,7 @@ function runCsv() {
     sed 's/#BETA#/'"$beta"'/g' $country-calibration.yml > $filename.yml
     sed -i 's/#POPULATION#/'"$population"'/g' $filename.yml
     sed -i 's/#ACCESSU5#/'"$access"'/g' $filename.yml
-    sed -i 's/#ACCESSO5#/'"$(bc -l <<< $access*0.45)"'/g' $filename.yml
+    sed -i 's/#ACCESSO5#/'"$(bc -l <<< $access*$O5ADJUST)"'/g' $filename.yml
     sed -i 's/#ZONE#/'"$zone"'/g' $filename.yml
 
     # Prepare and queue the job file
