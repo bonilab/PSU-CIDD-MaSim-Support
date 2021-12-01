@@ -136,12 +136,17 @@ function [] = plot_cases_pfpr(modelData, varargin)
     
     % Determine the bounds
     y_maxima = ceil(max(pfpr) / 5) * 5;
+    x_maxima = max(cases);
+    x_maxima = floor(x_maxima) + ceil((x_maxima - floor(x_maxima)) / 0.25) * 0.25;
+    x_minima = min(reported);
+    x_minima = floor(x_minima) + floor((x_minima - floor(x_minima)) / 0.25) * 0.25;
 
     % Format the log10 axis
     ylim([0 y_maxima]);
-    xlim(log10([200 1000]));
-    xticks(log10(200:200:1000));
-    xticklabels(split(num2str(200:200:1000)));
+    xlim([x_minima x_maxima]);
+    xticks(log10([0 50 100 200:200:1000 1500 2000]));
+    xticklabels(split(num2str([0 50 100 200:200:1000 1500 2000])));
+    xtickangle(45);
     
     % Label and format the plot
     xlabel('Clinical Cases per 1000');
