@@ -26,14 +26,15 @@ function [] = plot_validation(type, modelData, referenceData, varargin)
 end
 
 function [] = plot_comparison(modelData, referenceData)
-    CSV_PFPR2TO10 = 8; CENTER_MIN = 0; CENTER_MAX = 80;
+    CSV_PFPR2TO10 = 8; CENTER_MIN = 0;
 
     % Load the data
-    reference = csvread(referenceData);
+    reference = readmatrix(referenceData);
     [data, districts] = load(modelData, 11 * 365, 16 * 365);
     
     % Since the MAP values are the mean, we want to compare against the
     % mean of our data, but highlight the seasonal minima and maxima
+    x_maxima = 0; y_maxima = 0;
     hold on;
     for district = transpose(districts)
         expected = reference(reference(:, 1) == district, 2);
@@ -55,12 +56,20 @@ function [] = plot_comparison(modelData, referenceData)
         scatter(expected, mean(maxima), 75, [99 99 99] / 255, 'filled', 'MarkerEdgeColor', 'black');
         scatter(expected, mean(pfpr), 150, [99 99 99] / 127.5, 'filled', 'MarkerEdgeColor', 'black');
         scatter(expected, abs(mean(minima)), 75, [99 99 99] / 255, 'filled', 'MarkerEdgeColor', 'black');
+
+        % Note the maximum so we can format the plot correctly
+        if max(maxima) > y_maxima
+            y_maxima = ceil(max(maxima) / 5) * 5;
+        end      
+        if max(mean(pfpr)) > x_maxima
+            x_maxima = ceil(max(mean(pfpr)) / 5) *5;
+        end
     end
     hold off;
     
     % Set the limits
-    xlim([CENTER_MIN CENTER_MAX]);
-    ylim([CENTER_MIN CENTER_MAX]);
+    xlim([CENTER_MIN x_maxima]);
+    ylim([CENTER_MIN y_maxima]);
     
     % Plot the reference error lines
     data = get(gca, 'YLim');
@@ -68,9 +77,10 @@ function [] = plot_comparison(modelData, referenceData)
         line([data(1) data(2)], [data(1)*value data(2)*value], 'Color', [0.5 0.5 0.5], 'LineStyle', '-.');
     end
     line([data(1) data(2)], [data(1) data(2)], 'Color', 'black');
-    text(data(2), data(2) + 0.5, '\pm0%', 'FontSize', 16);
-    text(data(2), data(2) * 0.95, '-5%', 'FontSize', 16);
-	text(data(2), data(2) * 0.9, '-10%', 'FontSize', 16);
+    
+    text(x_maxima, x_maxima + 0.5, '\pm0%', 'FontSize', 16);
+    text(x_maxima, x_maxima * 0.95, '-5%', 'FontSize', 16);
+	text(x_maxima, x_maxima * 0.9, '-10%', 'FontSize', 16);
     
     % Label and format the plot
     ylabel('Simulated {\itPf}PR_{2 to 10}');
