@@ -15,3 +15,6 @@ __pycache__
 # Ignore IDE directories
 .idea
 .vscode
+
+# Ignore the user specific helper script
+load.sh
