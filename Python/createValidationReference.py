@@ -51,7 +51,7 @@ def main(gis):
     # Generate the results file
     filename = TEMPLATE.format(prefix)
     with open(filename, 'w') as csvfile:
-        for district in data:
+        for district in sorted(data.keys()):
             csvfile.write("{},{}\n".format(district, data[district][0] / data[district][1]))
     print("{} created".format(filename))        
 
