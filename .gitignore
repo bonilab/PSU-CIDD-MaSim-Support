@@ -16,5 +16,3 @@ __pycache__
 .idea
 .vscode
 
-# Ignore the user specific helper script
-load.sh
