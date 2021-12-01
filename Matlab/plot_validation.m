@@ -134,8 +134,11 @@ function [] = plot_cases_pfpr(modelData, varargin)
     end
     hold off;
     
+    % Determine the bounds
+    y_maxima = ceil(max(pfpr) / 5) * 5;
+
     % Format the log10 axis
-    ylim([0 80]);
+    ylim([0 y_maxima]);
     xlim(log10([200 1000]));
     xticks(log10(200:200:1000));
     xticklabels(split(num2str(200:200:1000)));
