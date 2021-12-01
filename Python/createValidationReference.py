@@ -43,7 +43,7 @@ def main(gis):
                 data[district] = [0, 0]
 
             # First value is the weighted PfPR sum
-            data[district][0] += (pfpr[row][col] * population[row][col])
+            data[district][0] += ((pfpr[row][col] * population[row][col]) * 100.0)
 
             # Second value is the population sum
             data[district][1] += population[row][col]
@@ -52,7 +52,7 @@ def main(gis):
     filename = TEMPLATE.format(prefix)
     with open(filename, 'w') as csvfile:
         for district in sorted(data.keys()):
-            csvfile.write("{},{}\n".format(district, data[district][0] / data[district][1]))
+            csvfile.write("{},{}\n".format(district, round(data[district][0] / data[district][1], 2)))
     print("{} created".format(filename))        
 
 
