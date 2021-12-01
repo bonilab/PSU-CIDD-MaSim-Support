@@ -12,16 +12,13 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
 import include.calibrationLib as cl
+import include.standards as std
 from include.ascFile import load_asc, write_asc
 from include.utility import progressBar
 
 
 # Default path for beta values
 BETAVALUES = "data/calibration.csv"
-
-# Templates for the expected reference files
-PFPR_FILE       = "{}_pfpr2to10.asc"
-POPULATION_FILE = "{}_population.asc"
 
 # Starting epsilon and delta to be used
 EPSILON = 0.00001
@@ -30,9 +27,9 @@ MAX_EPSILON = 0.1
 def create_beta_map(configuration, gisPath, prefix):
    
     # Load the relevent raster files
-    filename = os.path.join(gisPath, PFPR_FILE.format(prefix))
+    filename = os.path.join(gisPath, std.PFPR_FILE.format(prefix))
     [ascHeader, pfpr] = load_asc(filename)
-    filename = os.path.join(gisPath, POPULATION_FILE.format(prefix))    
+    filename = os.path.join(gisPath, std.POPULATION_FILE.format(prefix))    
     [_, population] = load_asc(filename)
 
     # Defer to the library to load the rest
