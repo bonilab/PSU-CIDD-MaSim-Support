@@ -41,7 +41,7 @@ SELECT_CONFIGURATIONS = """
 SELECT c.id, c.studyid, c.filename
 FROM sim.configuration c
   LEFT JOIN sim.replicate r on r.configurationid = c.id
-WHERE r.id is null"""
+WHERE r.id is null AND c.studyid > 2"""
 
 
 def deleteConfigurations(connectionString):
@@ -74,15 +74,15 @@ def main(configuration, studyId, failed):
       deleteFailed(cfg['connection_string'])
       
     if studyId is not None:
-
       # Delete the studies
       print("Deleteing from study id {}...".format(studyId))
       deleteReplicates(cfg['connection_string'], studyId)
 
-      # Don't delete the default study numbers
+      # Don't delete configurations from the default study numbers
       if int(studyId) not in (1, 2): 
         print("Deleting configuration for study id {}...".format(studyId))
         deleteConfigurations(cfg['connection_string'])
+
   except DatabaseError:
     sys.stderr.write("An unrecoverable database error occurred, exiting\n")
     sys.exit(1)
