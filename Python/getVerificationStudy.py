@@ -22,7 +22,7 @@ from include.database import select, DatabaseError
 SELECT_REPLICATES = """
 SELECT r.id, c.filename, 
     to_char(r.starttime, 'YYYY-MON-DD HH24:MI:SS'), 
-    to_char(r.endtime, 'YYYY-MON-DD HH24:MI:SS'),
+    CASE WHEN r.endtime is null THEN 'Incomplete' ELSE to_char(r.endtime, 'YYYY-MON-DD HH24:MI:SS') END AS endtime,
     aggregationlevel
 FROM sim.study s 
     INNER JOIN sim.configuration c ON c.studyid = s.id
