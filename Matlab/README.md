@@ -4,6 +4,20 @@
 
 The following .m files are intended to be used as functions either from other scripts, or by themselves within MATLAB
 
+### plot_population.m
+
+This function generates a basic plot from the model validation data of the population growth. Three input parameters are required:
+
+- `filename` is the validation file created by `getverificationstudy`
+- `startDate` is the model start date in YYYY-MM-DD format
+- `scalar` is the population scaling parameter (`artificial_rescaling_of_population_size` in the YAML configuration file)
+
+An example of a call to the function is:
+
+```Matlab
+plot_population('verification-data.csv', '2021-12-17', 0.25);
+```
+
 ### plot_validation.m
 
 This function offers two methods for generating figures from model validation data. Two input files are required:
