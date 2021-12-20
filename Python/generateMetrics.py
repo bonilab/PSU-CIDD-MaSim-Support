@@ -60,10 +60,31 @@ def calculate(gisPath, prefix, division):
             out.write("{},{}\n".format(int(key), result))
             print(message)
 
+    # Calculate the initial population if present
+    initial = calculate_initial(gisPath, prefix)
+
     result = round(numerator * 100 / denominator, 2)
     print("\nFull Map, PfPR: {0}%".format(result))
     print("Population: {:,}".format(totalPopulation))
+    if initial is not None:
+        print("Initial Population: {:,}".format(initial))
     print("Cells: {}\n".format(cells))
+
+
+def calculate_initial(gisPath, prefix):
+    # Check to make sure the file exists
+    filename = "{}/{}_init_pop.asc".format(gisPath, prefix)
+    if not os.path.exists(filename):
+        return None
+
+    # Calculate and return the initial population value
+    population = 0
+    [ascheader, data] = load_asc(filename)
+    for row in range(ascheader['nrows']):
+        for col in range(ascheader['ncols']):
+            if data[row][col] != ascheader['nodata']:
+                population += data[row][col]
+    return population
 
 
 def load(filename, fileType):
