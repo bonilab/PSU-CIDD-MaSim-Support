@@ -186,7 +186,7 @@ def main(configuration, gisPath, studyId, useCache):
         else:
             print("Using cached calibration values for map...")
     except Exception as err:
-        sys.stderr.write("Error: {}\n".format(str(err)))
+        sys.stderr.write("ERROR: {}\n".format(str(err)))
         if not os.path.exists(BETAVALUES):
             sys.exit(1)
         else:
@@ -218,5 +218,5 @@ if __name__ == "__main__":
     try:
         main(args.configuration, args.gis, int(args.studyid), args.useCache)
     except Exception as err:
-        sys.stderr.write("Error: {}\n".format(str(err)))
+        sys.stderr.write("ERROR: {}\n".format(str(err)))
         sys.exit(1)
