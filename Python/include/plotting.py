@@ -3,6 +3,33 @@
 # This module provides some useful functionality for plotting
 import colorsys
 
+
+def format_ticks(yticks):
+    '''Given a list of numberic tick values, round them to the nearest thousands or millions.
+    
+    Returns a tuple with the the list of rounded values and the formatted strings. If nothing
+    was done then None is returned in both places.
+    '''
+
+    # Determine the divisor and postfix to use
+    if max(yticks) > 999999:
+        divisor, postfix = 1000000, 'M'
+    elif max(yticks) > 999:
+        divisor, postfix = 1000, 'K'
+    else:
+        return None, None
+
+    # Extract the ticks and format them
+    values, ticks = [], []
+    for tick in yticks:
+        if tick > 0:
+            ticks.append('{:.1f}{}'.format(tick / divisor, postfix))
+            values.append(tick)
+
+    # Return the formatted ticks
+    return values, ticks
+
+
 def scale_luminosity(rgb, luminosity):
     '''Scale the given RGB color based upon the luminosity value provided'''
     if type(rgb) is str:
