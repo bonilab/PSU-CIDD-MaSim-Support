@@ -74,8 +74,16 @@ def main(configuration, studyId, failed):
       deleteFailed(cfg['connection_string'])
       
     if studyId is not None:
+      # Guard against unintentional use
+      print('\033[93m' + "WARNING! Deleting from study {} will remove all failed replicates, and ALL replicates if the stored procedure bypasses completion checks!" + '\033[0m')
+      response = None
+      while not response in ['Y', 'N']:
+        response = input("Do you wish to continue? [Y/N] ").upper()
+        if response == 'N':
+          return
+
       # Delete the studies
-      print("Deleteing from study id {}...".format(studyId))
+      print("Deleting from study id {}...".format(studyId))
       deleteReplicates(cfg['connection_string'], studyId)
 
       # Don't delete configurations from the default study numbers
