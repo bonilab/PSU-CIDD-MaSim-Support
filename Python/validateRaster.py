@@ -32,7 +32,7 @@ def main(path):
 
     for filename in next(os.walk(path))[2]:
         # Continue if we this is not an ASC
-        if ".asc" not in filename: continue
+        if not filename.endswith(".asc"): continue
 
         # If the first one has not been set, do so and continue
         if first == '':
