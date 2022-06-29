@@ -5,7 +5,7 @@
 # study id is in place as well.
 
 # The maximum number of jobs that can run
-LIMIT=150
+LIMIT=100
 
 # Step size used when iterating over the files 
 STEP=0.05
