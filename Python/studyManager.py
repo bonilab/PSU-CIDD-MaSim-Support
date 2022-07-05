@@ -7,8 +7,6 @@
 import os
 import sys
 import argparse
-import yaml
-import psycopg2
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 import include.database as database

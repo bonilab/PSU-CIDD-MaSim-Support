@@ -8,7 +8,6 @@
 import csv
 import glob
 import os
-import psycopg2
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))

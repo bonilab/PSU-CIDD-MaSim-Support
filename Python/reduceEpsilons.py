@@ -8,7 +8,6 @@ import argparse
 import csv
 import os
 import sys
-import yaml
 
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))

@@ -1,2 +1,4 @@
-numpy
 jenkspy
+numpy
+psycopg2-binary
+pyaml

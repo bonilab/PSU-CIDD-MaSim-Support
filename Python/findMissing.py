@@ -5,7 +5,6 @@
 # This script finds the combination that are missing from a calibration.
 import argparse
 import csv
-import os
 import sys
 
 from pathlib import Path
