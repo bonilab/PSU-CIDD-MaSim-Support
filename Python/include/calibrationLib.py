@@ -235,7 +235,7 @@ def load_configuration(configuration):
 
     try:
         with open(configuration, "r") as yamlfile:
-            cfg = yaml.load(yamlfile)
+            cfg = yaml.safe_load(yamlfile)
             return cfg
 
     except yaml.parser.ParserError as ex:
