@@ -4,20 +4,8 @@
 import jenkspy
 import numpy as np
 
-
-def avg(values):
-    total = 0
-    count = 0
-    for row in values:
-        for value in row:
-            total += value
-            count += 1
-
-    return total / count
-
-
 # Find the goodness of variance fit (GVF) for the data set provided and the 
-# number of classes (bins) indciated
+# number of classes (bins) indicated
 #
 # Source: https://stats.stackexchange.com/q/144075
 def goodness_of_variance_fit(data, classes):
@@ -51,6 +39,32 @@ def classify(value, breaks):
     return len(breaks) - 1
 
 
+# Smooth using a moving average with a sliding window
+def movingAverage(vector, window):
+    '''
+    Calculate the moving average for the vector provided with the given window.
+
+    vector - A set of values to calculate the moving average for.
+    window - An odd-sized window to use when calculating the moving average.
+
+    Returns a vector contain the moving average.
+    '''
+    if window < 1:
+        raise ValueError('The window size should be greater than 1, got {}'.format(window))
+    if window % 2 != 1:
+        raise ValueError('Expected an odd window size, got {}'.format(window))
+
+    length = len(vector)
+    out = [0]*length
+    for ndx in range(length):
+        lb = int(ndx - (window - 1) / 2)
+        rb = int(ndx + (window - 1) / 2)
+        if lb < 0: lb = 0
+        if rb > length: rb = length
+        out[ndx] = (sum(vector[lb:rb]) / (rb - lb + 1))
+    return out
+
+
 def mse(expected, observed, nodata):
     total = 0
     count = 0
@@ -60,6 +74,28 @@ def mse(expected, observed, nodata):
             total += pow(expected[x][y] - observed[x][y], 2)
             count += 1
     return total / count
+
+
+def paddedMovingAverage(vector, padding, window):
+    '''
+    Pad the start and end of the vector before calculating the moving average 
+    for the vector provided with the given window.
+
+    vector - A set of values to calculate the moving average for.
+    padding - The padding to use at the start and end of the vector.
+    window - An odd-sized window to use when calculating the moving average.
+
+    Returns a vector contain the moving average.
+    '''
+    # Force to a vector, create a new vector padded to the window size
+    vector = vector.tolist()
+    new_vector = vector[0:padding]
+    new_vector.extend(vector)
+    new_vector.extend(vector[-(padding + 1):-1])
+
+    # Build a single array
+    new_vector = movingAverage(new_vector, window)
+    return new_vector[padding:-padding]
 
 
 def weighted_avg(values, weights, nodata):    
