@@ -63,7 +63,7 @@ def get_climate_zones(configurationYaml, gisPath):
     configurationYaml - The loaded configuration to examine.
     gisPath - The path to append to GIS files in the configuration.
     
-    Returns a matrix contianing the climate zones, locations without a zone will use the common nodata value.
+    Returns a matrix containing the climate zones, locations without a zone will use the common nodata value.
     '''
 
     # Start by checking if there is a raster defined, if so just load and return that
