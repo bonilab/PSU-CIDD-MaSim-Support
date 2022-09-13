@@ -2,7 +2,7 @@
 
 # generateMetrics.py
 #
-# This module contains functions relevent to getting metrics from ASC files.
+# This module contains functions relevant to getting metrics from ASC files.
 import argparse
 import os
 import sys
@@ -14,14 +14,18 @@ from include.ascFile import load_asc
 NUMERATOR = 0
 DENOMINATOR = 1
 
-def calculate(gisPath, prefix, division):
+def calculate(gisPath, prefix, division, populationFilename=None):
 
     # Attempt to load the files
     filename = "{}/{}_{}.asc".format(gisPath, prefix, division)
     [ascheader, district] = load(filename, division)        
     filename = "{}/{}_pfpr2to10.asc".format(gisPath, prefix)
     [_, pfpr] = load(filename, "PfPR")
-    filename = "{}/{}_population.asc".format(gisPath, prefix)
+
+    if populationFilename is None:
+        filename = "{}/{}_population.asc".format(gisPath, prefix)
+    else:
+        filename = populationFilename
     [_, population] = load(filename, "population")
 
     # Loop over the data that's been loaded
@@ -103,11 +107,16 @@ if __name__ == '__main__':
         help='The country code prefix used')        
     parser.add_argument('-d', action='store', dest='division', default='district',
         help='(optional) District or province level metrics, default district')
+    parser.add_argument('--pf', action='store', dest='population', default=None,
+        help='(optional) Population file to use when summing the total population')
     args = parser.parse_args()
 
     # Check the parameters
     if args.division not in ("district", "province"):
         print("Unknown division: {}, expected 'district' or 'province'".format(args.division))
         sys.exit(1)
-
-    calculate(args.gis, args.prefix, args.division)
+    if args.population is not None:
+        print("Using population file: {}".format(args.population))
+        calculate(args.gis, args.prefix, args.division, populationFilename = args.population)
+    else:
+        calculate(args.gis, args.prefix, args.division)
