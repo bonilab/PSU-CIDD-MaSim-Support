@@ -16,78 +16,89 @@ from include.calibrationLib import get_bin, get_climate_zones, get_treatments_li
 from include.stats import goodness_of_variance_fit
 
 
-def process(configuration, gisPath, prefix):
+def process(configuration, gisPath, prefix, type):
     # Load the configuration
     cfg = load_configuration(configuration)
 
-    # Load and bin the population
-    filename = "{}/{}_population.asc".format(gisPath, prefix)
-    [ascHeader, population] = load(filename, "population")
+    # Load and bin the population")
+    [ascHeader, population] = get_population(gisPath, prefix)
     data = list(i for j in population for i in j)
     data = list(i for i in data if i != ascHeader['nodata'])
-    populationBreaks = bin_data(data)
+    populationBreaks = bin_data(data, 'population')
 
     # Get the access to treatments rate and bin if need be
     [treatments, needsBinning] = get_treatments_list(cfg, gisPath)
     if treatments == -1:
-        print("Unable to load determine the treatments in the configuration.")
-        exit(1)
+        raise Exception("Unable to load determine the treatments in the configuration.")
     if needsBinning:
         data = list(i for j in treatments for i in j)
         data = list(i for i in data if i != ascHeader['nodata'])
-        treatments = bin_data(data)
+        treatments = bin_data(data, 'treatments')
     
-    # Load the PfPR data
-    filename = "{}/{}_pfpr2to10.asc".format(gisPath, prefix)
-    [_, pfpr] = load(filename, "PfPR")
+    # Load the binning range type
+    if type == 'pfpr':
+        filename = "{}/{}_pfpr2to10.asc".format(gisPath, prefix)
+    elif type == 'incidence':
+        filename = "{}/{}_incidence.asc".format(gisPath, prefix)
+    else:
+        raise Exception("Unknown binning range type, {}".format(type))
+    [_, data] = load(filename, "PfPR")
+    rangeBins = {}
 
     # Load the climate and treatment rasters
     climate = get_climate_zones(cfg, gisPath)
     treatment = get_treatments_raster(cfg, gisPath)
 
-    # Prepare our results
-    pfprRanges = {}
-    zoneTreatments = {}
-
     # Process the data
+    zoneTreatments = {}
     for row in range(0, ascHeader['nrows']):
         for col in range(0, ascHeader['ncols']):
 
             # Press on if there is nothing to do
             zone = climate[row][col]
-            if zone == ascHeader['nodata']:
-                continue
+            if zone == ascHeader['nodata']: continue
 
             # Note the bins
             popBin = int(get_bin(population[row][col], populationBreaks))
             treatBin = get_bin(treatment[row][col], treatments)
 
             # Add to the dictionary as needed
-            if zone not in pfprRanges:
-                pfprRanges[zone] = {}
-            if popBin not in pfprRanges[zone]:
-                pfprRanges[zone][popBin] = []
+            if zone not in rangeBins:
+                rangeBins[zone] = {}
+            if popBin not in rangeBins[zone]:
+                rangeBins[zone][popBin] = []
             if zone not in zoneTreatments:
                 zoneTreatments[zone] = []
 
             # Add to our data sets
-            pfprRanges[zone][popBin].append(pfpr[row][col])
+            rangeBins[zone][popBin].append(data[row][col])
             if treatBin not in zoneTreatments[zone]:
                 zoneTreatments[zone].append(treatBin)
 
-    return [pfprRanges, zoneTreatments, populationBreaks]
+    return [rangeBins, zoneTreatments, populationBreaks]
 
 
-# Helper function, load the ASC file indciated
+def get_population(gisPath, prefix):
+    for name in ['population', 'init_pop']:
+        filename = "{}/{}_{}.asc".format(gisPath, prefix, name)
+        if os.path.exists(filename):
+            return load(filename, "population")
+    raise Exception("Could not find a population file in: {}".format(gisPath))
+
+
+# Helper function, load the ASC file indicated
 def load(filename, fileType):
     if not os.path.exists(filename):
-        print("Could not find {} file, tried: {}".format(fileType, filename))
-        exit(1)
+        raise Exception("Could not find {} file, tried: {}".format(fileType, filename))
     return load_asc(filename)    
 
 
 # Bin the data provided using Jenks natural breaks optimization
-def bin_data(data, minimumClasses=5, maximumClasses=30, delta=0.01):
+def bin_data(data, type, minimumClasses=5, maximumClasses=30, delta=0.01):
+
+    # Alert the user since this can take awhile for large data sets
+    sys.stdout.write('Binning {}...'.format(type))
+    sys.stdout.flush()
 
     # Iterate from the the minimum to the maximum number classes and 
     # return the breaks with the lowest goodness of variance fit (GVF)
@@ -96,15 +107,16 @@ def bin_data(data, minimumClasses=5, maximumClasses=30, delta=0.01):
         gvf, breaks = goodness_of_variance_fit(data, classes)
         if abs(previousGvf - gvf) <= delta:
             # Note that the first index contains the lower bound
+            print('done!')
             return breaks[1:]
         previousGvf = gvf
 
     # If we get here, warn the user but press on
     print(classes, maximumClasses)
     if classes == maximumClasses:
-        print("Unable to find optimal fit, classes = {}, GVF = {}".format(classes, gvf))
+        print("done!\nUnable to find optimal fit, classes = {}, GVF = {}".format(classes, gvf))
         return breaks[1:]
-
+    
 
 def save(pfpr, treatments, populationBreaks, filename, prefix, username):
     with open(filename, 'w') as script:
@@ -136,6 +148,8 @@ if __name__ == '__main__':
         help='The path to the directory that the GIS files can be found in')
     parser.add_argument('-u', action='store', dest='username', required=True,
         help='The user who will be running the calibration on the cluster')  
+    parser.add_argument('-t', action='store', dest='type', required=False, default='pfpr',
+        help='The type of processing to be done either \'pfpr\' or \'incidence\'')
     args = parser.parse_args()
 
     # Check to see if it looks like there is a country prefix
@@ -145,17 +159,31 @@ if __name__ == '__main__':
         exit(0)
     prefix = prefix.group(1)
 
-    # Process and print the relevent ranges for the user
-    [pfpr, treatments, populationBreaks] = process(args.configuration, args.gis, prefix)
-    for zone in pfpr.keys():
-        print("Climate Zone {}".format(int(zone)))
-        print("Treatments: {}".format(sorted(treatments[zone])))
-        print("Populations: {}".format(sorted(pfpr[zone].keys())))
-        for popBin in sorted(pfpr[zone].keys()):
-            print("{} - {} to {} PfPR".format(popBin, min(pfpr[zone][popBin]), max(pfpr[zone][popBin])))
-        print
+    # Check to make sure the type is valid
+    if args.type == 'pfpr':
+        label = 'PfPR'
+    elif args.type == 'incidence':
+        label = 'per 1000'
+    else:
+        print("Unknown type argument, {}".format(args.type))
+        exit(0)
 
-    # Save the basic script
-    if not os.path.isdir('out'):
-        os.mkdir('out')
-    save(pfpr, treatments, populationBreaks, 'out/calibration.sh', prefix, args.username)
+    # Process and print the relevant ranges for the user
+    try:
+        [ranges, treatments, breaks] = process(args.configuration, args.gis, prefix, args.type)
+        for zone in ranges.keys():
+            if len(ranges.keys()) != 1: print("Climate Zone {}".format(int(zone)))
+            print("Treatments: {}".format(sorted(treatments[zone])))
+            print("Populations: {}".format(sorted(ranges[zone].keys())))
+            for bin in sorted(ranges[zone].keys()):
+                print("{} - {} to {} {}".format(bin, min(ranges[zone][bin]), max(ranges[zone][bin]), label))
+            print
+
+        # Save the basic script
+        if not os.path.isdir('out'):
+            os.mkdir('out')
+        save(ranges, treatments, breaks, 'out/calibration.sh', prefix, args.username)
+
+    except Exception as ex:
+        print(ex)
+        exit(1)
