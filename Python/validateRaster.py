@@ -50,7 +50,7 @@ def main(path):
         count = count + 1
     
     # Print the status
-    print("{} files checked".format(count))
+    print("{} files crosschecked, {} total files".format(count, count + 1))
 
     if not error:
         print("No errors detected")
