@@ -1,6 +1,6 @@
 # PSU-CIDD-MaSim-Support
 
-This repository contains analysis files used for modeling the prevalence of malaria (*P. falciparum*) in in various countries using the main malarial simulation. Generally the code is organized with the assumption that most scripts will be written in Python; however, a subdirectory for Matlab code is included which contains some useful functions for plotting various data points from the simuation related to calibration and validation.
+This repository contains analysis and support scripts used for modeling the prevalence of malaria (*P. falciparum*) in various countries using the main malarial simulation. Generally the code is organized with the assumption that most scripts will be written in Python; however, a subdirectory for Matlab code is included which contains some useful functions for plotting various data points from the simulation related to calibration and validation.
 
 The main repository for the simulation can be found at [maciekboni/PSU-CIDD-Malaria-Simulation](https://github.com/maciekboni/PSU-CIDD-Malaria-Simulation)
 
