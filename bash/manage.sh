@@ -14,15 +14,19 @@ fi
 
 # Delete what has already run
 if [ $1 = 'delete' ]; then
-  for item in `find . -name '*.pbs.e*' -size 0 | sed 's/\(.*\)\.pbs.e.*/\1.*/'`; do
-    rm $item
+  for item in `ls slurm-*.out`; do
+    file=`grep -oP 'Read input file: \K.*.yml' $item`
+      if grep -q 'Model finished!' $item; then
+        remove=$(echo $file | sed 's/\(.*\).yml/\1.*/')
+        rm $remove $item
+      fi
   done
   exit
 fi
 
 # Requeue jobs that are in the directory
 if [ $1 = 'requeue' ]; then
-  for item in `find . -name '*.pbs'`; do
+  for item in `find . -name '*.job'`; do
     qsub $item
   done
   exit
@@ -30,9 +34,11 @@ fi
 
 # Find jobs that failed, delete the logs, and queue the job again
 if [ $1 = 'rerun' ]; then
-  for item in `find . -name '*.pbs.e*' ! -size 0 | sed 's/\(.*\)\.pbs.e.*/\1/'`; do
-    rm -- $item.pbs.*
-    qsub $item.pbs
+  for item in `ls slurm-*.out`; do
+    file=`grep -oP 'Read input file: \K.*.yml' $item`
+      run=$(echo $file | sed 's/\(.*\).yml/\1.job/')
+      rm $item
+      sbatch $run
   done
   exit
 fi 
