@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#PBS -A mfb9_b_g_sc_default
-#PBS -l nodes=1:ppn=1:rhel7:stmem
-#PBS -l walltime=24:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --mem=1GB
+#SBATCH --time=24:00:00
+#SBATCH --partition=mfb9_b_g_sc_default
 
-#PBS -m ea
-
-cd $PBS_O_WORKDIR
+cd $SLURM_SUBMIT_DIR
 ./calibration.sh

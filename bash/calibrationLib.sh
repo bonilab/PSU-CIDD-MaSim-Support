@@ -15,7 +15,7 @@ O5ADJUST=1.0
 
 function check_delay {
   eval user=$1
-  while [ `qstat -u $user | grep $user | wc -l` -gt $LIMIT ]; do
+  while [ `squeue -u $user | grep $user | wc -l` -gt $LIMIT ]; do
     sleep 10s
   done
 }
@@ -57,8 +57,8 @@ function run() {
         sed -i 's/#ZONE#/'"$zone"'/g' $filename.yml
     
         # Prepare and queue the job file
-        sed 's/#FILENAME#/'"$filename"'/g' template.job > $filename.pbs    
-        qsub $filename.pbs
+        sed 's/#FILENAME#/'"$filename"'/g' template.job > $filename.job    
+        sbatch $filename.job
       done
     done
   done
@@ -85,8 +85,8 @@ function runCsv() {
     sed -i 's/#ZONE#/'"$zone"'/g' $filename.yml
 
     # Prepare and queue the job file
-    sed 's/#FILENAME#/'"$filename"'/g' template.job > $filename.pbs    
-    qsub $filename.pbs
+    sed 's/#FILENAME#/'"$filename"'/g' template.job > $filename.job    
+    sbatch $filename.job
 
   done < $filename
 }
@@ -103,7 +103,7 @@ function runReplicates() {
     # already exists in the database so collisions will not be a concern
     for ndx in `seq 1 1 $count`; do
       check_delay $user
-      qsub $replicate
+      sbatch $replicate
     done
   done < $filename
 }
