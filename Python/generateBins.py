@@ -153,7 +153,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Check to see if it looks like there is a country prefix
-    prefix = re.search(r"^([a-z]{3})-.*\.yml", args.configuration)
+    prefix = re.search(r"([a-z]{3})-.*\.yml", args.configuration)
     if prefix is None:
         print("Unknown or malformed country code prefix for configuration while parsing configuration name, {}".format(args.configuration))
         exit(0)
