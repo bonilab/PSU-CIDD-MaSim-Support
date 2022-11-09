@@ -4,8 +4,10 @@
 #
 # This script generates the bins that need to be run to determine the beta values
 import argparse
+import pathlib
 import os
 import re
+import stat
 import sys
 
 # Import our libraries
@@ -123,6 +125,7 @@ def save(pfpr, treatments, populationBreaks, filename, prefix, username):
         # Print the front matter
         script.write("#!/bin/bash\n")
         script.write("source ./calibrationLib.sh\n\n")
+        script.write("checkDependencies {}\n\n".format(prefix))
 
         # Print the ASC file generation commands
         script.write("generateAsc \"\\\"{}\\\"\"\n".format(
@@ -137,6 +140,10 @@ def save(pfpr, treatments, populationBreaks, filename, prefix, username):
                 " ".join([str(int(x)) for x in sorted(populationBreaks)]),
                 " ".join([str(x) for x in sorted(treatments[zone])]),
                 prefix, username))
+
+    # Set the file as executable
+    script = pathlib.Path(filename)
+    script.chmod(script.stat().st_mode | stat.S_IEXEC)
 
 
 if __name__ == '__main__':

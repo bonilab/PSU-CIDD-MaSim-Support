@@ -20,6 +20,23 @@ function check_delay {
   done
 }
 
+function checkDependencies {
+  eval country=$1
+
+  missing=false
+  declare -a files=("$country-calibration.yml" "template.job" "population.asc" "zone.asc")
+  for file in "${files[@]}"; do
+    if [ ! -f "$file" ]; then
+      echo "$file does not appear to exist!"
+      missing=true
+    fi
+  done
+  if [ "$missing" = true ]; then
+    echo "One or more missing files, exiting."
+    exit 1
+  fi
+}
+
 function generateAsc() {
   eval populations=$1
   for population in $populations; do
