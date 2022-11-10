@@ -26,8 +26,8 @@ fi
 
 # Requeue jobs that are in the directory
 if [ $1 = 'requeue' ]; then
-  for item in `find . -name '*.job'`; do
-    qsub $item
+  for item in `find . -name '*.job' ! -name 'run*.job' ! -name 'template.job'`; do
+    sbatch $item
   done
   exit
 fi
