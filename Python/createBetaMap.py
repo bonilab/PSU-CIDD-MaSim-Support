@@ -24,10 +24,13 @@ BETAVALUES = "data/calibration.csv"
 EPSILON = 0.00001
 MAX_EPSILON = 0.1
 
-def create_beta_map(configuration, gisPath, prefix):
+def create_beta_map(configuration, gisPath, prefix, pfpr_file):
    
-    # Load the relevent raster files
+    # Load the relevant raster files
     filename = os.path.join(gisPath, std.PFPR_FILE.format(prefix))
+    if pfpr_file:
+        print('Using supplied PfPR file...')
+        filename = pfpr_file    
     [ascHeader, pfpr] = load_asc(filename)
     filename = os.path.join(gisPath, std.POPULATION_FILE.format(prefix))    
     [_, population] = load_asc(filename)
@@ -168,7 +171,7 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
     
 
 # Main entry point for the script
-def main(configuration, gisPath, studyId, useCache):
+def main(configuration, gisPath, studyId, useCache, pfpr):
 
     # Parse the country prefix
     prefix = cl.get_prefix(configuration)
@@ -187,13 +190,9 @@ def main(configuration, gisPath, studyId, useCache):
             print("Using cached calibration values for map...")
     except Exception as err:
         sys.stderr.write("ERROR: {}\n".format(str(err)))
-        if not os.path.exists(BETAVALUES):
-            sys.exit(1)
-        else:
-            print("Attempting to use previous calibration file...")
 
     # Proceed with creating beta map
-    create_beta_map(cfg, gisPath, prefix)
+    create_beta_map(cfg, gisPath, prefix, pfpr)
 
 
 if __name__ == "__main__":
@@ -205,6 +204,8 @@ if __name__ == "__main__":
         help='The path to the directory that the GIS files can be found in')
     parser.add_argument('-s', action='store', dest='studyid', default=-1,
         help='The id of the study to use for the reference beta values')
+    parser.add_argument('--pfpr', action='store', dest='pfpr', default=None,
+        help='Override the default PfPR file with the one supplied')
     parser.add_argument('--cache', action='store_true', dest='useCache',
         help='Use cached values for the calibration')
     args = parser.parse_args()
@@ -214,9 +215,9 @@ if __name__ == "__main__":
         sys.stderr.write("The study id must be supplied when not using a cached calibration\n")
         sys.exit(1)
     
-    # Call the main function with the paramters
+    # Call the main function with the parameters
     try:
-        main(args.configuration, args.gis, int(args.studyid), args.useCache)
+        main(args.configuration, args.gis, int(args.studyid), args.useCache, args.pfpr)
     except Exception as err:
         sys.stderr.write("ERROR: {}\n".format(str(err)))
         sys.exit(1)
