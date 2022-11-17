@@ -6,7 +6,9 @@
 # file to prepare. 
 import argparse
 import csv
+import pathlib
 import os
+import stat
 import sys
 
 # Import our libraries
@@ -93,13 +95,23 @@ def writeBetas(lookup, prefix, username):
 
     print("Preparing script, {}".format(SCRIPT))
     with open(SCRIPT, "w") as script:
+        # Print the front matter
         script.write("#!/bin/bash\n")
         script.write("source ./calibrationLib.sh\n")
+        script.write("checkDependencies {}\n".format(prefix))
+
+        # Print the ASC file generation commands
         value = " ".join([str(int(x)) for x in sorted(populationAsc)])
         script.write("generateAsc \"\\\"{}\\\"\"\n".format(value.strip()))
         value = " ".join([str(int(x)) for x in sorted(parameters.keys())])
         script.write("generateZoneAsc \"\\\"{}\\\"\"\n".format(value.strip()))
+
+        # Print the run command for the script
         script.write("runCsv '{}' {} {}\n".format(RESULTS[4:], prefix, username))
+
+    # Set the file as executable
+    script = pathlib.Path(SCRIPT)
+    script.chmod(script.stat().st_mode | stat.S_IEXEC)        
         
 
 def main(configuration, gisPath, tolerance, step, username):
