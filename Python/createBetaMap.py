@@ -24,6 +24,9 @@ BETAVALUES = "data/calibration.csv"
 EPSILON = 0.00001
 MAX_EPSILON = 0.1
 
+# Warnings to be passed between functions
+WARNINGS = ''
+
 def create_beta_map(configuration, gisPath, prefix, pfpr_file):
    
     # Load the relevant raster files
@@ -88,12 +91,20 @@ def create_beta_map(configuration, gisPath, prefix, pfpr_file):
             epsilons[row].append(epsilon)
             if epsilon > maxEpsilon: 
                 maxEpsilon = epsilon
-                maxValues = "PfPR: {}, Population: {}".format(pfpr[row][col], population[row][col])
+
+                # Determine the population and treatment bin we are working with
+                zone = climate[row][col]
+                maxValues = "PfPR: {}, Population: {} (Bin: {}), Treatment: {}".format(
+                    pfpr[row][col], population[row][col], cl.get_bin(population[row][col], lookup[zone].keys()), treatments[row][col])
             meanBeta[row].append(sum(values) / len(values))
 
         # Note the progress
         progressBar(row + 1, ascHeader['nrows'])
-                
+
+    # Print the warnings, if any
+    if len(WARNINGS) > 0:
+        print(WARNINGS)
+
     # Write the results
     print("\n Max epsilon: {:.6f} / {}".format(maxEpsilon, maxValues))
     print("Epsilon Distribution")
@@ -119,6 +130,8 @@ def create_beta_map(configuration, gisPath, prefix, pfpr_file):
 # treatment level, this function will start with the lowest epsilon value 
 # and increase it until at least one value is found to be returned
 def get_betas(zone, pfpr, population, treatment, lookup):
+    global WARNINGS
+
     # Initial values
     epsilon = 0
     betas = []
@@ -132,6 +145,18 @@ def get_betas(zone, pfpr, population, treatment, lookup):
         if epsilon == MAX_EPSILON:
             print('Match not found!\nPfPR: ', pfpr, 'Population: ', population)
             return [None, None]
+
+    # If the PfPR is zero then verify that beta returned will be zero
+    if pfpr == 0 and sum(betas) > 0:
+        # Resolve the bins
+        populationBin = int(cl.get_bin(population, lookup[zone].keys()))
+        treatmentBin = cl.get_bin(treatment, lookup[zone][populationBin].keys())
+
+        # Append a warning for this bin if it hasn't already been added
+        binning = "Zone: {}, Population: {}, Treatment: {}".format(zone, populationBin, treatmentBin)
+        if binning not in WARNINGS:
+            WARNINGS += '\nWARNING: Non-zero beta returned when PfPR is zero for bin = {}'.format(binning)
+        return [[0], 0]
 
     # Return the results
     return [betas, epsilon] 
