@@ -123,15 +123,19 @@ def main(configuration, gisPath, tolerance, step, username):
         sys.stderr.write("Invalid country code associated with configuration file: {}\n".format(configuration))
         sys.exit(1)
 
-    # Load the configuration, and potentially raster data
-    cfg = cl.load_configuration(configuration)
-    climate = cl.get_climate_zones(cfg, gisPath)
-    treatment = cl.get_treatments_raster(cfg, gisPath)
+    try:
+        # Load the configuration, and potentially raster data
+        cfg = cl.load_configuration(configuration)
+        climate = cl.get_climate_zones(cfg, gisPath)
+        treatment = cl.get_treatments_raster(cfg, gisPath)
 
-    # Load the relevent raster data
-    filename = os.path.join(gisPath, POPULATION_FILE.format(prefix))    
-    [ascheader, population] = load_asc(filename)
-    lookup = cl.load_betas(CALIBRATION)
+            # Load the relevant raster data
+        filename = os.path.join(gisPath, POPULATION_FILE.format(prefix))    
+        [ascheader, population] = load_asc(filename)
+        lookup = cl.load_betas(CALIBRATION)
+    except FileNotFoundError as err:
+        sys.stderr.write("Unable to load required file!\n{}\n".format(str(err)))
+        sys.exit(1)
 
     # Read the epsilons file in
     [_, beta] = load_asc(BETAVALUES.format(prefix))
