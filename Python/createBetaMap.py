@@ -227,8 +227,8 @@ if __name__ == "__main__":
         help='The configuration file to reference when creating the beta map')
     parser.add_argument('-g', action='store', dest='gis', required=True,
         help='The path to the directory that the GIS files can be found in')
-    parser.add_argument('-s', action='store', dest='studyid', default=-1,
-        help='The id of the study to use for the reference beta values')
+    parser.add_argument('-s', action='store', dest='studyid', default=1,
+        help='The id of the study to use for the reference beta values (default 1)')
     parser.add_argument('--pfpr', action='store', dest='pfpr', default=None,
         help='Override the default PfPR file with the one supplied')
     parser.add_argument('--cache', action='store_true', dest='useCache',
