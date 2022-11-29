@@ -15,7 +15,7 @@ import sys
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
-from include.calibrationLib import load_configuration
+import include.calibrationLib as cl
 from include.database import select, DatabaseError
  
 
@@ -72,7 +72,11 @@ ORDER BY dayselapsed, district"""
 def main(configuration, studyId):
     try:
         # Load the configuration, query for the list of replicates
-        cfg = load_configuration(configuration)
+        prefix = cl.get_prefix(configuration)
+        if prefix is None:
+            sys.stderr.write("Invalid country code associated with configuration file: {}\n".format(configuration))
+            sys.exit(1)
+        cfg = cl.load_configuration(configuration)
         replicates = select(cfg["connection_string"], SELECT_REPLICATES, {'studyId':studyId})
 
         # Display list, prompt user
@@ -85,7 +89,7 @@ def main(configuration, studyId):
             print("{}\t{}\t{}\t{}".format(replicate[0], replicate[1], replicate[2], replicate[3]))
 
         # Prompt for replicate id
-        replicateId = int(input("Replicate to retrive or zero (0) to exit: "))
+        replicateId = int(input("Replicate to retrieve or zero (0) to exit: "))
         if replicateId == 0: exit(0)
 
         # Check to make sure the entry is valid
@@ -104,7 +108,7 @@ def main(configuration, studyId):
             exit(0)
     
         # Save the replicate to disk
-        filename = "{}-verification-data.csv".format(replicateId)
+        filename = "{}-{}-verification-data.csv".format(prefix, replicateId)
         print("Saving data set to: {}".format(filename))
         with open(filename, "w") as csvfile:
             csvfile.write("")
@@ -117,7 +121,10 @@ def main(configuration, studyId):
     except DatabaseError:
         sys.stderr.write("An unrecoverable database error occurred, exiting.\n")
         sys.exit(1)
-
+    except KeyboardInterrupt as ex:
+        # Gracefully exit on keyboard interrupt, but note we exited abnormally
+        sys.exit(1)
+        
 
 if __name__ == "__main__":
     # Parse the parameters
