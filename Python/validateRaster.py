@@ -20,7 +20,7 @@ def compare(one, two):
     # Check the files
     result = True
     result = result and compare_header(oneHeader, twoHeader)
-    result = result and compare_data(oneValues, twoValues, oneHeader['nodata'])
+    result = result and compare_data(oneValues, twoValues, oneHeader['nodata'], errorLimit=10)
     return result
 
 

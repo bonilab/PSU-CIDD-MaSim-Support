@@ -38,8 +38,9 @@ def compare_header(one, two, printError=True):
 
 # Compare the two data sections, return True if they are the same, False otherwise.
 # If printError is set, then errors will be printed to stderr
-def compare_data(one, two, nodata, printError=True):
+def compare_data(one, two, nodata, printError=True, errorLimit=-1):
     result = True
+    count = 0
     for row in range(0, len(one)):
         for col in range(0, len(one[row])):
             # Set the values
@@ -49,9 +50,14 @@ def compare_data(one, two, nodata, printError=True):
             # Are they both nodata
             if (a == nodata and a != b) or (b == nodata and a != b):
                 result = False
+                count += 1
                 if printError:
-                    sys.stderr.write('Mismatched nodata at {}, {}\n'.format(row, col))
-                    sys.stderr.write('One: {}, Two {}\n'.format(a, b))
+                    if errorLimit == -1 or count < errorLimit:
+                        sys.stderr.write('Mismatched nodata at {}, {}\n'.format(row, col))
+                        sys.stderr.write('One: {}, Two {}\n'.format(a, b))
+
+    if errorLimit != -1 and count > errorLimit:
+        sys.stderr.write('Plus {} additional errors\n'.format(count - errorLimit))
     return result
 
 
