@@ -4,9 +4,9 @@
 #
 # Allows users to preform basic study management for the indicated configuration
 # (i.e., project database)
+import argparse
 import os
 import sys
-import argparse
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 import include.database as database

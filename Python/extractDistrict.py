@@ -4,7 +4,6 @@
 #
 # Filter the indicated raster files by the district id values indicated.
 import argparse
-import sys
 
 import include.ascFile as ascFile
 

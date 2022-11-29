@@ -78,7 +78,7 @@ def generate_asc(connectionString, replicateId):
 # Display the list of replicates to the user and return the one they select
 def prompt_user(connectionString, studyId):
     try:
-        # Retrive the replicates
+        # Retrieve the replicates
         if (studyId is None):
             query = SELECT_REPLICATES.format('')
         else:

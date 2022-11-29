@@ -7,8 +7,6 @@ import argparse
 import csv
 import sys
 
-from pathlib import Path
-
 # Output file paths
 RESULTS = "missing.csv"
 SCRIPT = "script.sh"
@@ -117,7 +115,7 @@ def main(filename, country, username):
 
 
 if __name__ == "__main__":
-    # Parse the paramters
+    # Parse the parameters
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', action='store', dest='calibration', required=True,
         help='The cached calibration values file (*.csv) to scan for missing values')

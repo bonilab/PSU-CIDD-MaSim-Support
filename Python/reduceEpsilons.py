@@ -6,8 +6,8 @@
 # file to prepare. 
 import argparse
 import csv
-import pathlib
 import os
+import pathlib
 import stat
 import sys
 

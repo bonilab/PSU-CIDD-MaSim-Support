@@ -24,7 +24,7 @@ def main(filename, x, y, value):
 if __name__ == "__main__":
     if len(sys.argv) != 5:
         print("Usage: ./pixelEditor.py [filename] [row] [col] [value]")
-        print("Coordinates are assumed to be zero indexed and the file specificed will be updated following execution")
+        print("Coordinates are assumed to be zero indexed and the file specified will be updated following execution")
         exit(0)
 
     # Parse the parameters

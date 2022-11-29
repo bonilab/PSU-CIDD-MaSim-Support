@@ -2,7 +2,7 @@
 
 # createVerificationReference.py
 #
-# This module reads the relevent ASC files for a projection to generate the 
+# This module reads the relevant ASC files for a projection to generate the 
 # weighted PfPR file that is used to check the model calibration.
 import argparse
 import glob
