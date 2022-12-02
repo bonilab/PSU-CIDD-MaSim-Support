@@ -27,7 +27,7 @@ MAX_EPSILON = 0.1
 # Warnings to be passed between functions
 WARNINGS = ''
 
-def create_beta_map(configuration, gisPath, prefix, pfpr_file):
+def create_beta_map(configuration, gisPath, prefix, age, pfpr_file):
    
     # Load the relevant raster files
     filename = os.path.join(gisPath, std.PFPR_FILE.format(prefix))
@@ -41,11 +41,23 @@ def create_beta_map(configuration, gisPath, prefix, pfpr_file):
     # Defer to the library to load the rest
     climate = cl.get_climate_zones(configuration, gisPath)
     treatments = cl.get_treatments_raster(configuration, gisPath)
-    lookup = cl.load_betas(BETAVALUES)
+    pfprBand, lookup = cl.load_betas(BETAVALUES)
 
     # Make sure the data loaded correct, or that there is data
     if len(lookup) == 0:
         raise ValueError("No calibration data is present in the file: {}".format(BETAVALUES))
+
+    # Verify that the age band matches what the file returns, errors are only likely to occur when
+    # the user tries to use cached data
+    error = None
+    if age == '0-59':
+        ageBand = '0 to 59 months'
+        if pfprBand != 'pfprunder5': error = '0 to 59 months, got 2 to 10 years'
+    elif age == '2-10':
+        ageBand = '2 to 10 years'
+        if pfprBand != 'pfpr2to10': error = '2 to 10 years, got 0 to 59 months'
+    if error is not None:
+        raise Exception('Mismatch between parameters and calibration file, expected {}'.format(error))
 
     # Prepare for the ASC data
     epsilons = []
@@ -56,7 +68,7 @@ def create_beta_map(configuration, gisPath, prefix, pfpr_file):
     distribution = [0] * 5
 
     # Scan each of the rows 
-    print("Determining betas for {} rows, {} columns".format(ascHeader['nrows'], ascHeader['ncols']))
+    print("\nDetermining betas for {}\nRaster Size: {} rows, {} columns".format(ageBand, ascHeader['nrows'], ascHeader['ncols']))
     for row in range(0, ascHeader['nrows']):
 
         # Append the empty rows
@@ -113,7 +125,7 @@ def create_beta_map(configuration, gisPath, prefix, pfpr_file):
         print("{:>6} : {}".format(pow(10, -(ndx + 1)), distribution[ndx]))
         total += distribution[ndx]
     print("Total Cells: {}".format(total))
-
+    
     # Create the directory if need be
     if not os.path.isdir('out'): os.mkdir('out')
 
@@ -196,7 +208,7 @@ def get_betas_scan(zone, pfpr, population, treatment, lookup, epsilon):
     
 
 # Main entry point for the script
-def main(configuration, gisPath, studyId, useCache, pfpr):
+def main(configuration, gisPath, studyId, useCache, age, pfpr):
 
     # Parse the country prefix
     prefix = cl.get_prefix(configuration)
@@ -210,30 +222,31 @@ def main(configuration, gisPath, studyId, useCache, pfpr):
     # Attempt to load the data from the database, if that fails, fall back to local file
     try:
         if not useCache:
-            cl.query_betas(cfg["connection_string"], studyId, filename = BETAVALUES)    
+            cl.query_betas(cfg["connection_string"], studyId, age, filename = BETAVALUES)    
         else:
             print("Using cached calibration values for map...")
     except Exception as err:
         sys.stderr.write("ERROR: {}\n".format(str(err)))
 
     # Proceed with creating beta map
-    create_beta_map(cfg, gisPath, prefix, pfpr)
+    create_beta_map(cfg, gisPath, prefix, age, pfpr)
 
 
 if __name__ == "__main__":
     # Parse the parameters
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', action='store', dest='configuration', required=True,
-        help='The configuration file to reference when creating the beta map')
-    parser.add_argument('-g', action='store', dest='gis', required=True,
-        help='The path to the directory that the GIS files can be found in')
-    parser.add_argument('-s', action='store', dest='studyid', default=1,
-        help='The id of the study to use for the reference beta values (default 1)')
-    parser.add_argument('--pfpr', action='store', dest='pfpr', default=None,
-        help='Override the default PfPR file with the one supplied')
-    parser.add_argument('--cache', action='store_true', dest='useCache',
-        help='Use cached values for the calibration')
+    parser.add_argument('-c', action='store', dest='configuration', required=True, help='The configuration file to reference when creating the beta map')
+    parser.add_argument('-g', action='store', dest='gis', required=True, help='The path to the directory that the GIS files can be found in')
+    parser.add_argument('-s', action='store', dest='studyid', default=1, help='The id of the study to use for the reference beta values (default 1)')
+    parser.add_argument('--age', action='store', dest='age', default='2-10', help='The age band to use for map generation, either 0-59 or 2-10 (default)')
+    parser.add_argument('--pfpr', action='store', dest='pfpr', default=None, help='Override the default PfPR file with the one supplied')
+    parser.add_argument('--cache', action='store_true', dest='useCache', help='Use cached values for the calibration')
     args = parser.parse_args()
+
+    # Check to make sure the age band supplied is valid
+    if args.age not in ['0-59', '2-10']:
+        sys.stderr.write("The age band supplied is not valid, expected \'0-59\' or \'2-10\', got: {}\n".format(args.age))
+        sys.exit(1)
 
     # Check that the study id is supplied if we are not using the cache
     if not args.useCache and args.studyid == -1:
@@ -242,7 +255,7 @@ if __name__ == "__main__":
     
     # Call the main function with the parameters
     try:
-        main(args.configuration, args.gis, int(args.studyid), args.useCache, args.pfpr)
+        main(args.configuration, args.gis, int(args.studyid), args.useCache, args.age, args.pfpr)
     except Exception as err:
         sys.stderr.write("ERROR: {}\n".format(str(err)))
         sys.exit(1)

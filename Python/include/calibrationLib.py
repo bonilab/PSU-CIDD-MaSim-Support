@@ -192,7 +192,7 @@ def get_treatments_raster(configurationYaml, gisPath):
 
 def load_betas(filename):
     '''
-    Read the relevent data from the CSV file into a dictionary
+    Read the relevant data from the CSV file into a dictionary
 
     filename - The file, with or without the path attached, to be loaded
     '''
@@ -200,6 +200,15 @@ def load_betas(filename):
     lookup = {}
     with open(filename) as csvfile:
         reader = csv.DictReader(csvfile)
+
+        # Check to see if we are reading Under-5 or 2-10 PfPR values
+        if 'pfpr2to10' in reader.fieldnames:
+            pfpr = 'pfpr2to10'
+        elif 'pfprunder5' in reader.fieldnames:
+            pfpr = 'pfprunder5'
+        else:
+            raise Exception('Calibration data does not appear to have a valid PfPR header.')
+
         for row in reader:
 
             # Add a new entry for the zone
@@ -218,12 +227,12 @@ def load_betas(filename):
                 lookup[zone][population][treatment] = []
 
             # Ignore the zeros unless the beta is also zero
-            if float(row['pfpr2to10']) == 0 and float(row['beta']) != 0: continue
+            if float(row[pfpr]) == 0 and float(row['beta']) != 0: continue
 
             # Append the beta and PfPR
-            lookup[zone][population][treatment].append([ float(row['pfpr2to10']) / 100, float(row['beta']) ])
+            lookup[zone][population][treatment].append([ float(row[pfpr]) / 100, float(row['beta']) ])
 
-    return lookup
+    return [pfpr, lookup]
 
 
 def load_configuration(configuration):
@@ -251,12 +260,20 @@ def load_configuration(configuration):
         exit(1)
 
 
-def query_betas(connection, studyId, filename="data/calibration.csv"):
+def query_betas(connection, studyId, age, filename="data/calibration.csv"):
     '''
     Query the database at the given location for the beta values in the given study. 
     Note that we are presuming that the filenames have been standardized to allow for scripting to take place.
     '''
     
+    # Verify the age (age band) is valid and set the variable
+    if age == '0-59':
+        ageBand = 'pfprunder5'
+    elif age == '2-10':
+        ageBand = 'pfpr2to10'
+    else:
+        raise Exception('Invalid age band provided, got: {}'.format(age))
+
     # Query for the one year mean EIR and PfPR along with binning parameters from the filename.
     SQL = r"""
         SELECT replicateid,
@@ -264,13 +281,12 @@ def query_betas(connection, studyId, filename="data/calibration.csv"):
             cast(fileparts[2] as numeric) as population,
             cast(fileparts[3] as numeric) as access,
             cast(fileparts[4] as numeric) as beta,
-            eir,
-            pfpr2to10
+            eir, {0}
         FROM (
             SELECT replicateid,
                 regexp_matches(filename, '^([\d\.]*)-(\d*)-([\.\d]*)-([\.\d]*)') as fileparts,
                 avg(eir) AS eir, 
-                avg(pfpr2to10) AS pfpr2to10
+                avg({0}) AS {0}
             FROM sim.configuration c
                 INNER JOIN sim.replicate r on r.configurationid = c.id
                 INNER JOIN sim.monthlydata md on md.replicateid = r.id
@@ -278,8 +294,8 @@ def query_betas(connection, studyId, filename="data/calibration.csv"):
             WHERE c.studyid = %(studyId)s
                 AND md.dayselapsed BETWEEN 4015 AND 4380
             GROUP BY replicateid, filename) iq
-        ORDER BY zone, population, access, pfpr2to10"""
-    header = "replicateid,zone,population,access,beta,eir,pfpr2to10\n"
+        ORDER BY zone, population, access, {0}""".format(ageBand)
+    header = "replicateid,zone,population,access,beta,eir,{}\n".format(ageBand)
 
     try:
         # Select for the beta values
