@@ -7,7 +7,7 @@
 
 function [] = plot_validation(type, modelData, referenceData, varargin)
     subplot(1, 2, 1);
-    plot_comparison(modelData, referenceData);
+    plot_comparison(modelData, referenceData, varargin{:});
     
     subplot(1, 2, 2);
     if strcmp(type, 'cases')
@@ -25,20 +25,23 @@ function [] = plot_validation(type, modelData, referenceData, varargin)
     end
 end
 
-function [] = plot_comparison(modelData, referenceData)
-    CSV_PFPR2TO10 = 8; CENTER_MIN = 0;
+function [] = plot_comparison(modelData, referenceData, varargin)
+    CENTER_MIN = 0;
+
+    % Parse the arguments
+    [pfprIndex, ageBand] = parseAge(varargin{:});
 
     % Load the data
     reference = readmatrix(referenceData);
     [data, districts] = load(modelData, 11 * 365, 16 * 365);
-    
+        
     % Since the MAP values are the mean, we want to compare against the
     % mean of our data, but highlight the seasonal minima and maxima
     x_maxima = 0; y_maxima = 0;
     hold on;
     for district = transpose(districts)
         expected = reference(reference(:, 1) == district, 2);
-        pfpr = data(data(:, 2) == district, CSV_PFPR2TO10); 
+        pfpr = data(data(:, 2) == district, pfprIndex); 
         
         % We want the seasonal maxima, filter out the local maxima, once
         % this is done we should only have six points left
@@ -83,13 +86,13 @@ function [] = plot_comparison(modelData, referenceData)
 	text(x_maxima, x_maxima * 0.9, '-10%', 'FontSize', 16);
     
     % Label and format the plot
-    ylabel('Simulated {\itPf}PR_{2 to 10}');
-    xlabel('Reference {\itPf}PR_{2 to 10}');
+    ylabel(sprintf('Simulated {\\itPf}PR_{%s}', ageBand));
+    xlabel(sprintf('Reference {\\itPf}PR_{%s}', ageBand));
     format();
 end
 
 function [] = plot_cases_pfpr(modelData, varargin)
-    CSV_POPULATION = 3; CSV_CASES = 4; CSV_REPORTED = 5; CSV_PFPR2TO10 = 8;
+    CSV_POPULATION = 3; CSV_CASES = 4; CSV_REPORTED = 5; 
     
     % Set the treatment rate if supplied
     treated = 1.0;
@@ -97,6 +100,7 @@ function [] = plot_cases_pfpr(modelData, varargin)
     if inputExist
         treated = varargin{inputExist + 1};
     end
+    [pfprIndex, ageBand] = parseAge(varargin{:});
 
     % Load the data
     [data, districts] = load(modelData, 12 * 365, 13 * 365);
@@ -112,7 +116,7 @@ function [] = plot_cases_pfpr(modelData, varargin)
         filtered = data(data(:, 2) == district, :);
         cases(ndx) = log10(sum(filtered(:, CSV_CASES)) / (max(filtered(:, CSV_POPULATION)) / 1000));
         reported(ndx) = log10((sum(filtered(:, CSV_REPORTED)) * treated) / (max(filtered(:, CSV_POPULATION)) / 1000));
-        pfpr(ndx) = mean(filtered(:, CSV_PFPR2TO10));
+        pfpr(ndx) = mean(filtered(:, pfprIndex));
         ndx = ndx + 1;
     end
 
@@ -150,7 +154,7 @@ function [] = plot_cases_pfpr(modelData, varargin)
     
     % Label and format the plot
     xlabel('Clinical Cases per 1000');
-    ylabel('Simulated {\itPf}PR_{2 to 10}');
+    ylabel(sprintf('Simulated {\\itPf}PR_{%s}', ageBand));
     legend boxoff;
     format();
 end
@@ -182,8 +186,25 @@ function [] = format()
 end
 
 function [data, districts] = load(filename, startDate, endDate)
-    data = csvread(filename, 1, 0);
+    data = readmatrix(filename);
     data = data(data(:, 1) >= startDate, :);
     data = data(data(:, 1) <= endDate, :);
     districts = unique(data(:, 2));
+end
+
+% Set the age banding if it is provided, default is 2 to 10
+function [pfprIndex, ageBand] = parseAge(varargin)
+    CSV_PFPR0TO59 = 7; CSV_PFPR2TO10 = 8;
+
+    pfprIndex = CSV_PFPR2TO10;
+    ageBand = '2 to 10';
+    inputExist = find(cellfun(@(x) strcmpi(x, 'age'), varargin));
+    if inputExist
+        if varargin{inputExist + 1} == 59
+            pfprIndex = CSV_PFPR0TO59;
+            ageBand = '0 to 59';
+        elseif varargin{inputExist + 1} ~= 120
+            error('Unknown value for age: %d, expected 59 or 120', varargin{inputExist + 1});
+        end
+    end    
 end
