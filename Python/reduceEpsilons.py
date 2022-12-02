@@ -129,10 +129,10 @@ def main(configuration, gisPath, tolerance, step, username):
         climate = cl.get_climate_zones(cfg, gisPath)
         treatment = cl.get_treatments_raster(cfg, gisPath)
 
-            # Load the relevant raster data
+        # Load the relevant raster data
         filename = os.path.join(gisPath, POPULATION_FILE.format(prefix))    
         [ascheader, population] = load_asc(filename)
-        lookup = cl.load_betas(CALIBRATION)
+        _, lookup = cl.load_betas(CALIBRATION)
     except FileNotFoundError as err:
         sys.stderr.write("Unable to load required file!\n{}\n".format(str(err)))
         sys.exit(1)
