@@ -128,6 +128,12 @@ function [] = plot_cases_pfpr(modelData, varargin)
         ndx = ndx + 1;
     end
 
+    % NOTE These are absolute values from the simuation data, if population
+    % scaling is applied they may need to be adjusted to approximate real
+    % projections
+    fprintf('Total Simulation Clinical Cases: %.2f\n', sum(data(:, CSV_CASES)));
+    fprintf('Total Simulation Cases Reported: %.2f\n', sum(data(:, CSV_REPORTED)));
+
     fprintf('Total Incidence: %.2f / 1000\n', sum(data(:, CSV_CASES)) / (population / 1000));
     fprintf('Total Cases: %.2f / 1000\n', sum(data(:, CSV_REPORTED)) / (population / 1000));
 
