@@ -59,7 +59,7 @@ def main(args):
             name = str(args.update[1])
             rename_studyname(cfg["connection_string"], id, name)
 
-        # Display the formated list of studies in the database
+        # Display the format list of studies in the database
         if args.list:
             rows = get_studies(cfg["connection_string"])
 
@@ -69,9 +69,9 @@ def main(args):
                 return
 
             # Display our resuts
-            layout = "{!s:32} {!s:10}"
+            layout = "{!s:40} {!s:10}"
             print(layout.format("Study Name", "Study Id"))
-            print("-"*42)
+            print("-"*50)
             for row in rows:
                 print(layout.format(*(row[1], row[0])))
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         parser.add_argument('-a', '--add', action='store', default=None,
             help='The name of the study to be added to the database, use double quotes around the name to include spaces')
         parser.add_argument('-l', '--list', action='store_true',
-            help='List all of the studies in the database')
+            help='DEFAULT, List all of the studies in the database')
         parser.add_argument('-d', '--delete', action='store', dest='remove', default=None,
             help='Delete the study indicated by the given id from the database')
         parser.add_argument('-u', '--update', action='store', dest='update', default=[], nargs=2, 
@@ -99,6 +99,9 @@ if __name__ == "__main__":
         sys.stderr.write("Error: {}\n".format(err))
         parser.print_help()
         sys.exit(1)
+
+    # Set the list flag if nothing was set since we would have errored out before here
+    args.list = True
 
     # Defer to main for everything else
     main(args)
