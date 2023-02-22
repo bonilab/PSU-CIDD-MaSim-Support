@@ -30,10 +30,10 @@ WHERE r.endtime is null"""
 
 # Select the replicates to be deleted
 SELECT_REPLICATES = """
-select r.id
-from sim.configuration c
-  inner join sim.replicate r on r.configurationid = c.id
-where c.studyid in (%(studyId)s)"""
+SELECT r.id
+FROM sim.configuration c
+  INNER JOIN sim.replicate r ON r.configurationid = c.id
+WHERE c.studyid IN (%(studyId)s)"""
 
 # Select empty configurations, those that have no replicates associated with 
 # them, so they may be deleted
@@ -65,32 +65,60 @@ def deleteReplicates(connectionString, studyId):
     delete(connectionString, "CALL delete_replicate(%(replicateId)s)", {'replicateId': row[0]})
 
 
-def main(configuration, studyId, failed):
+def deleteSql(connectionString, sql):
+  replicates = select(connectionString, sql, None)
+  for row in replicates:
+    print("{} - Deleting replicate {}".format(datetime.datetime.now(), row[0]))
+    delete(connectionString, "CALL delete_replicate(%(replicateId)s)", {'replicateId': row[0]}) 
+
+
+# Return True if the user wishes to continue, False otherwise
+def showWarning(message):
+    print('\033[93m' + 'WARNING! {}, and ALL replicates if the stored procedure bypasses completion checks!'.format(message) + '\033[0m')
+    response = None
+    while not response in ['Y', 'N']:
+      response = input("Do you wish to continue? [Y/N] ").upper()
+      if response == 'N': return False
+      if response == 'Y': return True
+
+
+def main(args):
   try:
-    cfg = load_configuration(configuration)
+    # Attempt to load the configuration
+    cfg = load_configuration(args.configuration)
     print("Connection: {}".format(cfg['connection_string']))
-    if failed:
+
+    # Delete failed studies, for these we don't prompt before deleting
+    if args.failed:
       print("Deleting failed studies...")
       deleteFailed(cfg['connection_string'])
       
-    if studyId is not None:
+    # Delete everything based upon a study id
+    if hasattr(args, "studyId") and args.studyId is not None:
       # Guard against unintentional use
-      print('\033[93m' + 'WARNING! Deleting from study {} will remove all failed replicates, and ALL replicates if the stored procedure bypasses completion checks!'.format(studyId) + '\033[0m')
-      response = None
-      while not response in ['Y', 'N']:
-        response = input("Do you wish to continue? [Y/N] ").upper()
-        if response == 'N':
-          return
+      if not showWarning('Deleting from study {} will remove ALL replicates associated'.format(args.studyId)): return
 
       # Delete the studies
-      print("Deleting from study id {}...".format(studyId))
-      deleteReplicates(cfg['connection_string'], studyId)
+      print("Deleting from study id {}...".format(args.studyId))
+      deleteReplicates(cfg['connection_string'], args.studyId)
 
       # Don't delete configurations from the default study numbers
-      if int(studyId) not in (1, 2): 
-        print("Deleting configuration for study id {}...".format(studyId))
+      if int(args.studyId) not in (1, 2): 
+        print("Deleting configuration for study id {}...".format(args.studyId))
         deleteConfigurations(cfg['connection_string'])
 
+    # Delete based upon custom SQL
+    if args.sql is not None and len(args.sql) > 0:
+      # Guard against unintentional use, then run the SQL
+      if not showWarning('Deleting based upon the SQL will remove all matches associated'): return
+
+      # Extra error handling in case of malformed SQL, obviously this is very dangerous
+      try:
+        deleteSql(cfg['connection_string'], args.sql)
+      except Exception as ex:
+        print('Error while attempting to delete with provided SQL:')
+        print(type(ex), ex)
+      
   except DatabaseError:
     sys.stderr.write("An unrecoverable database error occurred, exiting\n")
     sys.exit(1)
@@ -103,9 +131,11 @@ if __name__ == '__main__':
     help='The configuration file for the study to delete from')
   parser.add_argument('-f', action='store_true', dest='failed',
     help='Delete the failed or stalled replicates')    
-  parser.add_argument('-s', action='store', dest='studyid', required=False,
-    help='The id of the study to delete the replicates from')  
+  parser.add_argument('-s', action='store', dest='studyid', required=False, 
+    help='The id of the study to delete the replicates from')
+  parser.add_argument('--sql', action='store', dest='sql', required=False,
+    help='Custom SQL query to delete the replicates from')
   args = parser.parse_args()
   
   # Defer to main
-  main(args.configuration, args.studyid, args.failed)
+  main(args)
