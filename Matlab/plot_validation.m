@@ -142,7 +142,7 @@ function [] = plot_cases_pfpr(modelData, varargin)
     scatter(reported, pfpr, 125, [99 99 99] / 127.5, 'filled', 'MarkerEdgeColor', 'black', 'MarkerFaceAlpha', 0.5);    
     
     % Fix the legend
-	legend({'Total Clinical Cases', 'Reported Clinical Cases'}, 'Location', 'SouthEast', 'AutoUpdate', 'off');
+	legend({'Total Clinical Cases', 'Reported Clinical Cases'}, 'Location', 'NorthWest', 'AutoUpdate', 'off');
 
     % Add the incidence rate and CrI if supplied
     inputExist = find(cellfun(@(x) strcmpi(x, 'ci'), varargin));
@@ -165,12 +165,11 @@ function [] = plot_cases_pfpr(modelData, varargin)
     % Format the log10 axis
     ylim([0 y_maxima]);
     xlim([x_minima x_maxima]);
-    xticks(log10([0 50 100 200:200:1000 1500 2000]));
-    xticklabels(split(num2str([0 50 100 200:200:1000 1500 2000])));
-    xtickangle(45);
+    xticks(log10([0 10 25 50 100 200:200:1000 1500 2000]));
+    xticklabels(split(num2str([0 10 25 50 100 200:200:1000 1500 2000])));
     
     % Label and format the plot
-    xlabel('Clinical Cases per 1000');
+    xlabel('Clinical Cases per 1,000');
     ylabel(sprintf('Simulated {\\itPf}PR_{%s}', ageBand));
     legend boxoff;
     format();
