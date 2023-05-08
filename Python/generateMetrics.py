@@ -43,7 +43,10 @@ def calculate(gisPath, prefix, division, populationFilename=None):
             if not key in data.keys():
                 data[key] = [0, 0]
 
-            # Update the running values
+            # Warn the user if there is a no data in the PfPR
+            if pfpr[row][col] == ascheader['nodata']:
+                print('No data in PfPR values at {}, {}'.format(row, col))
+
             data[key][NUMERATOR] += pfpr[row][col] * population[row][col]
             data[key][DENOMINATOR] += population[row][col]
             totalPopulation += population[row][col]
