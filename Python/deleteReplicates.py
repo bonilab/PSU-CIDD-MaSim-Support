@@ -93,6 +93,11 @@ def main(args):
       print("Deleting failed studies...")
       deleteFailed(cfg['connection_string'])
       
+    # Delete configurations which don't have any replicates attached, for these we don't prompt before deleting
+    if args.empty:
+      print("Deleting empty configurations...")
+      deleteConfigurations(cfg['connection_string'])
+
     # Delete everything based upon a study id
     if hasattr(args, "studyId") and args.studyId is not None:
       # Guard against unintentional use
@@ -130,11 +135,13 @@ if __name__ == '__main__':
   parser.add_argument('-c', action='store', dest='configuration', required=True,
     help='The configuration file for the study to delete from')
   parser.add_argument('-f', action='store_true', dest='failed',
-    help='Delete the failed or stalled replicates')    
-  parser.add_argument('-s', action='store', dest='studyid', required=False, 
-    help='The id of the study to delete the replicates from')
+    help='Delete the failed or stalled replicates')
+  parser.add_argument('--empty', action='store_true', dest='empty', required=False,
+    help='Delete all configurations with no replicates attached from the database')
+  parser.add_argument('--study', action='store', dest='studyId', required=False, 
+    help='The id of the study to delete all replicates from')
   parser.add_argument('--sql', action='store', dest='sql', required=False,
-    help='Custom SQL query to delete the replicates from')
+    help='Custom SQL query to delete all replicates from')
   args = parser.parse_args()
   
   # Defer to main
