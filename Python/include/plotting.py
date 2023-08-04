@@ -5,7 +5,7 @@ import colorsys
 
 
 def format_ticks(yticks):
-    '''Given a list of numberic tick values, round them to the nearest thousands or millions.
+    '''Given a list of numeric tick values, round them to the nearest thousands or millions.
     
     Returns a tuple with the the list of rounded values and the formatted strings. If nothing
     was done then None is returned in both places.
@@ -28,6 +28,17 @@ def format_ticks(yticks):
 
     # Return the formatted ticks
     return values, ticks
+
+
+def increment(row, col, columns):
+    '''Move the current row, column to the next location (left to right) or move to the first location in the next row (top to bottom).
+    
+    Returns a tuple with the row as the first entry, column as the second entry.'''
+    col += 1
+    if col % columns == 0:
+        row += 1
+        col = 0
+    return row, col
 
 
 def scale_luminosity(rgb, luminosity):
