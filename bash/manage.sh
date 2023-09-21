@@ -3,12 +3,23 @@
 # Basic management script to allow for replicates to be cleaned up while they are running
 
 # Print usage
-if [ -z $1 ]; then 
+if [ -z $1 ]; then
   echo "Usage: ./manage.sh [command]"
   echo
+  echo "clean   - deletes logs of jobs that completed successfully"
   echo "delete  - deletes jobs that completed successfully"
   echo "requeue - re-queues jobs that are presnt in the directory"
   echo "rerun   - finds jobs that failed, deletes the logs, queues them"
+  exit
+fi
+
+# Clean the logs of what has already run
+if [ $1 = 'clean' ]; then
+  for item in `ls slurm-*.out 2> /dev/null`; do
+    if grep -q 'Model finished!' $item; then
+      rm $item
+    fi
+  done
   exit
 fi
 
