@@ -30,6 +30,12 @@ def main(path):
     first = ''
     error = False
 
+    # Start by checking to see if this directory exists
+    if not os.path.isdir(path):
+        print('The directory, {}, does not appear to exist'.format(path))
+        exit(1)
+    
+    # Walk the files in the directory given
     for filename in next(os.walk(path))[2]:
         # Continue if we this is not an ASC
         if not filename.endswith(".asc"): continue
