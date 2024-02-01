@@ -13,14 +13,18 @@ import sys
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 
+import include.calibrationLib as cl
+
 from include.ascFile import load_asc
-from include.calibrationLib import get_bin, get_climate_zones, get_treatments_list, get_treatments_raster, load_configuration
+# from include.calibrationLib import get_bin, get_climate_zones, get_treatments_list, get_treatments_raster, load_configuration
 from include.stats import goodness_of_variance_fit
 
+# Define exit status codes
+EXIT_SUCCESS, EXIT_FAILURE = 0, 1
 
 def process(configuration, gisPath, prefix, type):
     # Load the configuration
-    cfg = load_configuration(configuration)
+    cfg = cl.load_configuration(configuration)
 
     # Load and bin the population")
     [ascHeader, population] = get_population(gisPath, prefix)
@@ -29,7 +33,7 @@ def process(configuration, gisPath, prefix, type):
     populationBreaks = bin_data(data, 'population')
 
     # Get the access to treatments rate and bin if need be
-    [treatments, needsBinning] = get_treatments_list(cfg, gisPath)
+    [treatments, needsBinning] = cl.get_treatments_list(cfg, gisPath)
     if treatments == -1:
         raise Exception("Unable to load determine the treatments in the configuration.")
     if needsBinning:
@@ -48,8 +52,8 @@ def process(configuration, gisPath, prefix, type):
     rangeBins = {}
 
     # Load the climate and treatment rasters
-    climate = get_climate_zones(cfg, gisPath)
-    treatment = get_treatments_raster(cfg, gisPath)
+    climate = cl.get_climate_zones(cfg, gisPath)
+    treatment = cl.get_treatments_raster(cfg, gisPath)
 
     # Process the data
     zoneTreatments = {}
@@ -61,8 +65,8 @@ def process(configuration, gisPath, prefix, type):
             if zone == ascHeader['nodata']: continue
 
             # Note the bins
-            popBin = int(get_bin(population[row][col], populationBreaks))
-            treatBin = get_bin(treatment[row][col], treatments)
+            popBin = int(cl.get_bin(population[row][col], populationBreaks))
+            treatBin = cl.get_bin(treatment[row][col], treatments)
 
             # Add to the dictionary as needed
             if zone not in rangeBins:
@@ -120,7 +124,7 @@ def bin_data(data, type, minimumClasses=5, maximumClasses=30, delta=0.01):
         return breaks[1:]
     
 
-def save(pfpr, treatments, populationBreaks, filename, prefix, username):
+def save_cluster(pfpr, treatments, populationBreaks, filename, prefix, username):
     with open(filename, 'w') as script:
         # Print the front matter
         script.write("#!/bin/bash\n")
@@ -146,24 +150,38 @@ def save(pfpr, treatments, populationBreaks, filename, prefix, username):
     script.chmod(script.stat().st_mode | stat.S_IEXEC)
 
 
-if __name__ == '__main__':
-    # Parse the parameters
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-c', action='store', dest='configuration', required=True,
-        help='The configuration file to reference when creating the bins')
-    parser.add_argument('-g', action='store', dest='gis', required=True,
-        help='The path to the directory that the GIS files can be found in')
-    parser.add_argument('-u', action='store', dest='username', required=True,
-        help='The user who will be running the calibration on the cluster')  
-    parser.add_argument('-t', action='store', dest='type', required=False, default='pfpr',
-        help='The type of processing to be done either \'pfpr\' or \'incidence\'')
-    args = parser.parse_args()
+def save_local(pfpr, treatments, populationBreaks, filename, prefix):
+    with open(filename, 'w') as script:
+        # Print the front matter
+        script.write("#!/bin/bash\n")
+        script.write("source ./localCalibrationLib.sh\n\n")
+        script.write("checkDependencies {}\n\n".format(prefix))
 
+        # Print the ASC file generation commands
+        script.write("generateAsc \"\\\"{}\\\"\"\n".format(
+            " ".join([str(int(x)) for x in sorted(populationBreaks)])))
+        script.write("generateZoneAsc \"\\\"{}\\\"\"\n\n".format(
+            " ".join([str(int(x)) for x in sorted(pfpr.keys())])))
+
+        # Print the zone matter
+        for zone in pfpr.keys():
+            script.write("run {} \"\\\"{}\\\"\" \"\\\"{}\\\"\" {}\n".format(
+                zone,
+                " ".join([str(int(x)) for x in sorted(populationBreaks)]),
+                " ".join([str(x) for x in sorted(treatments[zone])]),
+                prefix))
+
+    # Set the file as executable
+    script = pathlib.Path(filename)
+    script.chmod(script.stat().st_mode | stat.S_IEXEC)
+
+
+def main(args):
     # Check to see if it looks like there is a country prefix
     prefix = re.search(r"([a-z]{3})-.*\.yml", args.configuration)
     if prefix is None:
         print("Unknown or malformed country code prefix for configuration while parsing configuration name, {}".format(args.configuration))
-        exit(0)
+        exit(EXIT_SUCCESS)
     prefix = prefix.group(1)
 
     # Check to make sure the type is valid
@@ -173,13 +191,13 @@ if __name__ == '__main__':
         label = 'per 1000'
     else:
         print("Unknown type argument, {}".format(args.type))
-        exit(0)
+        exit(EXIT_SUCCESS)
 
     # Process and print the relevant ranges for the user
     try:
         [ranges, treatments, breaks] = process(args.configuration, args.gis, prefix, args.type)
         for zone in ranges.keys():
-            if len(ranges.keys()) != 1: print("Climate Zone {}".format(int(zone)))
+            if len(ranges.keys()) != 1: print("\nClimate Zone {}".format(int(zone)))
             print("Treatments: {}".format(sorted(treatments[zone])))
             print("Populations: {}".format(sorted(ranges[zone].keys())))
             for bin in sorted(ranges[zone].keys()):
@@ -187,10 +205,38 @@ if __name__ == '__main__':
             print
 
         # Save the basic script
-        if not os.path.isdir('out'):
-            os.mkdir('out')
-        save(ranges, treatments, breaks, 'out/calibration.sh', prefix, args.username)
+        os.makedirs('out', exist_ok=True)
+        if args.local: 
+            save_local(ranges, treatments, breaks, 'out/calibration.sh', prefix)
+        else: 
+            save_cluster(ranges, treatments, breaks, 'out/calibration.sh', prefix, args.username)
 
     except Exception as ex:
         print(ex)
-        exit(1)
+        exit(EXIT_FAILURE)
+
+
+if __name__ == '__main__':
+    # Parse the parameters
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', action='store', dest='configuration', required=True,
+        help='The configuration file to reference when creating the bins')
+    parser.add_argument('-g', action='store', dest='gis', required=True,
+        help='The path to the directory that the GIS files can be found')
+    parser.add_argument('-l', action='store_true', dest='local',
+        help='Flag to include if the replicates will be run locally')
+    parser.add_argument('-t', action='store', dest='type', required=False, default='pfpr',
+        help='Optional, default \'pfpr\', the type of processing to be done either \'pfpr\' or \'incidence\'')
+    parser.add_argument('-u', action='store', dest='username', required=False,
+        help='Optional, the user who will be running the calibration on the cluster, required if running on cluster')    
+    args = parser.parse_args()
+
+    # Make sure the arguments make sense
+    if not args.local and not args.username:
+        print('The user name must be supplied if not running locally!')
+        exit(EXIT_FAILURE)
+    if args.local and args.username:
+        print('Local flag set, ignoring user name...')
+
+    # Defer to main
+    main(args)
