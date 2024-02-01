@@ -14,7 +14,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 import include.ascFile as asc
 import include.calibrationLib as cl
 import include.stats as stats
-import include.writer as writer
+import include.bashWriter as bash
 
 
 # Process the configuration file, GIS files, and produce the bins
@@ -147,13 +147,13 @@ def main(args):
                 print("{} - {} to {} {}".format(bin, min(ranges[zone][bin]), max(ranges[zone][bin]), label))
             print
 
-        # Save the basic script
+        # Save the bash script
         os.makedirs('out', exist_ok=True)
-        if args.local: 
-            writer.save_local(ranges, treatments, breaks, 'out/calibration.sh', prefix)
+        if args.username: 
+            bash.run_cluster(ranges, treatments, breaks, 'out/calibration.sh', prefix, args.username)
         else: 
-            writer.save_cluster(ranges, treatments, breaks, 'out/calibration.sh', prefix, args.username)
-
+            bash.run_local(ranges, treatments, breaks, 'out/calibration.sh', prefix)
+            
     except Exception as ex:
         print(ex)
         exit(cl.EXIT_FAILURE)
@@ -166,22 +166,13 @@ if __name__ == '__main__':
         help='The configuration file to reference when creating the bins')
     parser.add_argument('-g', action='store', dest='gis', required=True,
         help='The path to the directory that the GIS files can be found')
-    parser.add_argument('-l', action='store_true', dest='local',
-        help='Flag to include if the replicates will be run locally')
     parser.add_argument('-p', action='store', dest='prefix', 
         help='Optional, the file prefix for ASC files, if not supplied the script will attempt to determine it')
     parser.add_argument('-t', action='store', dest='type', required=False, default='pfpr',
         help='Optional, default \'pfpr\', the type of processing to be done either \'pfpr\' or \'incidence\'')
     parser.add_argument('-u', action='store', dest='username', required=False,
-        help='Optional, the user who will be running the calibration on the cluster, required if running on cluster')    
+        help='Optional, if supplied scripts will be produced to run on the cluster with the user indicated')    
     args = parser.parse_args()
-
-    # Make sure the arguments make sense
-    if not args.local and not args.username:
-        print('The user name must be supplied if not running locally!')
-        exit(cl.EXIT_FAILURE)
-    if args.local and args.username:
-        print('Local flag set, ignoring user name...')
 
     # Defer to main
     main(args)

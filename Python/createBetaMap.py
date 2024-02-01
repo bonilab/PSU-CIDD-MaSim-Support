@@ -12,7 +12,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 import include.ascFile as asc
 import include.calibrationLib as cl
-import include.standards as standard
+import include.standards as std
 import include.utility as utility
 
 
@@ -26,12 +26,12 @@ WARNINGS = ''
 def create_beta_map(betas, configuration, gisPath, prefix, age, pfpr_file):
    
     # Load the relevant raster files
-    filename = os.path.join(gisPath, standard.PFPR_FILE.format(prefix))
+    filename = os.path.join(gisPath, std.PFPR_FILE.format(prefix))
     if pfpr_file:
         print('Using supplied PfPR file...')
         filename = pfpr_file    
     ascHeader, pfpr = asc.load_asc(filename)
-    filename = os.path.join(gisPath, standard.POPULATION_FILE.format(prefix))    
+    filename = os.path.join(gisPath, std.POPULATION_FILE.format(prefix))    
     _, population = asc.load_asc(filename)
 
     # Defer to the library to load the rest
@@ -125,10 +125,10 @@ def create_beta_map(betas, configuration, gisPath, prefix, age, pfpr_file):
     if not os.path.isdir('out'): os.mkdir('out')
 
     # Save the maps        
-    filename = "out/{}_epsilons.asc".format(prefix)
+    filename = std.EPSILONVALUES.format(prefix)
     print("\nSaving {}".format(filename))
     asc.write_asc(ascHeader, epsilons, filename)
-    filename = "out/{}_beta.asc".format(prefix)
+    filename = std.BETAVALUES.format(prefix)
     print("Saving {}".format(filename))
     asc.write_asc(ascHeader, meanBeta, filename)
 
