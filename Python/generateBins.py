@@ -16,8 +16,6 @@ import include.ascFile as asc
 import include.calibrationLib as cl
 import include.stats as stats
 
-# Define exit status codes
-EXIT_SUCCESS, EXIT_FAILURE = 0, 1
 
 # === The following block of code primarily handles reading files and business logic ===
 
@@ -188,7 +186,7 @@ def main(args):
         prefix = cl.get_prefix(args.configuration)
         if prefix is None:
             print("Unknown or malformed country code prefix for configuration while parsing configuration name, {}".format(args.configuration))
-            exit(EXIT_FAILURE)
+            exit(cl.EXIT_FAILURE)
 
     # Check to make sure the type is valid
     if args.type == 'pfpr':
@@ -197,7 +195,7 @@ def main(args):
         label = 'per 1000'
     else:
         print("Unknown type argument, {}".format(args.type))
-        exit(EXIT_SUCCESS)
+        exit(cl.EXIT_SUCCESS)
 
     # Process and print the relevant ranges for the user
     try:
@@ -219,7 +217,7 @@ def main(args):
 
     except Exception as ex:
         print(ex)
-        exit(EXIT_FAILURE)
+        exit(cl.EXIT_FAILURE)
 
 
 if __name__ == '__main__':
@@ -242,7 +240,7 @@ if __name__ == '__main__':
     # Make sure the arguments make sense
     if not args.local and not args.username:
         print('The user name must be supplied if not running locally!')
-        exit(EXIT_FAILURE)
+        exit(cl.EXIT_FAILURE)
     if args.local and args.username:
         print('Local flag set, ignoring user name...')
 

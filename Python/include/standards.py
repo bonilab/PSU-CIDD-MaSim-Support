@@ -7,3 +7,6 @@
 DISTRICT_FILE   = "{}_district.asc"
 PFPR_FILE       = "{}_pfpr2to10.asc"
 POPULATION_FILE = "{}_population.asc"
+
+# Sentinel value to indicate that the values come from an ASC file
+YAML_SENTINEL = -1

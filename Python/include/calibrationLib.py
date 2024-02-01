@@ -8,11 +8,12 @@ import sys
 import yaml
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
+import ascFile as asc
+import standards
 
-from ascFile import load_asc
-from database import select, DatabaseError
 
-YAML_SENTINEL = -1
+# Define exit status codes
+EXIT_SUCCESS, EXIT_FAILURE = 0, 1
 
 def get_bin(value, bins):
     '''Get the bin that the value belongs to'''
@@ -46,14 +47,13 @@ def get_prefix(filename):
 def generate_raster(filename, value):
     '''Generate a reference raster using the data in the filename and the value provided'''
 
-    [ ascHeader, ascData ] = load_asc(filename)
+    ascHeader, ascData = asc.load_asc(filename)
     for row in range(0, ascHeader['nrows']):
         for col in range(0, ascHeader['ncols']):
             if ascData[row][col] == ascHeader['nodata']:
                 continue
             ascData[row][col] = value
     return ascData
-
 
 
 def get_climate_zones(configurationYaml, gisPath):
@@ -70,7 +70,7 @@ def get_climate_zones(configurationYaml, gisPath):
     if 'ecoclimatic_raster' in configurationYaml['raster_db']:
         filename = str(configurationYaml['raster_db']['ecoclimatic_raster'])
         filename = os.path.join(gisPath, filename)
-        [_, ascData] = load_asc(filename)
+        _, ascData = asc.load_asc(filename)
         return ascData
 
     # Get the filename of the district raster in case we need it
@@ -88,7 +88,7 @@ def get_climate_zones(configurationYaml, gisPath):
     # there should only be one climate zone
     if len(yaml["base"]) != 1:
         print("Multiple climate zones, but no raster defined.")
-        exit(1)
+        exit(EXIT_FAILURE)
 
     # Districts need to be defined, so use that as our template raster
     return generate_raster(filename, 1)
@@ -109,11 +109,11 @@ def get_treatments_list(configurationYaml, gisPath):
     overFive = float(configurationYaml['raster_db']['p_treatment_for_more_than_5_by_location'][0])
 
     # If both are not equal to the sentinel then they are set via a raster
-    if not (underFive == overFive == YAML_SENTINEL):
+    if not (underFive == overFive == standards.YAML_SENTINEL):
         results = []
-        if underFive != YAML_SENTINEL:
+        if underFive != standards.YAML_SENTINEL:
             results.append(underFive)
-        if overFive != YAML_SENTINEL:
+        if overFive != standards.YAML_SENTINEL:
             results.append(overFive)
         return results, False
 
@@ -121,7 +121,7 @@ def get_treatments_list(configurationYaml, gisPath):
     try:
         filename = str(configurationYaml['raster_db']['pr_treatment_under5'])
         filename = os.path.join(gisPath, filename)
-        [acsHeader, ascData] = load_asc(filename)
+        acsHeader, ascData = asc.load_asc(filename)
         underFive = list(set(i for j in ascData for i in j))
         underFive.remove(acsHeader['nodata'])
     except FileNotFoundError:
@@ -133,7 +133,7 @@ def get_treatments_list(configurationYaml, gisPath):
     try:
         filename = str(configurationYaml['raster_db']['pr_treatment_over5'])
         filename = os.path.join(gisPath, filename)
-        [_, ascData] = load_asc(filename)
+        _, ascData = asc.load_asc(filename)
         overFive = list(set(i for j in ascData for i in j)) 
         overFive.remove(acsHeader['nodata'])
     except FileNotFoundError:
@@ -145,7 +145,7 @@ def get_treatments_list(configurationYaml, gisPath):
     # Get the unique district ids
     filename = str(configurationYaml['raster_db']['district_raster'])
     filename = os.path.join(gisPath, filename)
-    [_, ascData] = load_asc(filename)
+    _, ascData = asc.load_asc(filename)
     districts = list(set(i for j in ascData for i in j)) 
     districts.remove(acsHeader['nodata'])
 
@@ -165,14 +165,14 @@ def get_treatments_raster(configurationYaml, gisPath):
     configurationYaml - The loaded configuration to examine.
     gisPath - The path to append to GIS files in the configuration.
 
-    Returns a matrix contianing the climate zones, locations without a zone will use the common nodata value.
+    Returns a matrix containing the climate zones, locations without a zone will use the common nodata value.
     '''
 
     # Start by checking if there is a raster defined, if so just load and return that
     if 'pr_treatment_under5' in configurationYaml['raster_db']:
         filename = str(configurationYaml['raster_db']['pr_treatment_under5'])
         filename = os.path.join(gisPath, filename)
-        [_, ascData] = load_asc(filename)
+        _, ascData = asc.load_asc(filename)
         return ascData
 
     # There is not, make sure there is a single value defined before continuing
@@ -182,7 +182,7 @@ def get_treatments_raster(configurationYaml, gisPath):
     # There is not, make sure there is a single zone defined before continuing
     if underFive != overFive:
         print("Different treatments defined for under and over five, not supported.")
-        exit(1)
+        exit(EXIT_FAILURE)
 
     # Generate and return the reference raster
     filename = str(configurationYaml['raster_db']['district_raster'])
@@ -249,73 +249,12 @@ def load_configuration(configuration):
 
     except yaml.parser.ParserError as ex:
         print("An error occurred parsing the input file:\n{}".format(ex))
-        exit(1)
+        exit(EXIT_FAILURE)
 
     except FileNotFoundError:
         print("Configuration file not found: {}".format(configuration))
-        exit(1)
+        exit(EXIT_FAILURE)
 
     except Exception as ex:
         print("An unknown error occurred while loading the configuration:\n{}".format(ex))
-        exit(1)
-
-
-def query_betas(connection, studyId, age, filename="data/calibration.csv"):
-    '''
-    Query the database at the given location for the beta values in the given study. 
-    Note that we are presuming that the filenames have been standardized to allow for scripting to take place.
-    '''
-    
-    # Verify the age (age band) is valid and set the variable
-    if age == '0-59':
-        ageBand = 'pfprunder5'
-    elif age == '2-10':
-        ageBand = 'pfpr2to10'
-    else:
-        raise Exception('Invalid age band provided, got: {}'.format(age))
-
-    # Query for the one year mean EIR and PfPR along with binning parameters from the filename.
-    SQL = r"""
-        SELECT replicateid,
-            cast(fileparts[1] as numeric) as zone,
-            cast(fileparts[2] as numeric) as population,
-            cast(fileparts[3] as numeric) as access,
-            cast(fileparts[4] as numeric) as beta,
-            eir, {0}
-        FROM (
-            SELECT replicateid,
-                regexp_matches(filename, '^([\d\.]*)-(\d*)-([\.\d]*)-([\.\d]*)') as fileparts,
-                avg(eir) AS eir, 
-                avg({0}) AS {0}
-            FROM sim.configuration c
-                INNER JOIN sim.replicate r on r.configurationid = c.id
-                INNER JOIN sim.monthlydata md on md.replicateid = r.id
-                INNER JOIN sim.monthlysitedata msd on msd.monthlydataid = md.id
-            WHERE c.studyid = %(studyId)s
-                AND md.dayselapsed BETWEEN 4015 AND 4380
-            GROUP BY replicateid, filename) iq
-        ORDER BY zone, population, access, {0}""".format(ageBand)
-    header = "replicateid,zone,population,access,beta,eir,{}\n".format(ageBand)
-
-    try:
-        # Select for the beta values
-        print("Loading beta values for study id: {}".format(studyId))
-        rows = select(connection, SQL, {'studyId': studyId})
-    except DatabaseError:
-        raise Exception("Error occurred while querying the database.")
-
-    # Make sure results were returned
-    if len(rows) == 0:
-        raise ValueError("No data returned for study id: {}".format(studyId))
-
-    # Create the directory if need be
-    directory = os.path.dirname(os.path.abspath(filename))
-    if not os.path.isdir(directory): os.mkdir(directory)
-
-    # Save the values to a CSV file
-    print("Saving beta values to: {}".format(filename))
-    with open(filename, "w") as csvfile:
-        csvfile.write(header)
-        for row in rows:
-            line = ','.join(str(row[ndx]) for ndx in range(0, len(row)))
-            csvfile.write("{}\n".format(line))
+        exit(EXIT_FAILURE)
