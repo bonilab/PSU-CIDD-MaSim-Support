@@ -13,7 +13,7 @@ def run_cluster(pfpr, treatments, populationBreaks, filename, prefix, username):
     with open(filename, 'w') as script:
         # Print the front matter
         script.write("#!/bin/bash\n")
-        script.write("source ./calibrationLib.sh\n\n")
+        script.write("source ./calibrationCluster.sh\n\n")
         script.write("checkDependencies {}\n\n".format(prefix))
 
         # Print the ASC file generation commands
@@ -39,7 +39,7 @@ def reduce_cluster(filename, prefix, population, zones, reduction, username):
     with open(filename, "w") as script:
         # Print the front matter
         script.write("#!/bin/bash\n")
-        script.write("source ./calibrationLib.sh\n")
+        script.write("source ./calibrationCluster.sh\n")
         script.write("checkDependencies {}\n".format(prefix))
 
         # Print the ASC file generation commands
@@ -61,17 +61,18 @@ def reduce_local(filename, prefix, population, zones, reduction):
     with open(filename, "w") as script:
         # Print the front matter
         script.write("#!/bin/bash\n")
-        script.write("source ./localCalibrationLib.sh\n")
-        script.write("checkDependencies {}\n".format(prefix))
+        script.write("source ./calibrationLocal.sh\n")
+        script.write("set_spooler\n")
+        script.write("check_dependencies {}\n".format(prefix))
 
         # Print the ASC file generation commands
         value = " ".join([str(int(x)) for x in sorted(population)])
-        script.write("generateAsc \"\\\"{}\\\"\"\n".format(value.strip()))
+        script.write("generate_asc \"\\\"{}\\\"\"\n".format(value.strip()))
         value = " ".join([str(int(x)) for x in sorted(zones.keys())])
-        script.write("generateZoneAsc \"\\\"{}\\\"\"\n".format(value.strip()))
+        script.write("generate_zone_asc \"\\\"{}\\\"\"\n".format(value.strip()))
 
         # Print the run command for the script
-        script.write("runCsv '{}' {}\n".format(reduction, prefix))
+        script.write("run_csv '{}' {}\n".format(reduction, prefix))
 
     # Set the file as executable
     script = pathlib.Path(filename)
@@ -82,18 +83,19 @@ def run_local(pfpr, treatments, populationBreaks, filename, prefix):
     with open(filename, 'w') as script:
         # Print the front matter
         script.write("#!/bin/bash\n")
-        script.write("source ./localCalibrationLib.sh\n\n")
-        script.write("checkDependencies {}\n\n".format(prefix))
+        script.write("source ./calibrationLocal.sh\n\n")
+        script.write("set_spooler\n")
+        script.write("check_dependencies {}\n\n".format(prefix))
 
         # Print the ASC file generation commands
-        script.write("generateAsc \"\\\"{}\\\"\"\n".format(
+        script.write("generate_asc \"\\\"{}\\\"\"\n".format(
             " ".join([str(int(x)) for x in sorted(populationBreaks)])))
-        script.write("generateZoneAsc \"\\\"{}\\\"\"\n\n".format(
+        script.write("generate_zone_asc \"\\\"{}\\\"\"\n\n".format(
             " ".join([str(int(x)) for x in sorted(pfpr.keys())])))
 
         # Print the zone matter
         for zone in pfpr.keys():
-            script.write("run {} \"\\\"{}\\\"\" \"\\\"{}\\\"\" {}\n".format(
+            script.write("run_sweep {} \"\\\"{}\\\"\" \"\\\"{}\\\"\" {}\n".format(
                 zone,
                 " ".join([str(int(x)) for x in sorted(populationBreaks)]),
                 " ".join([str(x) for x in sorted(treatments[zone])]),

@@ -21,7 +21,7 @@ The main repository for the simulation can be found at [rjzupko/PSU-CIDD-Malaria
 
 ### Dependencies
 
-The following dependencies need to be installed for all of the Python scripts to operate and can be installed individually via `pip install`: 
+The following dependencies need to be installed for all of the Python scripts to operate and can be installed individually on most systems via `pip install`: 
 
 - jenkspy: https://pypi.org/project/jenkspy/
 - numpy : https://pypi.org/project/numpy/
@@ -30,6 +30,12 @@ Or, all the dependencies can be installed via `pip install` using the `Python/re
 
 ```bash
 pip install -r requirements.txt
+```
+
+In order to user the local beta calibration and replicate execution functionality [task-spooler](https://viric.name/soft/ts/) will need to be installed:
+
+```bash
+sudo apt install task-spooler
 ```
 
 The MATLAB calibration validation scripts require the Signal Processing Toolbox be installed and were last updated with MATLAB R2021b.
