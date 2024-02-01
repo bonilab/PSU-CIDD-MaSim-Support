@@ -52,7 +52,7 @@ function generate_zone_asc() {
 # Check for the task-spooler and set the job limit
 function set_spooler {
   if [[ -z `which tsp` ]]; then
-    echo "The task-spooler does not appear to be installed"
+    echo "The task-spooler does not appear to be installed, exiting."
     exit 1
   fi
 
