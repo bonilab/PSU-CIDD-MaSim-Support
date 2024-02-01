@@ -12,28 +12,28 @@ import sys
 
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
-
+import include.ascFile as asc
 import include.calibrationLib as cl
-
-from include.ascFile import load_asc
-# from include.calibrationLib import get_bin, get_climate_zones, get_treatments_list, get_treatments_raster, load_configuration
-from include.stats import goodness_of_variance_fit
+import include.stats as stats
 
 # Define exit status codes
 EXIT_SUCCESS, EXIT_FAILURE = 0, 1
 
+# === The following block of code primarily handles reading files and business logic ===
+
+# Process the configuration file, GIS files, and produce the bins
 def process(configuration, gisPath, prefix, type):
     # Load the configuration
     cfg = cl.load_configuration(configuration)
 
-    # Load and bin the population")
-    [ascHeader, population] = get_population(gisPath, prefix)
+    # Load the data, remove the NODATA, and bin the population
+    ascHeader, population = get_population(gisPath, prefix)
     data = list(i for j in population for i in j)
     data = list(i for i in data if i != ascHeader['nodata'])
     populationBreaks = bin_data(data, 'population')
 
     # Get the access to treatments rate and bin if need be
-    [treatments, needsBinning] = cl.get_treatments_list(cfg, gisPath)
+    treatments, needsBinning = cl.get_treatments_list(cfg, gisPath)
     if treatments == -1:
         raise Exception("Unable to load determine the treatments in the configuration.")
     if needsBinning:
@@ -48,15 +48,14 @@ def process(configuration, gisPath, prefix, type):
         filename = "{}/{}_incidence.asc".format(gisPath, prefix)
     else:
         raise Exception("Unknown binning range type, {}".format(type))
-    [_, data] = load(filename, "PfPR")
-    rangeBins = {}
-
+    _, data = load(filename, "PfPR")
+    
     # Load the climate and treatment rasters
     climate = cl.get_climate_zones(cfg, gisPath)
     treatment = cl.get_treatments_raster(cfg, gisPath)
 
     # Process the data
-    zoneTreatments = {}
+    rangeBins, zoneTreatments = {}, {}
     for row in range(0, ascHeader['nrows']):
         for col in range(0, ascHeader['ncols']):
 
@@ -81,23 +80,24 @@ def process(configuration, gisPath, prefix, type):
             if treatBin not in zoneTreatments[zone]:
                 zoneTreatments[zone].append(treatBin)
 
-    return [rangeBins, zoneTreatments, populationBreaks]
+    return rangeBins, zoneTreatments, populationBreaks
 
-
+# Helper function, get the correct population file
 def get_population(gisPath, prefix):
     for name in ['population', 'init_pop']:
         filename = "{}/{}_{}.asc".format(gisPath, prefix, name)
         if os.path.exists(filename):
             return load(filename, "population")
-    raise Exception("Could not find a population file in: {}".format(gisPath))
-
+    raise Exception("Could not find a population file in: {} with prefix '{}'".format(gisPath, prefix))
 
 # Helper function, load the ASC file indicated
 def load(filename, fileType):
     if not os.path.exists(filename):
         raise Exception("Could not find {} file, tried: {}".format(fileType, filename))
-    return load_asc(filename)    
+    return asc.load_asc(filename)    
 
+
+# === The following block of code performs the binning operations === 
 
 # Bin the data provided using Jenks natural breaks optimization
 def bin_data(data, type, minimumClasses=5, maximumClasses=30, delta=0.01):
@@ -110,7 +110,7 @@ def bin_data(data, type, minimumClasses=5, maximumClasses=30, delta=0.01):
     # return the breaks with the lowest goodness of variance fit (GVF)
     previousGvf = 0
     for classes in range(minimumClasses, maximumClasses + 1):
-        gvf, breaks = goodness_of_variance_fit(data, classes)
+        gvf, breaks = stats.goodness_of_variance_fit(data, classes)
         if abs(previousGvf - gvf) <= delta:
             # Note that the first index contains the lower bound
             print('done!')
@@ -124,6 +124,9 @@ def bin_data(data, type, minimumClasses=5, maximumClasses=30, delta=0.01):
         return breaks[1:]
     
 
+# === The next two functions are very similar, but are left in place in case major changes are needed between local and cluster runs ===
+
+# Prepare the script that will run on the cluster
 def save_cluster(pfpr, treatments, populationBreaks, filename, prefix, username):
     with open(filename, 'w') as script:
         # Print the front matter
@@ -149,7 +152,7 @@ def save_cluster(pfpr, treatments, populationBreaks, filename, prefix, username)
     script = pathlib.Path(filename)
     script.chmod(script.stat().st_mode | stat.S_IEXEC)
 
-
+# Prepare the script that will run locally
 def save_local(pfpr, treatments, populationBreaks, filename, prefix):
     with open(filename, 'w') as script:
         # Print the front matter
@@ -176,13 +179,16 @@ def save_local(pfpr, treatments, populationBreaks, filename, prefix):
     script.chmod(script.stat().st_mode | stat.S_IEXEC)
 
 
+# === The remainder of the code handles the logic around running the script itself === 
+
 def main(args):
     # Check to see if it looks like there is a country prefix
-    prefix = re.search(r"([a-z]{3})-.*\.yml", args.configuration)
-    if prefix is None:
-        print("Unknown or malformed country code prefix for configuration while parsing configuration name, {}".format(args.configuration))
-        exit(EXIT_SUCCESS)
-    prefix = prefix.group(1)
+    prefix = args.prefix
+    if not prefix:
+        prefix = cl.get_prefix(args.configuration)
+        if prefix is None:
+            print("Unknown or malformed country code prefix for configuration while parsing configuration name, {}".format(args.configuration))
+            exit(EXIT_FAILURE)
 
     # Check to make sure the type is valid
     if args.type == 'pfpr':
@@ -225,6 +231,8 @@ if __name__ == '__main__':
         help='The path to the directory that the GIS files can be found')
     parser.add_argument('-l', action='store_true', dest='local',
         help='Flag to include if the replicates will be run locally')
+    parser.add_argument('-p', action='store', dest='prefix', 
+        help='Optional, the file prefix for ASC files, if not supplied the script will attempt to determine it')
     parser.add_argument('-t', action='store', dest='type', required=False, default='pfpr',
         help='Optional, default \'pfpr\', the type of processing to be done either \'pfpr\' or \'incidence\'')
     parser.add_argument('-u', action='store', dest='username', required=False,
