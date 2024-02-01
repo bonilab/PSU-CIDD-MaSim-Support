@@ -9,18 +9,18 @@ import sys
 
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
-
-from ascFile import *
+import include.ascFile as asc
+import include.calibrationLib as cl
 
 def compare(one, two):
     # Load the ASC files
-    [ oneHeader, oneValues ] = load_asc(one)
-    [ twoHeader, twoValues ] = load_asc(two)
+    oneHeader, oneValues = asc.load_asc(one)
+    twoHeader, twoValues = asc.load_asc(two)
 
     # Check the files
     result = True
-    result = result and compare_header(oneHeader, twoHeader)
-    result = result and compare_data(oneValues, twoValues, oneHeader['nodata'], errorLimit=10)
+    result = result and asc.compare_header(oneHeader, twoHeader)
+    result = result and asc.compare_data(oneValues, twoValues, oneHeader['nodata'], errorLimit=10)
     return result
 
 
@@ -33,7 +33,7 @@ def main(path):
     # Start by checking to see if this directory exists
     if not os.path.isdir(path):
         print('The directory, {}, does not appear to exist'.format(path))
-        exit(1)
+        exit(cl.EXIT_FAILURE)
     
     # Walk the files in the directory given
     for filename in next(os.walk(path))[2]:

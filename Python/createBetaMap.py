@@ -125,10 +125,10 @@ def create_beta_map(betas, configuration, gisPath, prefix, age, pfpr_file):
     if not os.path.isdir('out'): os.mkdir('out')
 
     # Save the maps        
-    filename = std.EPSILONVALUES.format(prefix)
+    filename = std.EPSILON_VALUES.format(prefix)
     print("\nSaving {}".format(filename))
     asc.write_asc(ascHeader, epsilons, filename)
-    filename = std.BETAVALUES.format(prefix)
+    filename = std.BETA_VALUES.format(prefix)
     print("Saving {}".format(filename))
     asc.write_asc(ascHeader, meanBeta, filename)
 

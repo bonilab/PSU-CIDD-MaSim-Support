@@ -4,18 +4,22 @@
 #
 # Filter the indicated raster files by the district id values indicated.
 import argparse
+import os
+import sys
 
-import include.ascFile as ascFile
+# Import our libraries
+sys.path.append(os.path.join(os.path.dirname(__file__), 'include'))
+import include.ascFile as asc
 
 
 def main(districtsFile, targetFiles, districts):
     # Load the reference districts raster
-    [ascHeader, ascDistricts] = ascFile.load_asc(districtsFile)
+    [ascHeader, ascDistricts] = asc.load_asc(districtsFile)
 
     # Load the target extraction rasters
     rasters = []
     for file in targetFiles:
-        [_, data] = ascFile.load_asc(file)
+        _, data = asc.load_asc(file)
         rasters.append(data)
 
     # Iterate over the reference raster
@@ -38,7 +42,7 @@ def main(districtsFile, targetFiles, districts):
     for ndx in range(len(targetFiles)):
         out = "extract_{}".format(targetFiles[ndx])
         print("Saving {} as {}".format(targetFiles[ndx], out))
-        ascFile.write_asc(ascHeader, rasters[ndx], out)
+        asc.write_asc(ascHeader, rasters[ndx], out)
 
 
 if __name__ == "__main__":

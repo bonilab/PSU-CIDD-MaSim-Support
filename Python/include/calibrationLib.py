@@ -198,8 +198,8 @@ def load_betas(filename):
     '''
 
     lookup = {}
-    with open(filename) as csvfile:
-        reader = csv.DictReader(csvfile)
+    with open(filename) as input:
+        reader = csv.DictReader(input)
 
         # Check to see if we are reading Under-5 or 2-10 PfPR values
         if 'pfpr2to10' in reader.fieldnames:
@@ -243,8 +243,8 @@ def load_configuration(configuration):
     '''
 
     try:
-        with open(configuration, "r") as yamlfile:
-            cfg = yaml.safe_load(yamlfile)
+        with open(configuration, "r") as input:
+            cfg = yaml.safe_load(input)
             return cfg
 
     except yaml.parser.ParserError as ex:

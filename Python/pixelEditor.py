@@ -5,20 +5,23 @@
 # This script takes an ASC filename, x, y, and pixel value as an input. The 
 # file is then opened and the pixel at that location is updated to be the value
 # and saved.
+import os
 import sys
 
-import include.ascFile as ascFile
+# Import our libraries
+sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
+import include.ascFile as asc
 
 
-def main(filename, x, y, value):
+def main(filename, row, col, value):
     # Load the ASC file
-    [ascheader, data] = ascFile.load_asc(filename)
+    header, data = asc.load_asc(filename)
 
     # Edit the value
     data[row][col] = value
 
     # Write the ASC file
-    ascFile.write_asc(ascheader, data, filename)
+    asc.write_asc(header, data, filename)
 
 
 if __name__ == "__main__":

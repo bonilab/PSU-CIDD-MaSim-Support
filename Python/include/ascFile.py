@@ -2,7 +2,6 @@
 #
 # This module contains some common functions for working with ASC files.
 import sys
-import numpy as np
 
 
 # Compare the two header files, return True if they are the same, False otherwise.
@@ -63,54 +62,54 @@ def compare_data(one, two, nodata, printError=True, errorLimit=-1):
 
 # Generate an ASC header with values zeroed
 def get_header():
-    ascheader = {}
-    ascheader['ncols'] = 0
-    ascheader['nrows'] = 0
-    ascheader['xllcorner'] = 0
-    ascheader['yllcorner'] = 0
-    ascheader['cellsize'] = 0
-    ascheader['nodata'] = 0
-    return ascheader
+    header = {}
+    header['ncols'] = 0
+    header['nrows'] = 0
+    header['xllcorner'] = 0
+    header['yllcorner'] = 0
+    header['cellsize'] = 0
+    header['nodata'] = 0
+    return header
 
 
 # Read the ASC file and return the header / data
 def load_asc(filename):
-    with open(filename) as ascfile:
-        lines = ascfile.readlines()
+    with open(filename) as input:
+        lines = input.readlines()
 
         # Read the header values
-        ascheader = {}
-        ascheader['ncols'] = int(lines[0].split()[1])
-        ascheader['nrows'] = int(lines[1].split()[1])
-        ascheader['xllcorner'] = float(lines[2].split()[1])
-        ascheader['yllcorner'] = float(lines[3].split()[1])
-        ascheader['cellsize'] = float(lines[4].split()[1])
-        ascheader['nodata'] = int(lines[5].split()[1])
+        header = {}
+        header['ncols'] = int(lines[0].split()[1])
+        header['nrows'] = int(lines[1].split()[1])
+        header['xllcorner'] = float(lines[2].split()[1])
+        header['yllcorner'] = float(lines[3].split()[1])
+        header['cellsize'] = float(lines[4].split()[1])
+        header['nodata'] = int(lines[5].split()[1])
 
         # Read the rest of the entries
-        ascdata = []
-        for ndx in range(6, ascheader['nrows'] + 6):
+        data = []
+        for ndx in range(6, header['nrows'] + 6):
             row = [float(value) for value in lines[ndx].split()]
-            ascdata.append(row)
+            data.append(row)
 
-        return [ascheader, ascdata]
+        return header, data
 
 
 # Write an ASC file using the data provided
-def write_asc(ascheader, ascdata, filename):
-    with open(filename, 'w') as ascfile:
+def write_asc(header, data, filename):
+    with open(filename, 'w') as output:
 
         # Write the header values
-        ascfile.write('ncols         ' + str(ascheader['ncols']) + '\n')
-        ascfile.write('nrows         ' + str(ascheader['nrows']) + '\n')
-        ascfile.write('xllcorner     ' + str(ascheader['xllcorner']) + '\n')
-        ascfile.write('yllcorner     ' + str(ascheader['yllcorner']) + '\n')
-        ascfile.write('cellsize      ' + '{0:.8g}'.format(ascheader['cellsize']) + '\n')
-        ascfile.write('NODATA_value  ' + str(ascheader['nodata']) + '\n')
+        output.write('ncols         ' + str(header['ncols']) + '\n')
+        output.write('nrows         ' + str(header['nrows']) + '\n')
+        output.write('xllcorner     ' + str(header['xllcorner']) + '\n')
+        output.write('yllcorner     ' + str(header['yllcorner']) + '\n')
+        output.write('cellsize      ' + '{0:.8g}'.format(header['cellsize']) + '\n')
+        output.write('NODATA_value  ' + str(header['nodata']) + '\n')
 
         # Write the data
-        for ndx in range(0, ascheader['nrows']):
-            row = ['{0:.8g}'.format(value) for value in ascdata[ndx]]
+        for ndx in range(0, header['nrows']):
+            row = ['{0:.8g}'.format(value) for value in data[ndx]]
             row = ' '.join(row)
-            ascfile.write(row)
-            ascfile.write('\n')
+            output.write(row)
+            output.write('\n')

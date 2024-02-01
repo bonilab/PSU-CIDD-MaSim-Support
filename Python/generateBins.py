@@ -4,9 +4,7 @@
 #
 # This script generates the bins that need to be run to determine the beta values
 import argparse
-
 import os
-
 import sys
 
 # Import our libraries

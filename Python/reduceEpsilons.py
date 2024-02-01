@@ -116,8 +116,8 @@ def main(betas, configuration, gisPath, tolerance, step, username):
         sys.exit(cl.EXIT_FAILURE)
  
     # Read the epsilons file in
-    _, beta = asc.load_asc(std.BETAVALUES.format(prefix))
-    _, epsilon = asc.load_asc(std.EPSILONVALUES.format(prefix))
+    _, beta = asc.load_asc(std.BETA_VALUES.format(prefix))
+    _, epsilon = asc.load_asc(std.EPSILON_VALUES.format(prefix))
 
     print ("Evaluating epsilons for {} rows, {} columns".format(header['nrows'], header['ncols']))
 

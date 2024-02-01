@@ -1,4 +1,3 @@
 jenkspy
 numpy
-psycopg2-binary
 pyyaml

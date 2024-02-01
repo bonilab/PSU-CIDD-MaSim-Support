@@ -8,34 +8,33 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
-from include.ascFile import load_asc
+import include.ascFile as asc
 
 # Note some constants
-NUMERATOR = 0
-DENOMINATOR = 1
-
+NUMERATOR, DENOMINATOR = 0, 1
+ 
 def calculate(gisPath, prefix, division, populationFilename=None):
 
     # Attempt to load the files
     filename = "{}/{}_{}.asc".format(gisPath, prefix, division)
-    [ascheader, district] = load(filename, division)        
+    header, district = load(filename, division)        
     filename = "{}/{}_pfpr2to10.asc".format(gisPath, prefix)
-    [_, pfpr] = load(filename, "PfPR")
+    _, pfpr = load(filename, "PfPR")
 
     if populationFilename is None:
         filename = "{}/{}_population.asc".format(gisPath, prefix)
     else:
         filename = populationFilename
-    [_, population] = load(filename, "population")
+    _, population = load(filename, "population")
 
     # Loop over the data that's been loaded
     data = {}
     cells = 0
     totalPopulation = 0
-    for row in range(ascheader['nrows']):
-        for col in range(ascheader['ncols']):
+    for row in range(header['nrows']):
+        for col in range(header['ncols']):
             # Continue if there is no data
-            if district[row][col] == ascheader['nodata']:
+            if district[row][col] == header['nodata']:
                 continue
 
             # Create the district if it does not exist
@@ -44,7 +43,7 @@ def calculate(gisPath, prefix, division, populationFilename=None):
                 data[key] = [0, 0]
 
             # Warn the user if there is a no data in the PfPR
-            if pfpr[row][col] == ascheader['nodata']:
+            if pfpr[row][col] == header['nodata']:
                 print('No data in PfPR values at {}, {}'.format(row, col))
 
             data[key][NUMERATOR] += pfpr[row][col] * population[row][col]
@@ -86,10 +85,10 @@ def calculate_initial(gisPath, prefix):
 
     # Calculate and return the initial population value
     population = 0
-    [ascheader, data] = load_asc(filename)
-    for row in range(ascheader['nrows']):
-        for col in range(ascheader['ncols']):
-            if data[row][col] != ascheader['nodata']:
+    header, data = asc.load_asc(filename)
+    for row in range(header['nrows']):
+        for col in range(header['ncols']):
+            if data[row][col] != header['nodata']:
                 population += data[row][col]
     return population
 
@@ -98,7 +97,7 @@ def load(filename, fileType):
     if not os.path.exists(filename):
         print("Could not find {} file, tried: {}".format(fileType, filename))
         exit(1)
-    return load_asc(filename)    
+    return asc.load_asc(filename)    
 
 
 if __name__ == '__main__':

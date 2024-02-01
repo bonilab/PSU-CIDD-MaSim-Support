@@ -12,21 +12,16 @@ import sys
 
 # Import our libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), 'include'))
-
+import include.ascFile as asc
 import include.standards as std
-from include.ascFile import load_asc
-
-
-# Filename template to use for the results
-TEMPLATE = "{}-weighted_pfpr.csv"
 
 
 def main(gis):
     # Get the prefix and open the ASC files
     prefix = scan_prefix(gis)
-    [header, districts] = load_asc(os.path.join(gis, std.DISTRICT_FILE.format(prefix)))
-    [_, pfpr] = load_asc(os.path.join(gis, std.PFPR_FILE.format(prefix)))
-    [_, population] = load_asc(os.path.join(gis, std.POPULATION_FILE.format(prefix)))
+    header, districts = asc.load_asc(os.path.join(gis, std.DISTRICT_FILE.format(prefix)))
+    _, pfpr = asc.load_asc(os.path.join(gis, std.PFPR_FILE.format(prefix)))
+    _, population = asc.load_asc(os.path.join(gis, std.POPULATION_FILE.format(prefix)))
     
     # Iterate through the district file to guide the calculation
     data = {}
@@ -49,10 +44,10 @@ def main(gis):
             data[district][1] += population[row][col]
 
     # Generate the results file
-    filename = TEMPLATE.format(prefix)
-    with open(filename, 'w') as csvfile:
+    filename = std.WEIGHTED_PFPR.format(prefix)
+    with open(filename, 'w') as output:
         for district in sorted(data.keys()):
-            csvfile.write("{},{}\n".format(district, round(data[district][0] / data[district][1], 2)))
+            output.write("{},{}\n".format(district, round(data[district][0] / data[district][1], 2)))
     print("{} created".format(filename))        
 
 
@@ -79,7 +74,7 @@ if __name__ == '__main__':
         help='The path to the directory that the GIS files can be found in')
     args = parser.parse_args()
 
-    # Call the main function with the paramters
+    # Call the main function with the parameters
     try:
         main(args.gis)
     except Exception as err:
