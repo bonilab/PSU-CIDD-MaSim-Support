@@ -4,10 +4,9 @@
 #
 # This script generates the bins that need to be run to determine the beta values
 import argparse
-import pathlib
+
 import os
-import re
-import stat
+
 import sys
 
 # Import our libraries
@@ -15,6 +14,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "include"))
 import include.ascFile as asc
 import include.calibrationLib as cl
 import include.stats as stats
+import include.writer as writer
 
 
 # === The following block of code primarily handles reading files and business logic ===
@@ -122,61 +122,6 @@ def bin_data(data, type, minimumClasses=5, maximumClasses=30, delta=0.01):
         return breaks[1:]
     
 
-# === The next two functions are very similar, but are left in place in case major changes are needed between local and cluster runs ===
-
-# Prepare the script that will run on the cluster
-def save_cluster(pfpr, treatments, populationBreaks, filename, prefix, username):
-    with open(filename, 'w') as script:
-        # Print the front matter
-        script.write("#!/bin/bash\n")
-        script.write("source ./calibrationLib.sh\n\n")
-        script.write("checkDependencies {}\n\n".format(prefix))
-
-        # Print the ASC file generation commands
-        script.write("generateAsc \"\\\"{}\\\"\"\n".format(
-            " ".join([str(int(x)) for x in sorted(populationBreaks)])))
-        script.write("generateZoneAsc \"\\\"{}\\\"\"\n\n".format(
-            " ".join([str(int(x)) for x in sorted(pfpr.keys())])))
-
-        # Print the zone matter
-        for zone in pfpr.keys():
-            script.write("run {} \"\\\"{}\\\"\" \"\\\"{}\\\"\" {} {}\n".format(
-                zone,
-                " ".join([str(int(x)) for x in sorted(populationBreaks)]),
-                " ".join([str(x) for x in sorted(treatments[zone])]),
-                prefix, username))
-
-    # Set the file as executable
-    script = pathlib.Path(filename)
-    script.chmod(script.stat().st_mode | stat.S_IEXEC)
-
-# Prepare the script that will run locally
-def save_local(pfpr, treatments, populationBreaks, filename, prefix):
-    with open(filename, 'w') as script:
-        # Print the front matter
-        script.write("#!/bin/bash\n")
-        script.write("source ./localCalibrationLib.sh\n\n")
-        script.write("checkDependencies {}\n\n".format(prefix))
-
-        # Print the ASC file generation commands
-        script.write("generateAsc \"\\\"{}\\\"\"\n".format(
-            " ".join([str(int(x)) for x in sorted(populationBreaks)])))
-        script.write("generateZoneAsc \"\\\"{}\\\"\"\n\n".format(
-            " ".join([str(int(x)) for x in sorted(pfpr.keys())])))
-
-        # Print the zone matter
-        for zone in pfpr.keys():
-            script.write("run {} \"\\\"{}\\\"\" \"\\\"{}\\\"\" {}\n".format(
-                zone,
-                " ".join([str(int(x)) for x in sorted(populationBreaks)]),
-                " ".join([str(x) for x in sorted(treatments[zone])]),
-                prefix))
-
-    # Set the file as executable
-    script = pathlib.Path(filename)
-    script.chmod(script.stat().st_mode | stat.S_IEXEC)
-
-
 # === The remainder of the code handles the logic around running the script itself === 
 
 def main(args):
@@ -211,9 +156,9 @@ def main(args):
         # Save the basic script
         os.makedirs('out', exist_ok=True)
         if args.local: 
-            save_local(ranges, treatments, breaks, 'out/calibration.sh', prefix)
+            writer.save_local(ranges, treatments, breaks, 'out/calibration.sh', prefix)
         else: 
-            save_cluster(ranges, treatments, breaks, 'out/calibration.sh', prefix, args.username)
+            writer.save_cluster(ranges, treatments, breaks, 'out/calibration.sh', prefix, args.username)
 
     except Exception as ex:
         print(ex)
