@@ -17,8 +17,6 @@ import include.stats as stats
 import include.writer as writer
 
 
-# === The following block of code primarily handles reading files and business logic ===
-
 # Process the configuration file, GIS files, and produce the bins
 def process(configuration, gisPath, prefix, type):
     # Load the configuration
@@ -95,8 +93,6 @@ def load(filename, fileType):
     return asc.load_asc(filename)    
 
 
-# === The following block of code performs the binning operations === 
-
 # Bin the data provided using Jenks natural breaks optimization
 def bin_data(data, type, minimumClasses=5, maximumClasses=30, delta=0.01):
 
@@ -121,8 +117,6 @@ def bin_data(data, type, minimumClasses=5, maximumClasses=30, delta=0.01):
         print("done!\nUnable to find optimal fit, classes = {}, GVF = {}".format(classes, gvf))
         return breaks[1:]
     
-
-# === The remainder of the code handles the logic around running the script itself === 
 
 def main(args):
     # Check to see if it looks like there is a country prefix
