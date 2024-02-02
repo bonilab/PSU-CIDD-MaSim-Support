@@ -86,11 +86,14 @@ function run_sweep() {
         sed -i 's/#ZONE#/'"$zone"'/g' $filename.yml
     
         # Queue the job, update the counter
-        tsp ./MaSim -i $filename.yml -r SQLiteDistrictReporter -j $counter
+        tsp ./MaSim -i $filename.yml -r SQLitePixelReporter -j $counter
         ((counter++))
       done
     done
   done
+
+  # Report the total number of jobs queued
+  echo "Started $counter jobs!"
 }
 
 # Run a beta calibration CSV file
@@ -101,6 +104,7 @@ function run_csv() {
 
   # Set the job counter based on the number of files in this folder
   counter=`ls . | wc -l`  
+  initial=$counter
 
   while IFS=, read -r zone population access beta
   do
@@ -116,10 +120,14 @@ function run_csv() {
     sed -i 's/#ZONE#/'"$zone"'/g' $filename.yml
 
     # Queue the job, update the counter
-    tsp ./MaSim -i $filename.yml -r SQLiteDistrictReporter -j $counter
+    tsp ./MaSim -i $filename.yml -r SQLitePixelReporter -j $counter
     ((counter++))
 
   done < $filename
+
+  # Report the total number of jobs queued
+  total=(($counter-$initial))
+  echo "Started $total jobs!"
 }
 
 # Run a CSV file of replicates (i.e., commands), append the job counter
