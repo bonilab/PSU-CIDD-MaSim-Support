@@ -20,7 +20,7 @@ function check_dependencies {
   eval country=$1
 
   missing=false
-  declare -a files=("$country-calibration.yml" "template.job" "population.asc" "zone.asc")
+  declare -a files=("$country-calibration.yml" "population.asc" "zone.asc")
   for file in "${files[@]}"; do
     if [ ! -f "$file" ]; then
       echo "$file does not appear to exist!"
