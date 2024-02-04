@@ -86,7 +86,7 @@ function run_sweep() {
         sed -i 's/#ZONE#/'"$zone"'/g' $filename.yml
     
         # Queue the job, update the counter
-        tsp ./MaSim -i $filename.yml -r SQLitePixelReporter -j $counter
+        tsp bash -c "./MaSim -i $filename.yml -r SQLitePixelReporter -j $counter &> $counter.log"
         ((counter++))
       done
     done
@@ -120,7 +120,7 @@ function run_csv() {
     sed -i 's/#ZONE#/'"$zone"'/g' $filename.yml
 
     # Queue the job, update the counter
-    tsp ./MaSim -i $filename.yml -r SQLitePixelReporter -j $counter
+    tsp bash -c "./MaSim -i $filename.yml -r SQLitePixelReporter -j $counter &> $counter.log"
     ((counter++))
 
   done < $filename
@@ -144,7 +144,7 @@ function run_replicates() {
 
     # Loop for the count, queue the 
     for ndx in `seq 1 1 $count`; do
-      tsp $command -j $counter
+      tsp bash -c "$command -j $counter &> $counter.log"
       ((counter++))
     done
   done < $filename
