@@ -12,6 +12,8 @@ The main repository for the simulation can be found at [rjzupko/PSU-CIDD-Malaria
 
 `bash/` - This directory contains Bash scripts as well as job files that may be manipulated by the Bash scripts to run replicates on the [Roar Supercomputer](https://www.icds.psu.edu/computing-services/roar-user-guide/).
 
+`earthengine/` - This directory contains scripts intended for use with [Google Earth Engine](https://earthengine.google.com/).
+
 `matlab/` - This directory contains Matlab functions that can be used to generate plots for various comparison points used for model calibration and validation.
 
 `python/` - This directory contains the Python scripts that invoked by the `bash` scripts in the root directory of this repository. \
